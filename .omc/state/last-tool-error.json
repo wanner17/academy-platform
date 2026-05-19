@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"ls d:\\\\dev\\\\academy-platform\",\"description\":\"List academy-platform directory contents\"}",
+  "error": "Exit code 2\nls: cannot access 'd:devacademy-platform': No such file or directory",
+  "timestamp": "2026-05-19T04:52:37.654Z",
+  "retry_count": 1
+}

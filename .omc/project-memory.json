@@ -1,0 +1,237 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1779180623969,
+  "projectRoot": "d:\\dev\\academy-platform",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "16.0.0",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "19.2.0",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.0",
+        "category": "frontend"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "eslint",
+      "typecheck": "tsc --noEmit",
+      "prisma:generate": "dotenv -e .env.local -- prisma generate",
+      "prisma:migrate": "dotenv -e .env.local -- prisma migrate dev",
+      "prisma:seed": "dotenv -e .env.local -- tsx prisma/seed.ts"
+    }
+  },
+  "conventions": {
+    "namingStyle": "camelCase",
+    "importStyle": "ES modules",
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "src"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "omx_wiki": {
+      "path": "omx_wiki",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1779180623909,
+      "keyFiles": [
+        "log.md"
+      ]
+    },
+    "prisma": {
+      "path": "prisma",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1779180623911,
+      "keyFiles": [
+        "schema.prisma",
+        "seed.ts"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 1,
+      "lastAccessed": 1779180623928,
+      "keyFiles": [
+        "proxy.ts"
+      ]
+    },
+    "prisma\\migrations": {
+      "path": "prisma\\migrations",
+      "purpose": "Database migrations",
+      "fileCount": 1,
+      "lastAccessed": 1779180623930,
+      "keyFiles": [
+        "migration_lock.toml"
+      ]
+    },
+    "src\\app": {
+      "path": "src\\app",
+      "purpose": "Application code",
+      "fileCount": 3,
+      "lastAccessed": 1779180623931,
+      "keyFiles": [
+        "globals.css",
+        "layout.tsx",
+        "page.tsx"
+      ]
+    },
+    "src\\components": {
+      "path": "src\\components",
+      "purpose": "UI components",
+      "fileCount": 1,
+      "lastAccessed": 1779180623932,
+      "keyFiles": [
+        "confirm-submit-button.tsx"
+      ]
+    },
+    "src\\lib": {
+      "path": "src\\lib",
+      "purpose": "Library code",
+      "fileCount": 2,
+      "lastAccessed": 1779180623932,
+      "keyFiles": [
+        "program-labels.ts",
+        "schedule-labels.ts"
+      ]
+    },
+    "src\\types": {
+      "path": "src\\types",
+      "purpose": "Type definitions",
+      "fileCount": 1,
+      "lastAccessed": 1779180623933,
+      "keyFiles": [
+        "next-auth.d.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "DEVELOPMENT_SUMMARY.md",
+      "accessCount": 10,
+      "lastAccessed": 1779180759635,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\repositories\\homework.repository.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779180654674,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\repositories\\progress.repository.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779180654714,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\services\\homework.service.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779180655345,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\services\\progress.service.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779180655924,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\actions.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779180656166,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779180656582,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(student)\\student\\[slug]\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779180656749,
+      "type": "file"
+    },
+    {
+      "path": "prisma\\schema.prisma",
+      "accessCount": 1,
+      "lastAccessed": 1779180659848,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\students\\actions.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779180660730,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\students\\page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779180660939,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\auth\\server.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779180665569,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\auth\\authorization.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779180665775,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

@@ -1,0 +1,115 @@
+'use server'
+
+import type { ProgramMode, TargetLevel } from '@prisma/client'
+import { getServerSession } from 'next-auth'
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { isAcademyAdminRole, requireAcademyMember } from '@/lib/auth/authorization'
+import { authConfig } from '@/lib/integrations/auth/config'
+import { programService } from '@/lib/services/program.service'
+import { scheduleService } from '@/lib/services/schedule.service'
+
+export async function updateProgramInfoAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const program = await programService.getProgramById(programId, academy.id)
+  const isAdmin = isAcademyAdminRole(user.role)
+  assertProgramWritable(program, user)
+
+  await programService.updateProgram(programId, academy.id, {
+    title: String(formData.get('title') ?? ''),
+    teacherId: isAdmin ? String(formData.get('teacherId') ?? '') : program.teacherId ?? undefined,
+    mode: String(formData.get('mode') ?? 'SCHOOL_EXAM') as ProgramMode,
+    targetLevel: String(formData.get('targetLevel') ?? 'MIDDLE') as TargetLevel,
+    schoolName: String(formData.get('schoolName') ?? ''),
+    grade: String(formData.get('grade') ?? ''),
+    subject: String(formData.get('subject') ?? ''),
+    description: String(formData.get('description') ?? ''),
+    order: isAdmin ? Number(formData.get('order') ?? 0) : program.order,
+    isActive: isAdmin ? formData.get('isActive') === 'true' : program.isActive,
+  })
+
+  revalidateProgramSchedulePaths(slug, programId)
+  revalidatePath(`/admin/${slug}/programs`)
+  redirect(`/admin/${slug}/programs/${programId}`)
+}
+
+export async function createProgramScheduleAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+
+  await scheduleService.createSchedule(academy.id, readScheduleForm(formData, programId))
+
+  revalidateProgramSchedulePaths(slug, programId)
+  redirect(`/admin/${slug}/programs/${programId}`)
+}
+
+export async function updateProgramScheduleAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const scheduleId = String(formData.get('id') ?? '')
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+  const schedule = await scheduleService.getScheduleById(scheduleId, academy.id)
+  if (schedule.programId !== programId) throw new Error('Schedule does not belong to this program')
+
+  await scheduleService.updateSchedule(scheduleId, academy.id, readScheduleForm(formData, programId))
+
+  revalidateProgramSchedulePaths(slug, programId)
+  redirect(`/admin/${slug}/programs/${programId}`)
+}
+
+export async function deleteProgramScheduleAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const scheduleId = String(formData.get('id') ?? '')
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+  const schedule = await scheduleService.getScheduleById(scheduleId, academy.id)
+  if (schedule.programId !== programId) throw new Error('Schedule does not belong to this program')
+
+  await scheduleService.deleteSchedule(scheduleId, academy.id)
+
+  revalidateProgramSchedulePaths(slug, programId)
+  redirect(`/admin/${slug}/programs/${programId}`)
+}
+
+async function readProgramScheduleContext(formData: FormData) {
+  const slug = String(formData.get('slug') ?? '')
+  const programId = String(formData.get('programId') ?? '')
+  const session = await getServerSession(authConfig)
+  const { academy, user } = await requireAcademyMember(session, slug)
+  return { slug, programId, academy, user }
+}
+
+function assertProgramWritable(
+  program: Awaited<ReturnType<typeof programService.getProgramById>>,
+  user: { id: string; role: string },
+) {
+  if (isAcademyAdminRole(user.role)) return
+  if (program.teacher?.userId === user.id) return
+  throw new Error('Forbidden')
+}
+
+function readScheduleForm(formData: FormData, programId: string) {
+  return {
+    programId,
+    title: String(formData.get('title') ?? ''),
+    subject: String(formData.get('subject') ?? ''),
+    teacher: String(formData.get('teacher') ?? ''),
+    room: String(formData.get('room') ?? ''),
+    dayOfWeek: Number(formData.get('dayOfWeek') ?? 0),
+    startTime: String(formData.get('startTime') ?? ''),
+    endTime: String(formData.get('endTime') ?? ''),
+    color: String(formData.get('color') ?? ''),
+    isActive: formData.get('isActive') === 'true',
+  }
+}
+
+function revalidateProgramSchedulePaths(slug: string, programId: string) {
+  revalidatePath(`/${slug}`)
+  revalidatePath(`/${slug}/programs`)
+  revalidatePath(`/${slug}/programs/${programId}`)
+  revalidatePath(`/${slug}/schedule`)
+  revalidatePath(`/admin/${slug}`)
+  revalidatePath(`/admin/${slug}/schedule`)
+  revalidatePath(`/admin/${slug}/programs/${programId}`)
+}
