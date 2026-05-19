@@ -6,6 +6,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { isAcademyAdminRole, requireAcademyMember } from '@/lib/auth/authorization'
 import { authConfig } from '@/lib/integrations/auth/config'
+import { homeworkService } from '@/lib/services/homework.service'
+import { progressService } from '@/lib/services/progress.service'
 import { programService } from '@/lib/services/program.service'
 import { scheduleService } from '@/lib/services/schedule.service'
 
@@ -112,4 +114,62 @@ function revalidateProgramSchedulePaths(slug: string, programId: string) {
   revalidatePath(`/admin/${slug}`)
   revalidatePath(`/admin/${slug}/schedule`)
   revalidatePath(`/admin/${slug}/programs/${programId}`)
+}
+
+export async function createHomeworkAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+
+  await homeworkService.createHomework(academy.id, {
+    authorId: user.id,
+    programId,
+    title: String(formData.get('title') ?? ''),
+    content: String(formData.get('content') ?? ''),
+    dueDate: formData.get('dueDate') ? new Date(String(formData.get('dueDate'))) : undefined,
+    isVisible: formData.get('isVisible') !== 'false',
+  })
+
+  revalidatePath(`/admin/${slug}/programs/${programId}`)
+  redirect(`/admin/${slug}/programs/${programId}`)
+}
+
+export async function deleteHomeworkAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+
+  await homeworkService.deleteHomework(String(formData.get('id') ?? ''), academy.id)
+
+  revalidatePath(`/admin/${slug}/programs/${programId}`)
+  redirect(`/admin/${slug}/programs/${programId}`)
+}
+
+export async function createProgressLogAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+
+  await progressService.createProgressLog(academy.id, {
+    authorId: user.id,
+    programId,
+    classDate: new Date(String(formData.get('classDate') ?? '')),
+    content: String(formData.get('content') ?? ''),
+    nextPlan: String(formData.get('nextPlan') ?? '') || undefined,
+    isVisible: formData.get('isVisible') !== 'false',
+  })
+
+  revalidatePath(`/admin/${slug}/programs/${programId}`)
+  redirect(`/admin/${slug}/programs/${programId}`)
+}
+
+export async function deleteProgressLogAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+
+  await progressService.deleteProgressLog(String(formData.get('id') ?? ''), academy.id)
+
+  revalidatePath(`/admin/${slug}/programs/${programId}`)
+  redirect(`/admin/${slug}/programs/${programId}`)
 }

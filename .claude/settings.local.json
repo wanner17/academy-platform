@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /d d:\\\\dev\\\\academy-platform)",
+      "Bash(npm.cmd run *)"
+    ]
+  }
+}

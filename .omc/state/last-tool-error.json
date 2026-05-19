@@ -1,7 +1,7 @@
 {
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"ls d:\\\\dev\\\\academy-platform\",\"description\":\"List academy-platform directory contents\"}",
-  "error": "Exit code 2\nls: cannot access 'd:devacademy-platform': No such file or directory",
-  "timestamp": "2026-05-19T04:52:37.654Z",
+  "tool_name": "PowerShell",
+  "tool_input_preview": "{\"command\":\"cd d:\\\\dev\\\\academy-platform; npm.cmd run typecheck 2>&1\",\"timeout\":60000,\"description\":\"Run TypeScript type check\"}",
+  "error": "Exit code 2\n> academy-platform@0.1.0 typecheck\n> tsc --noEmit\n\nsrc/app/(admin)/admin/[slug]/programs/[id]/page.tsx(68,29): error TS7006: Parameter 'schedule' implicitly has an 'any' type.\r\nsrc/app/(admin)/admin/[slug]/programs/[id]/page.tsx(101,29): error TS7006: Parameter 'hw' implicitly has an 'any' type.\r\nsrc/app/(admin)/admin/[slug]/programs/[id]/page.tsx(140,32): error TS7006: Parameter 'log' implicitly has an 'any' type.\r\nsrc/app/(student)/student/[slug]/page.tsx(64,27): error TS7006: Para...",
+  "timestamp": "2026-05-19T08:57:00.244Z",
   "retry_count": 1
 }

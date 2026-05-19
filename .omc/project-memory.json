@@ -161,6 +161,24 @@
       "type": "file"
     },
     {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\actions.ts",
+      "accessCount": 3,
+      "lastAccessed": 1779180931673,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779180975965,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(student)\\student\\[slug]\\page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779180999258,
+      "type": "file"
+    },
+    {
       "path": "src\\lib\\repositories\\homework.repository.ts",
       "accessCount": 1,
       "lastAccessed": 1779180654674,
@@ -182,24 +200,6 @@
       "path": "src\\lib\\services\\progress.service.ts",
       "accessCount": 1,
       "lastAccessed": 1779180655924,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\actions.ts",
-      "accessCount": 1,
-      "lastAccessed": 1779180656166,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1779180656582,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\(student)\\student\\[slug]\\page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1779180656749,
       "type": "file"
     },
     {
