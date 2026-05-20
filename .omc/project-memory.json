@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1779180623969,
+  "lastScanned": 1779321315023,
   "projectRoot": "d:\\dev\\academy-platform",
   "techStack": {
     "languages": [
@@ -67,6 +67,7 @@
     "isMonorepo": false,
     "workspaces": [],
     "mainDirectories": [
+      "public",
       "src"
     ],
     "gitBranches": {
@@ -80,7 +81,7 @@
       "path": "omx_wiki",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1779180623909,
+      "lastAccessed": 1779321314505,
       "keyFiles": [
         "log.md"
       ]
@@ -89,17 +90,28 @@
       "path": "prisma",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1779180623911,
+      "lastAccessed": 1779321314516,
       "keyFiles": [
         "schema.prisma",
         "seed.ts"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 3,
+      "lastAccessed": 1779321314607,
+      "keyFiles": [
+        "instagram-icon.svg",
+        "logo.png",
+        "naver-blog-icon.svg"
       ]
     },
     "src": {
       "path": "src",
       "purpose": "Source code",
       "fileCount": 1,
-      "lastAccessed": 1779180623928,
+      "lastAccessed": 1779321314609,
       "keyFiles": [
         "proxy.ts"
       ]
@@ -108,7 +120,7 @@
       "path": "prisma\\migrations",
       "purpose": "Database migrations",
       "fileCount": 1,
-      "lastAccessed": 1779180623930,
+      "lastAccessed": 1779321314611,
       "keyFiles": [
         "migration_lock.toml"
       ]
@@ -117,7 +129,7 @@
       "path": "src\\app",
       "purpose": "Application code",
       "fileCount": 3,
-      "lastAccessed": 1779180623931,
+      "lastAccessed": 1779321314613,
       "keyFiles": [
         "globals.css",
         "layout.tsx",
@@ -127,18 +139,21 @@
     "src\\components": {
       "path": "src\\components",
       "purpose": "UI components",
-      "fileCount": 1,
-      "lastAccessed": 1779180623932,
+      "fileCount": 4,
+      "lastAccessed": 1779321314614,
       "keyFiles": [
-        "confirm-submit-button.tsx"
+        "confirm-submit-button.tsx",
+        "public-login-form.tsx",
+        "student-attendance-button.tsx"
       ]
     },
     "src\\lib": {
       "path": "src\\lib",
       "purpose": "Library code",
-      "fileCount": 2,
-      "lastAccessed": 1779180623932,
+      "fileCount": 3,
+      "lastAccessed": 1779321314615,
       "keyFiles": [
+        "attendance-labels.ts",
         "program-labels.ts",
         "schedule-labels.ts"
       ]
@@ -147,7 +162,7 @@
       "path": "src\\types",
       "purpose": "Type definitions",
       "fileCount": 1,
-      "lastAccessed": 1779180623933,
+      "lastAccessed": 1779321314617,
       "keyFiles": [
         "next-auth.d.ts"
       ]
@@ -176,6 +191,12 @@
       "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\actions.ts",
       "accessCount": 3,
       "lastAccessed": 1779180931673,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\layout.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1779321489293,
       "type": "file"
     },
     {
