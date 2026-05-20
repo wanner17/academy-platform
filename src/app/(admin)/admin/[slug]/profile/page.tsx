@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { SmartEditor } from '@/components/admin/smart-editor'
+import { TeacherMediaFields } from '@/components/admin/teacher-media-fields'
 import { isAcademyAdminRole } from '@/lib/auth/authorization'
 import { requireMemberPage } from '@/lib/auth/server'
 import { teacherService } from '@/lib/services/teacher.service'
@@ -17,10 +19,10 @@ export default async function MyProfilePage({ params }: MyProfilePageProps) {
   const teacher = await teacherService.getTeacherByUserId(user.id, academy.id)
 
   return (
-    <main className="mx-auto grid max-w-5xl gap-6 px-6 py-10 lg:grid-cols-2">
-      <section className="rounded-lg border bg-white p-5">
+    <main className="mx-auto grid max-w-7xl gap-6 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <section className="min-w-0 rounded-lg border bg-white p-5">
         <h1 className="mb-4 text-2xl font-bold">내 정보</h1>
-        <form action={updateMyTeacherAction} className="space-y-4">
+        <form action={updateMyTeacherAction} className="min-w-0 space-y-4">
           <input type="hidden" name="slug" value={slug} />
           <label className="block">
             <span className="mb-1 block text-sm font-medium">이름</span>
@@ -32,8 +34,9 @@ export default async function MyProfilePage({ params }: MyProfilePageProps) {
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">소개</span>
-            <textarea className="min-h-40 w-full rounded border px-3 py-2" defaultValue={teacher.bio ?? ''} name="bio" />
+            <SmartEditor defaultValue={teacher.bio ?? ''} minHeight={220} name="bio" slug={slug} />
           </label>
+          <TeacherMediaFields imageUrl={teacher.profileImageUrl} slug={slug} videoUrls={teacher.introVideoUrls ?? teacher.introVideoUrl} />
           <ConfirmSubmitButton
             className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white"
             message="내 정보를 저장할까요?"
@@ -43,7 +46,7 @@ export default async function MyProfilePage({ params }: MyProfilePageProps) {
         </form>
       </section>
 
-      <section className="rounded-lg border bg-white p-5">
+      <section className="min-w-0 rounded-lg border bg-white p-5">
         <h2 className="mb-4 text-2xl font-bold">비밀번호 설정</h2>
         <form action={updateMyPasswordAction} className="space-y-4">
           <input type="hidden" name="slug" value={slug} />

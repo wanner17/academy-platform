@@ -3,8 +3,9 @@
 import { getServerSession } from 'next-auth'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { requireAcademyAdmin } from '@/lib/auth/authorization'
+import { isAcademyAdminRole, requireAcademyAdmin, requireAcademyMember } from '@/lib/auth/authorization'
 import { authConfig } from '@/lib/integrations/auth/config'
+import { programService } from '@/lib/services/program.service'
 import { scheduleService } from '@/lib/services/schedule.service'
 
 export async function createScheduleAction(formData: FormData) {
@@ -22,12 +23,14 @@ export async function updateScheduleAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
   const id = String(formData.get('id') ?? '')
   const session = await getServerSession(authConfig)
-  const { academy } = await requireAcademyAdmin(session, slug)
+  const { academy, user } = await requireAcademyMember(session, slug)
+  const schedule = await scheduleService.getScheduleById(id, academy.id)
+  await assertScheduleWritable(academy.id, schedule.programId, user)
 
   await scheduleService.updateSchedule(id, academy.id, readScheduleForm(formData))
 
   revalidateSchedulePaths(slug)
-  redirect(`/admin/${slug}/schedule`)
+  redirect(schedule.programId ? `/admin/${slug}/programs/${schedule.programId}/schedule` : `/admin/${slug}/schedule`)
 }
 
 export async function deleteScheduleAction(formData: FormData) {
@@ -55,6 +58,16 @@ function readScheduleForm(formData: FormData) {
     color: String(formData.get('color') ?? ''),
     isActive: formData.get('isActive') === 'true',
   }
+}
+
+async function assertScheduleWritable(academyId: string, programId: string | null, user: { id: string; role: string }) {
+  if (isAcademyAdminRole(user.role)) return
+  if (!programId) throw new Error('Forbidden')
+
+  const program = await programService.getProgramById(programId, academyId)
+  if (program.teacher?.userId === user.id) return
+
+  throw new Error('Forbidden')
 }
 
 function revalidateSchedulePaths(slug: string) {

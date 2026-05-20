@@ -4,6 +4,7 @@ import { dayLabels } from '@/lib/schedule-labels'
 import { programModeLabels, targetLevelLabels } from '@/lib/program-labels'
 import { programService } from '@/lib/services/program.service'
 import { scheduleService } from '@/lib/services/schedule.service'
+import { publicPath } from '@/lib/utils/public-path'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 
 type ProgramDetailPageProps = {
@@ -20,7 +21,7 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
-      <a className="mb-6 inline-block text-sm text-blue-700" href={`/${slug}/programs`}>
+      <a className="mb-6 inline-block text-sm text-blue-700" href={publicPath(slug, '/programs')}>
         수업 안내
       </a>
       <section className="mb-8 rounded-lg border bg-white p-6">

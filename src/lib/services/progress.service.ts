@@ -1,6 +1,7 @@
 import {
   progressRepository,
   type CreateProgressLogInput,
+  type UpdateProgressLogInput,
 } from '@/lib/repositories/progress.repository'
 
 export const progressService = {
@@ -8,9 +9,9 @@ export const progressService = {
     return progressRepository.findByProgram(academyId, programId)
   },
 
-  getVisibleProgressLogsForPrograms(academyId: string, programIds: string[]) {
+  getVisibleProgressLogsForPrograms(academyId: string, programIds: string[], studentId?: string) {
     if (programIds.length === 0) return []
-    return progressRepository.findVisibleByPrograms(academyId, programIds)
+    return progressRepository.findVisibleByPrograms(academyId, programIds, studentId)
   },
 
   async getProgressLogById(id: string, academyId: string) {
@@ -20,20 +21,26 @@ export const progressService = {
   },
 
   createProgressLog(academyId: string, data: CreateProgressLogInput) {
-    const content = data.content.trim()
-    const nextPlan = data.nextPlan?.trim() || undefined
-    if (!content) throw new Error('Content is required')
-    if (Number.isNaN(data.classDate.getTime())) throw new Error('Class date is invalid')
+    return progressRepository.create(academyId, normalizeProgressLogInput(data))
+  },
 
-    return progressRepository.create(academyId, {
-      ...data,
-      content,
-      nextPlan,
-    })
+  async updateProgressLog(id: string, academyId: string, data: UpdateProgressLogInput) {
+    await this.getProgressLogById(id, academyId)
+    return progressRepository.update(id, academyId, normalizeProgressLogInput(data))
   },
 
   async deleteProgressLog(id: string, academyId: string) {
     await this.getProgressLogById(id, academyId)
     return progressRepository.delete(id, academyId)
   },
+}
+
+function normalizeProgressLogInput<T extends CreateProgressLogInput | UpdateProgressLogInput>(data: T) {
+  const content = data.content.trim()
+  const nextPlan = data.nextPlan?.trim() || undefined
+  const studentId = data.studentId?.trim() || undefined
+  if (!content) throw new Error('Content is required')
+  if (Number.isNaN(data.classDate.getTime())) throw new Error('Class date is invalid')
+
+  return { ...data, content, nextPlan, studentId }
 }

@@ -1,0 +1,3 @@
+ALTER TABLE `Teacher`
+  ADD COLUMN `profileImageUrl` VARCHAR(191) NULL,
+  ADD COLUMN `introVideoUrl` VARCHAR(191) NULL;

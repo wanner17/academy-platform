@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { requireAcademyAdmin } from '@/lib/auth/authorization'
+import { requireAcademyMember } from '@/lib/auth/authorization'
 import { authConfig } from '@/lib/integrations/auth/config'
 import { getR2StorageProvider } from '@/lib/storage'
 import { assertAllowedUpload, sanitizeUploadName } from '@/lib/uploads/file-policy'
@@ -15,10 +15,11 @@ type PresignRouteProps = {
 export async function POST(request: Request, { params }: PresignRouteProps) {
   const { slug } = await params
   const session = await getServerSession(authConfig)
-  const { academy } = await requireAcademyAdmin(session, slug)
+  const { academy } = await requireAcademyMember(session, slug)
   const body = await request.json()
   const filename = sanitizeUploadName(String(body.filename ?? 'attachment'))
   const contentType = String(body.contentType ?? 'application/octet-stream')
+  const folder = String(body.folder ?? 'notices')
   const size = Number(body.size ?? 0)
 
   if (!Number.isFinite(size) || size <= 0) {
@@ -36,7 +37,8 @@ export async function POST(request: Request, { params }: PresignRouteProps) {
     return NextResponse.json({ error: error instanceof Error ? error.message : 'File type is not allowed' }, { status: 400 })
   }
 
-  const objectKey = `notices/${academy.id}/${randomUUID()}-${filename}`
+  const safeFolder = folder === 'teachers' || folder === 'gallery' || folder === 'main' ? folder : 'notices'
+  const objectKey = `${safeFolder}/${academy.id}/${randomUUID()}-${filename}`
   const upload = await getR2StorageProvider().createPresignedUploadUrl({
     objectKey,
     contentType,

@@ -1,163 +1,129 @@
-import { getAcademyBySlug } from '@/lib/utils/tenant'
-import { teacherService } from '@/lib/services/teacher.service'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
-import {
-  createTeacherAction,
-  deleteTeacherAction,
-  resetTeacherPasswordAction,
-  updateTeacherAction,
-} from './actions'
+import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { requireAdminPage } from '@/lib/auth/server'
+import { teacherService } from '@/lib/services/teacher.service'
+import { deleteTeacherAction } from './actions'
+import { stripHtml } from '@/lib/utils/html'
 
 type AdminTeachersPageProps = {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ active?: string; q?: string; subject?: string }>
 }
 
-export default async function AdminTeachersPage({ params }: AdminTeachersPageProps) {
+export default async function AdminTeachersPage({ params, searchParams }: AdminTeachersPageProps) {
   const { slug } = await params
+  const filters = await searchParams
   await requireAdminPage(slug)
   const academy = await getAcademyBySlug(slug)
-  const teachers = await teacherService.getAdminTeachers(academy.id)
+  const allTeachers = await teacherService.getAdminTeachers(academy.id)
+  const query = filters.q?.trim().toLowerCase() || ''
+  const selectedSubject = filters.subject?.trim() || ''
+  const selectedActive = filters.active === 'true' ? true : filters.active === 'false' ? false : undefined
+  const subjects = Array.from(new Set(allTeachers.map((teacher) => teacher.subject).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b, 'ko-KR'),
+  )
+  const teachers = allTeachers.filter((teacher) => {
+    const matchesQuery = query
+      ? [teacher.name, teacher.subject, stripHtml(teacher.bio ?? ''), teacher.user?.email ?? ''].some((value) =>
+          value.toLowerCase().includes(query),
+        )
+      : true
+    const matchesSubject = selectedSubject ? teacher.subject === selectedSubject : true
+    const matchesActive = selectedActive === undefined ? true : teacher.isActive === selectedActive
+    return matchesQuery && matchesSubject && matchesActive
+  })
 
   return (
-    <main className="mx-auto grid max-w-5xl gap-6 px-6 py-10 lg:grid-cols-[1fr_360px]">
-      <section>
-        <h1 className="mb-4 text-2xl font-bold">강사진 관리</h1>
-        <div className="space-y-4">
-          {teachers.map((teacher) => (
-            <article key={teacher.id} className="rounded-lg border bg-white p-5">
-              <form action={updateTeacherAction} className="space-y-4">
-                <input type="hidden" name="slug" value={slug} />
-                <input type="hidden" name="id" value={teacher.id} />
-                <div className="grid gap-4 md:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-1 block text-sm font-medium">이름</span>
-                    <input className="w-full rounded border px-3 py-2" defaultValue={teacher.name} name="name" required />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1 block text-sm font-medium">과목</span>
-                    <input className="w-full rounded border px-3 py-2" defaultValue={teacher.subject} name="subject" required />
-                  </label>
-                </div>
-                <label className="block">
-                  <span className="mb-1 block text-sm font-medium">소개</span>
-                  <textarea className="min-h-24 w-full rounded border px-3 py-2" defaultValue={teacher.bio ?? ''} name="bio" />
-                </label>
-                <div className="rounded border bg-slate-50 p-4">
-                  <p className="mb-3 text-sm font-medium">강사 로그인 계정</p>
-                  {teacher.user ? (
-                    <p className="text-sm text-slate-600">{teacher.user.email}</p>
-                  ) : (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <label className="block">
-                        <span className="mb-1 block text-sm font-medium">로그인 이메일</span>
-                        <input className="w-full rounded border px-3 py-2" name="loginEmail" type="email" />
-                      </label>
-                      <label className="block">
-                        <span className="mb-1 block text-sm font-medium">임시 비밀번호</span>
-                        <input className="w-full rounded border px-3 py-2" minLength={8} name="loginPassword" type="password" />
-                      </label>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-wrap items-end gap-4">
-                  <label className="block">
-                    <span className="mb-1 block text-sm font-medium">정렬</span>
-                    <input className="w-24 rounded border px-3 py-2" defaultValue={teacher.order} name="order" type="number" />
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input defaultChecked={teacher.isActive} name="isActive" type="checkbox" value="true" />
-                    공개
-                  </label>
-                  <ConfirmSubmitButton
-                    className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white"
-                    message="강사 정보를 저장할까요?"
-                  >
-                    저장
-                  </ConfirmSubmitButton>
-                </div>
-              </form>
-              <form action={deleteTeacherAction} className="mt-3">
-                <input type="hidden" name="slug" value={slug} />
-                <input type="hidden" name="id" value={teacher.id} />
-                <ConfirmSubmitButton
-                  className="rounded border px-3 py-1 text-sm text-red-700"
-                  message="이 강사를 삭제할까요?"
-                >
-                  삭제
-                </ConfirmSubmitButton>
-              </form>
-              {teacher.user ? (
-                <form action={resetTeacherPasswordAction} className="mt-3 flex flex-wrap items-end gap-2 rounded border bg-slate-50 p-3">
-                  <input type="hidden" name="slug" value={slug} />
-                  <input type="hidden" name="id" value={teacher.id} />
-                  <label className="block grow">
-                    <span className="mb-1 block text-sm font-medium">새 임시 비밀번호</span>
-                    <input className="w-full rounded border px-3 py-2" minLength={8} name="newPassword" required type="password" />
-                  </label>
-                  <ConfirmSubmitButton
-                    className="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-white"
-                    message="강사 비밀번호를 초기화할까요?"
-                  >
-                    비밀번호 초기화
-                  </ConfirmSubmitButton>
-                </form>
-              ) : null}
-            </article>
-          ))}
-          {teachers.length === 0 ? (
-            <div className="rounded-lg border bg-white p-5 text-sm text-slate-500">등록된 강사가 없습니다.</div>
-          ) : null}
+    <main className="mx-auto max-w-6xl px-6 py-10">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">강사진 관리</h1>
+          <p className="mt-1 text-sm text-slate-600">강사 정보를 리스트로 관리합니다.</p>
         </div>
-      </section>
-
-      <section className="rounded-lg border bg-white p-5">
-        <h2 className="mb-4 font-semibold">강사 추가</h2>
-        <form action={createTeacherAction} className="space-y-4">
-          <input type="hidden" name="slug" value={slug} />
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">이름</span>
-            <input className="w-full rounded border px-3 py-2" name="name" required />
+        <a className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white" href={`/admin/${slug}/teachers/new`}>
+          강사 등록
+        </a>
+      </div>
+      <section className="mb-6 rounded-lg border bg-white p-4">
+        <form className="grid gap-3 md:grid-cols-4" method="get">
+          <label className="block md:col-span-2">
+            <span className="mb-1 block text-sm font-medium">검색</span>
+            <input className="w-full rounded border px-3 py-2" defaultValue={filters.q ?? ''} name="q" placeholder="이름, 과목, 소개, 이메일" />
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">과목</span>
-            <input className="w-full rounded border px-3 py-2" name="subject" required />
+            <select className="w-full rounded border px-3 py-2" defaultValue={selectedSubject} name="subject">
+              <option value="">전체</option>
+              {subjects.map((subject) => (
+                <option key={subject} value={subject}>
+                  {subject}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">소개</span>
-            <textarea className="min-h-32 w-full rounded border px-3 py-2" name="bio" />
+            <span className="mb-1 block text-sm font-medium">공개</span>
+            <select className="w-full rounded border px-3 py-2" defaultValue={filters.active ?? ''} name="active">
+              <option value="">전체</option>
+              <option value="true">공개</option>
+              <option value="false">비공개</option>
+            </select>
           </label>
-          <div className="rounded border bg-slate-50 p-4">
-            <p className="mb-3 text-sm font-medium">강사 로그인 계정</p>
-            <div className="space-y-4">
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium">로그인 이메일</span>
-                <input className="w-full rounded border px-3 py-2" name="loginEmail" type="email" />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium">임시 비밀번호</span>
-                <input className="w-full rounded border px-3 py-2" minLength={8} name="loginPassword" type="password" />
-              </label>
-            </div>
+          <div className="flex items-end gap-2">
+            <button className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white" type="submit">
+              조회
+            </button>
+            <a className="rounded border px-4 py-2 text-sm" href={`/admin/${slug}/teachers`}>
+              초기화
+            </a>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">정렬</span>
-              <input className="w-24 rounded border px-3 py-2" defaultValue={0} name="order" type="number" />
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input defaultChecked name="isActive" type="checkbox" value="true" />
-              공개
-            </label>
-          </div>
-          <ConfirmSubmitButton
-            className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white"
-            message="강사를 저장할까요?"
-          >
-            저장
-          </ConfirmSubmitButton>
         </form>
+        <p className="mt-3 text-sm text-slate-500">총 {teachers.length}명</p>
       </section>
+      <div className="overflow-x-auto rounded-lg border bg-white">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead className="bg-slate-50 text-slate-600">
+            <tr>
+              <th className="px-4 py-3 font-medium">이름</th>
+              <th className="px-4 py-3 font-medium">과목</th>
+              <th className="px-4 py-3 font-medium">로그인 계정</th>
+              <th className="px-4 py-3 font-medium">상태</th>
+              <th className="px-4 py-3 text-right font-medium">관리</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {teachers.map((teacher) => (
+              <tr key={teacher.id}>
+                <td className="px-4 py-3 font-medium">{teacher.name}</td>
+                <td className="px-4 py-3">{teacher.subject}</td>
+                <td className="px-4 py-3">{teacher.user?.email ?? '-'}</td>
+                <td className="px-4 py-3">
+                  {teacher.isActive ? (
+                    <span className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700">공개</span>
+                  ) : (
+                    <span className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-500">비공개</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex justify-end gap-2">
+                    <a className="rounded border px-3 py-1" href={`/admin/${slug}/teachers/${teacher.id}/edit`}>
+                      수정
+                    </a>
+                    <form action={deleteTeacherAction}>
+                      <input type="hidden" name="slug" value={slug} />
+                      <input type="hidden" name="id" value={teacher.id} />
+                      <ConfirmSubmitButton className="rounded border px-3 py-1 text-red-700" message="이 강사를 삭제할까요?">
+                        삭제
+                      </ConfirmSubmitButton>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {teachers.length === 0 ? <p className="p-4 text-sm text-slate-500">등록된 강사가 없습니다.</p> : null}
+      </div>
     </main>
   )
 }

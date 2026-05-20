@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
-import { LogoutButton } from '@/components/admin/logout-button'
+import { PublicHeader } from '@/components/public/public-header'
 import { requireStudentPage } from '@/lib/auth/server'
+import { publicPath } from '@/lib/utils/public-path'
 
 type StudentLayoutProps = {
   children: React.ReactNode
@@ -9,26 +10,29 @@ type StudentLayoutProps = {
 
 export default async function StudentLayout({ children, params }: StudentLayoutProps) {
   const { slug } = await params
+  let academyName = ''
 
   try {
-    await requireStudentPage(slug)
+    const { academy } = await requireStudentPage(slug)
+    academyName = academy.name
   } catch {
-    redirect(`/admin/login?callbackUrl=/student/${slug}`)
+    redirect(`/${slug}/login`)
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <a className="font-semibold" href={`/student/${slug}`}>
-            학생 페이지
-          </a>
-          <nav className="flex gap-4 text-sm text-slate-600">
-            <a href={`/${slug}`}>공개 사이트</a>
-            <LogoutButton />
-          </nav>
-        </div>
-      </header>
+    <div className="student-shell">
+      <PublicHeader
+        academyName={academyName}
+        authHref={`/student/${slug}`}
+        authLabel="나의 강의실"
+        contactHref={publicPath(slug, '/contact')}
+        homeHref={publicPath(slug)}
+        noticesHref={publicPath(slug, '/notices')}
+        programsHref={publicPath(slug, '/programs')}
+        scheduleHref={publicPath(slug, '/schedule')}
+        slug={slug}
+        teachersHref={publicPath(slug, '/teachers')}
+      />
       {children}
     </div>
   )

@@ -11,6 +11,9 @@ export const academyService = {
     const phone = data.phone?.trim() || undefined
     const email = data.email?.trim() || undefined
     const mapUrl = normalizeOptionalUrl(data.mapUrl)
+    const heroImageUrl = normalizeOptionalUrl(data.heroImageUrl)
+    const naverBlogUrl = normalizeOptionalUrl(data.naverBlogUrl)
+    const instagramUrl = normalizeOptionalUrl(data.instagramUrl)
 
     if (!name) throw new Error('Name is required')
     if (email && !email.includes('@')) throw new Error('Email is invalid')
@@ -22,6 +25,9 @@ export const academyService = {
       phone,
       email,
       mapUrl,
+      heroImageUrl,
+      naverBlogUrl,
+      instagramUrl,
     })
   },
 }

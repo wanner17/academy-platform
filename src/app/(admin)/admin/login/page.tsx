@@ -9,12 +9,14 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await getServerSession(authConfig)
-  if (session?.user?.academySlug) {
-    if (session.user.role === 'STUDENT') redirect(`/student/${session.user.academySlug}`)
-    redirect(`/admin/${session.user.academySlug}`)
-  }
-
   const { callbackUrl } = await searchParams
+  if (session?.user) {
+    if (callbackUrl?.startsWith('/admin?slug=')) redirect(callbackUrl)
+    if (session.user.academySlug) {
+      if (session.user.role === 'STUDENT') redirect(`/student/${session.user.academySlug}`)
+      redirect(`/admin/${session.user.academySlug}`)
+    }
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 px-6">

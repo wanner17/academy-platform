@@ -16,32 +16,32 @@ export default async function ContactPage({ params, searchParams }: ContactPageP
     <>
       <div className="pub-page-hero">
         <div className="pub-page-hero-inner">
-          <div className="pub-label">CONTACT</div>
+          <div className="pub-label">상담 문의</div>
           <h1 className="pub-page-title">상담 문의</h1>
           <p className="pub-page-subtitle">연락처와 문의 내용을 남기면 담당자가 확인합니다.</p>
         </div>
       </div>
 
       <div className="pub-page-content">
-        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 60, alignItems: 'start' }}>
+        <div className="pub-contact-grid">
           <aside className="pub-side">
             <h3 className="pub-side-title">연락처</h3>
             <div className="pub-side-line" />
             {academy.phone && (
               <div className="pub-notice-item">
-                <div className="pub-label" style={{ marginBottom: 4 }}>PHONE</div>
+                <div className="pub-label" style={{ marginBottom: 4 }}>전화</div>
                 {academy.phone}
               </div>
             )}
             {academy.email && (
               <div className="pub-notice-item">
-                <div className="pub-label" style={{ marginBottom: 4 }}>EMAIL</div>
+                <div className="pub-label" style={{ marginBottom: 4 }}>이메일</div>
                 {academy.email}
               </div>
             )}
             {academy.address && (
               <div className="pub-notice-item">
-                <div className="pub-label" style={{ marginBottom: 4 }}>ADDRESS</div>
+                <div className="pub-label" style={{ marginBottom: 4 }}>주소</div>
                 {academy.address}
               </div>
             )}
@@ -58,12 +58,12 @@ export default async function ContactPage({ params, searchParams }: ContactPageP
               <input type="hidden" name="slug" value={slug} />
 
               <label>
-                <span className="pub-form-label">NAME</span>
+                <span className="pub-form-label">이름</span>
                 <input className="pub-form-input" name="name" required />
               </label>
 
               <label>
-                <span className="pub-form-label">PHONE</span>
+                <span className="pub-form-label">연락처</span>
                 <input
                   className="pub-form-input"
                   name="phone"
@@ -73,17 +73,17 @@ export default async function ContactPage({ params, searchParams }: ContactPageP
               </label>
 
               <label>
-                <span className="pub-form-label">EMAIL</span>
+                <span className="pub-form-label">이메일</span>
                 <input className="pub-form-input" name="email" type="email" />
               </label>
 
               <label>
-                <span className="pub-form-label">SUBJECT</span>
+                <span className="pub-form-label">제목</span>
                 <input className="pub-form-input" name="subject" />
               </label>
 
               <label>
-                <span className="pub-form-label">MESSAGE</span>
+                <span className="pub-form-label">문의 내용</span>
                 <textarea className="pub-form-textarea" name="content" required />
               </label>
 
@@ -91,7 +91,7 @@ export default async function ContactPage({ params, searchParams }: ContactPageP
                 className="pub-form-submit"
                 message="문의 내용을 접수할까요?"
               >
-                SUBMIT INQUIRY
+                문의 접수
               </ConfirmSubmitButton>
             </form>
           </section>

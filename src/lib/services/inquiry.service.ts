@@ -38,4 +38,10 @@ export const inquiryService = {
     if (!inquiry) throw new Error('Inquiry not found')
     return inquiryRepository.updateStatus(id, academyId, status)
   },
+
+  async updateInquiryMemo(id: string, academyId: string, memo: string) {
+    const inquiry = await inquiryRepository.findById(id, academyId)
+    if (!inquiry) throw new Error('Inquiry not found')
+    return inquiryRepository.updateMemo(id, academyId, memo.trim() || undefined)
+  },
 }

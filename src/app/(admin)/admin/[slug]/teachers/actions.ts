@@ -8,6 +8,7 @@ import { requireAcademyAdmin } from '@/lib/auth/authorization'
 import { prisma } from '@/lib/db/prisma'
 import { authConfig } from '@/lib/integrations/auth/config'
 import { teacherService } from '@/lib/services/teacher.service'
+import { sanitizeRichText } from '@/lib/utils/html'
 
 export async function createTeacherAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
@@ -19,7 +20,9 @@ export async function createTeacherAction(formData: FormData) {
     userId: teacherUserId,
     name: String(formData.get('name') ?? ''),
     subject: String(formData.get('subject') ?? ''),
-    bio: String(formData.get('bio') ?? ''),
+    bio: sanitizeRichText(String(formData.get('bio') ?? '')),
+    profileImageUrl: String(formData.get('profileImageUrl') ?? ''),
+    introVideoUrls: String(formData.get('introVideoUrls') ?? ''),
     order: Number(formData.get('order') ?? 0),
     isActive: formData.get('isActive') === 'true',
   })
@@ -40,7 +43,9 @@ export async function updateTeacherAction(formData: FormData) {
     userId: teacherUserId,
     name: String(formData.get('name') ?? ''),
     subject: String(formData.get('subject') ?? ''),
-    bio: String(formData.get('bio') ?? ''),
+    bio: sanitizeRichText(String(formData.get('bio') ?? '')),
+    profileImageUrl: String(formData.get('profileImageUrl') ?? ''),
+    introVideoUrls: String(formData.get('introVideoUrls') ?? ''),
     order: Number(formData.get('order') ?? 0),
     isActive: formData.get('isActive') === 'true',
   })
@@ -106,7 +111,7 @@ export async function resetTeacherPasswordAction(formData: FormData) {
   })
 
   revalidateTeacherPaths(slug)
-  redirect(`/admin/${slug}/teachers`)
+  redirect(`/admin/${slug}/teachers/${id}/edit`)
 }
 
 function revalidateTeacherPaths(slug: string) {

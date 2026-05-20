@@ -1,7 +1,10 @@
 import { getAcademyBySlug } from '@/lib/utils/tenant'
+import { TeacherCard } from '@/components/public/teacher-card'
+import { academyGalleryService } from '@/lib/services/academy-gallery.service'
 import { noticeService } from '@/lib/services/notice.service'
 import { teacherService } from '@/lib/services/teacher.service'
 import { scheduleService } from '@/lib/services/schedule.service'
+import { publicPath } from '@/lib/utils/public-path'
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -11,10 +14,11 @@ export default async function AcademyHomePage({ params }: PageProps) {
   const { slug } = await params
   const academy = await getAcademyBySlug(slug)
 
-  const [{ items: notices }, teachers, schedules] = await Promise.all([
+  const [{ items: notices }, teachers, schedules, galleryImages] = await Promise.all([
     noticeService.getPublicNotices(academy.id, 1, 5),
     teacherService.getPublicTeachers(academy.id),
     scheduleService.getPublicSchedules(academy.id),
+    academyGalleryService.getPublicImages(academy.id),
   ])
 
   return (
@@ -29,15 +33,19 @@ export default async function AcademyHomePage({ params }: PageProps) {
               '단순한 지식 전달을 넘어, 입시라는 거대한 파도 속에서 흔들리지 않는 중심을 만듭니다. 상위권을 향한 독보적인 커리큘럼.'}
           </p>
           <div className="pub-hero-actions">
-            <a className="pub-btn-primary" href={`/${slug}/contact`}>
-              GET CONSULTATION
+            <a className="pub-btn-primary" href={publicPath(slug, '/contact')}>
+              상담 신청
             </a>
-            <a className="pub-btn-outline" href={`/${slug}/programs`}>
-              VIEW CURRICULUM
+            <a className="pub-btn-outline" href={publicPath(slug, '/programs')}>
+              수업 안내
             </a>
           </div>
         </div>
-        <div className="pub-hero-image" aria-label="academy interior" />
+        <div
+          className="pub-hero-image"
+          style={academy.heroImageUrl ? { backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.18)), url("${academy.heroImageUrl}")` } : undefined}
+          aria-label="academy interior"
+        />
       </section>
 
       {/* Schedule Strip */}
@@ -54,6 +62,28 @@ export default async function AcademyHomePage({ params }: PageProps) {
         </section>
       )}
 
+      {galleryImages.length > 0 && (
+        <section className="pub-section pub-gallery-section">
+          <div className="pub-section-head">
+            <div>
+              <div className="pub-label">LEARNING SPACE</div>
+              <h2 className="pub-h2">학습 공간</h2>
+            </div>
+            <a className="pub-view-all" href={publicPath(slug, '/gallery')}>
+              전체 사진 보기 →
+            </a>
+          </div>
+          <div className="pub-gallery-grid">
+            {galleryImages.slice(0, 5).map((image, index) => (
+              <figure className={index === 0 ? 'pub-gallery-main' : undefined} key={image.id}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img alt="학원 소개 사진" src={image.imageUrl} />
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Instructors */}
       {teachers.length > 0 && (
         <section className="pub-section">
@@ -62,22 +92,13 @@ export default async function AcademyHomePage({ params }: PageProps) {
               <div className="pub-label">THE FACULTY</div>
               <h2 className="pub-h2">Master Instructors</h2>
             </div>
-            <a className="pub-view-all" href={`/${slug}/teachers`}>
-              VIEW ALL PROFILES →
+            <a className="pub-view-all" href={publicPath(slug, '/teachers')}>
+              강사진 전체 보기 →
             </a>
           </div>
           <div className="pub-instructors">
             {teachers.slice(0, 3).map((teacher) => (
-              <article key={teacher.id}>
-                <div className="pub-teacher-placeholder">👤</div>
-                <div className="pub-role">
-                  {teacher.subject?.toUpperCase() ?? 'INSTRUCTOR'}
-                </div>
-                <h3 className="pub-teacher-name">{teacher.name}</h3>
-                <p className="pub-teacher-bio">
-                  {teacher.bio || '소개를 준비 중입니다.'}
-                </p>
-              </article>
+              <TeacherCard href={publicPath(slug, `/teachers/${teacher.id}`)} key={teacher.id} teacher={teacher} />
             ))}
           </div>
         </section>
@@ -89,15 +110,13 @@ export default async function AcademyHomePage({ params }: PageProps) {
           <h2 className="pub-posts-h2">공지사항</h2>
           {notices.map((notice) => (
             <article key={notice.id} className="pub-post">
-              <div className="pub-post-placeholder" />
               <div>
                 <div className="pub-meta">
-                  NOTICE{notice.isPinned ? ' · 고정' : ''}
+                  공지{notice.isPinned ? ' · 고정' : ''}
                 </div>
                 <h3 className="pub-post-title">
-                  <a href={`/${slug}/notices/${notice.id}`}>{notice.title}</a>
+                  <a href={publicPath(slug, `/notices/${notice.id}`)}>{notice.title}</a>
                 </h3>
-                <p className="pub-post-desc">{notice.content}</p>
               </div>
             </article>
           ))}
@@ -130,8 +149,8 @@ export default async function AcademyHomePage({ params }: PageProps) {
               <br />
               온라인으로 접수하세요.
             </p>
-            <a className="pub-cs-link" href={`/${slug}/contact`}>
-              INQUIRY →
+            <a className="pub-cs-link" href={publicPath(slug, '/contact')}>
+              문의하기 →
             </a>
           </div>
         </aside>

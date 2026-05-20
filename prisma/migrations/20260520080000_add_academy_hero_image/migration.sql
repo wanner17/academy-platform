@@ -1,0 +1,2 @@
+ALTER TABLE `Academy`
+  ADD COLUMN `heroImageUrl` VARCHAR(191) NULL;

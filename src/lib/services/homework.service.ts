@@ -1,6 +1,7 @@
 import {
   homeworkRepository,
   type CreateHomeworkInput,
+  type UpdateHomeworkInput,
 } from '@/lib/repositories/homework.repository'
 
 export const homeworkService = {
@@ -8,9 +9,9 @@ export const homeworkService = {
     return homeworkRepository.findByProgram(academyId, programId)
   },
 
-  getVisibleHomeworksForPrograms(academyId: string, programIds: string[]) {
+  getVisibleHomeworksForPrograms(academyId: string, programIds: string[], studentId?: string) {
     if (programIds.length === 0) return []
-    return homeworkRepository.findVisibleByPrograms(academyId, programIds)
+    return homeworkRepository.findVisibleByPrograms(academyId, programIds, studentId)
   },
 
   async getHomeworkById(id: string, academyId: string) {
@@ -20,20 +21,26 @@ export const homeworkService = {
   },
 
   createHomework(academyId: string, data: CreateHomeworkInput) {
-    const title = data.title.trim()
-    const content = data.content.trim()
-    if (!title) throw new Error('Title is required')
-    if (!content) throw new Error('Content is required')
+    return homeworkRepository.create(academyId, normalizeHomeworkInput(data))
+  },
 
-    return homeworkRepository.create(academyId, {
-      ...data,
-      title,
-      content,
-    })
+  async updateHomework(id: string, academyId: string, data: UpdateHomeworkInput) {
+    await this.getHomeworkById(id, academyId)
+    return homeworkRepository.update(id, academyId, normalizeHomeworkInput(data))
   },
 
   async deleteHomework(id: string, academyId: string) {
     await this.getHomeworkById(id, academyId)
     return homeworkRepository.delete(id, academyId)
   },
+}
+
+function normalizeHomeworkInput<T extends CreateHomeworkInput | UpdateHomeworkInput>(data: T) {
+  const title = data.title.trim()
+  const content = data.content.trim()
+  const studentId = data.studentId?.trim() || undefined
+  if (!title) throw new Error('Title is required')
+  if (!content) throw new Error('Content is required')
+
+  return { ...data, title, content, studentId }
 }

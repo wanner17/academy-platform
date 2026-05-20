@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { requireMemberPage } from '@/lib/auth/server'
 import { prisma } from '@/lib/db/prisma'
 import { teacherService } from '@/lib/services/teacher.service'
+import { sanitizeRichText } from '@/lib/utils/html'
 
 export async function updateMyTeacherAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
@@ -15,7 +16,9 @@ export async function updateMyTeacherAction(formData: FormData) {
   await teacherService.updateTeacher(teacher.id, academy.id, {
     name: String(formData.get('name') ?? ''),
     subject: String(formData.get('subject') ?? ''),
-    bio: String(formData.get('bio') ?? ''),
+    bio: sanitizeRichText(String(formData.get('bio') ?? '')),
+    profileImageUrl: String(formData.get('profileImageUrl') ?? ''),
+    introVideoUrls: String(formData.get('introVideoUrls') ?? ''),
     order: teacher.order,
     isActive: teacher.isActive,
     userId: teacher.userId ?? undefined,

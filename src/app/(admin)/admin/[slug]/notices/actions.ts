@@ -7,6 +7,7 @@ import { authConfig } from '@/lib/integrations/auth/config'
 import { requireAcademyAdmin } from '@/lib/auth/authorization'
 import { noticeAttachmentService } from '@/lib/services/notice-attachment.service'
 import { noticeService } from '@/lib/services/notice.service'
+import { sanitizeRichText } from '@/lib/utils/html'
 
 export async function createNoticeAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
@@ -15,7 +16,7 @@ export async function createNoticeAction(formData: FormData) {
 
   const notice = await noticeService.createNotice(academy.id, {
     title: String(formData.get('title') ?? ''),
-    content: String(formData.get('content') ?? ''),
+    content: sanitizeRichText(String(formData.get('content') ?? '')),
     isPinned: formData.get('isPinned') === 'true',
   })
   await noticeAttachmentService.attachUploadedObjects(academy.id, notice.id, user.id, readUploadedAttachments(formData))
@@ -50,7 +51,7 @@ export async function updateNoticeAction(formData: FormData) {
 
   await noticeService.updateNotice(id, academy.id, {
     title: String(formData.get('title') ?? ''),
-    content: String(formData.get('content') ?? ''),
+    content: sanitizeRichText(String(formData.get('content') ?? '')),
     isPinned: formData.get('isPinned') === 'true',
     status: String(formData.get('status') ?? 'PUBLISHED') as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
   })

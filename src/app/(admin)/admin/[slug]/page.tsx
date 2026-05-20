@@ -36,7 +36,7 @@ export default async function AdminHomePage({ params }: AdminHomePageProps) {
         </a>
         <a className="rounded-lg border bg-white p-5 shadow-sm" href={`/admin/${slug}/notices`}>
           <h2 className="font-semibold">공지 관리</h2>
-          <p className="mt-1 text-sm text-slate-600">공개 사이트 공지를 작성하고 삭제합니다.</p>
+          <p className="mt-1 text-sm text-slate-600">사용자 사이트 공지를 작성하고 삭제합니다.</p>
         </a>
         <a className="rounded-lg border bg-white p-5 shadow-sm" href={`/admin/${slug}/inquiries`}>
           <h2 className="font-semibold">문의 관리</h2>

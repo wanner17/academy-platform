@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { FileDropZone } from '@/components/admin/file-drop-zone'
 
 type UploadedAttachment = {
   displayName: string
@@ -20,7 +21,7 @@ export function NoticeAttachmentInput({ slug }: NoticeAttachmentInputProps) {
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState(0)
 
-  async function uploadFiles(files: FileList | null) {
+  async function uploadFiles(files: File[] | FileList | null) {
     if (!files?.length) return
     setIsUploading(true)
     setError(null)
@@ -70,13 +71,19 @@ export function NoticeAttachmentInput({ slug }: NoticeAttachmentInputProps) {
     <div className="space-y-3">
       <label className="block">
         <span className="mb-1 block text-sm font-medium">이미지/첨부</span>
-        <input
-          className="w-full rounded border px-3 py-2 text-sm"
-          disabled={isUploading}
-          multiple
-          onChange={(event) => uploadFiles(event.target.files)}
-          type="file"
-        />
+        <FileDropZone disabled={isUploading} multiple onFiles={uploadFiles}>
+          <div className="text-center">
+            <p className="text-sm font-medium text-slate-700">파일을 드래그하거나 클릭해서 업로드</p>
+            <p className="mt-1 text-xs text-slate-500">여러 파일 가능</p>
+          </div>
+          <input
+            className="mt-3 w-full rounded border bg-white px-3 py-2 text-sm"
+            disabled={isUploading}
+            multiple
+            onChange={(event) => uploadFiles(event.target.files)}
+            type="file"
+          />
+        </FileDropZone>
       </label>
       <p className="text-xs text-slate-500">허용: jpg, png, webp, gif, pdf, docx, xlsx, pptx, hwp, hwpx, mp4, webm, mov</p>
       {isUploading ? (

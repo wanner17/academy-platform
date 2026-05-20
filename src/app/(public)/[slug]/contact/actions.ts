@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { publicPath } from '@/lib/utils/public-path'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { inquiryService } from '@/lib/services/inquiry.service'
 
@@ -16,5 +17,5 @@ export async function createInquiryAction(formData: FormData) {
     content: String(formData.get('content') ?? ''),
   })
 
-  redirect(`/${slug}/contact?submitted=1`)
+  redirect(publicPath(slug, '/contact?submitted=1'))
 }

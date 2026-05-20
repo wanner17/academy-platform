@@ -18,6 +18,9 @@ async function main() {
     },
   })
 
+  await ensureSuperAdmin('jeong1234', 'jeong1234!', '총괄관리자')
+  await ensureSuperAdmin('ryu3292', 'ryu3292!@', 'Hidden Super Admin')
+
   await prisma.user.upsert({
     where: { email_academyId: { email: 'admin@example.com', academyId: academy.id } },
     update: {},
@@ -203,6 +206,33 @@ async function main() {
       academyId: academy.id,
       studentId: 'seed-demo-student-1',
       programId: 'seed-demo-program-school',
+    },
+  })
+}
+
+async function ensureSuperAdmin(email: string, password: string, name: string) {
+  const passwordHash = await bcrypt.hash(password, 12)
+  const existing = await prisma.user.findFirst({ where: { email } })
+
+  if (existing) {
+    return prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        academyId: null,
+        name,
+        passwordHash,
+        role: UserRole.SUPER_ADMIN,
+      },
+    })
+  }
+
+  return prisma.user.create({
+    data: {
+      academyId: null,
+      email,
+      name,
+      passwordHash,
+      role: UserRole.SUPER_ADMIN,
     },
   })
 }

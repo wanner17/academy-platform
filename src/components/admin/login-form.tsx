@@ -21,7 +21,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         })
 
         if (result?.error) {
-          setError('이메일 또는 비밀번호가 올바르지 않습니다.')
+          setError('아이디 또는 비밀번호가 올바르지 않습니다.')
           return
         }
 
@@ -29,8 +29,8 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
       }}
     >
       <label className="block">
-        <span className="mb-1 block text-sm font-medium">이메일</span>
-        <input className="w-full rounded border px-3 py-2" name="email" type="email" required />
+        <span className="mb-1 block text-sm font-medium">아이디</span>
+        <input className="w-full rounded border px-3 py-2" name="email" type="text" autoComplete="username" required />
       </label>
       <label className="block">
         <span className="mb-1 block text-sm font-medium">비밀번호</span>

@@ -5,6 +5,9 @@ export type CreateTeacherInput = {
   name: string
   subject: string
   bio?: string
+  profileImageUrl?: string
+  introVideoUrl?: string
+  introVideoUrls?: string
   order?: number
   isActive?: boolean
 }
@@ -34,6 +37,10 @@ export const teacherRepository = {
 
   findByUserId(userId: string, academyId: string) {
     return prisma.teacher.findFirst({ where: { userId, academyId }, include: { user: true, programs: true } })
+  },
+
+  findPublicById(id: string, academyId: string) {
+    return prisma.teacher.findFirst({ where: { id, academyId, isActive: true }, include: { user: true } })
   },
 
   create(academyId: string, data: CreateTeacherInput) {

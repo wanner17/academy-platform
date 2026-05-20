@@ -7,6 +7,9 @@ export type UpdateAcademyInput = {
   phone?: string
   email?: string
   mapUrl?: string
+  heroImageUrl?: string
+  naverBlogUrl?: string
+  instagramUrl?: string
 }
 
 export const academyRepository = {

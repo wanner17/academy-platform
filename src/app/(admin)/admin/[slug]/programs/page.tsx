@@ -1,10 +1,9 @@
 import type { ProgramMode, TargetLevel } from '@prisma/client'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
-import { ProgramFields } from '@/components/admin/program-fields'
 import { programService } from '@/lib/services/program.service'
 import { teacherService } from '@/lib/services/teacher.service'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
-import { createProgramAction, deleteProgramAction, updateProgramAction } from './actions'
+import { deleteProgramAction } from './actions'
 import { requireAdminPage } from '@/lib/auth/server'
 import { programModeLabels, targetLevelLabels } from '@/lib/program-labels'
 
@@ -51,9 +50,16 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
   )
 
   return (
-    <main className="mx-auto grid max-w-6xl gap-6 px-6 py-10 xl:grid-cols-[1fr_380px]">
-      <section>
-        <h1 className="mb-4 text-2xl font-bold">수업 관리</h1>
+    <main className="mx-auto max-w-6xl px-6 py-10">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">수업 관리</h1>
+          <p className="mt-1 text-sm text-slate-600">수업을 리스트로 확인하고 조건별로 필터링합니다.</p>
+        </div>
+        <a className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white" href={`/admin/${slug}/programs/new`}>
+          수업 등록
+        </a>
+      </div>
         <section className="mb-6 rounded-lg border bg-white p-4">
           <form className="grid gap-3 md:grid-cols-3" method="get">
             <label className="block md:col-span-3">
@@ -119,7 +125,7 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
             </label>
             <div className="flex items-end gap-2">
               <button className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white" type="submit">
-                필터
+                조회
               </button>
               <a className="rounded border px-4 py-2 text-sm" href={`/admin/${slug}/programs`}>
                 초기화
@@ -128,54 +134,57 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
           </form>
           <p className="mt-3 text-sm text-slate-500">총 {programs.length}개</p>
         </section>
-        <div className="space-y-4">
-          {programs.map((program) => (
-            <article key={program.id} className="rounded-lg border bg-white p-5">
-              <form action={updateProgramAction} className="space-y-4">
-                <input type="hidden" name="slug" value={slug} />
-                <input type="hidden" name="id" value={program.id} />
-                <ProgramFields defaults={program} teachers={teachers} />
-                <ConfirmSubmitButton
-                  className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white"
-                  message="수업 정보를 저장할까요?"
-                >
-                  저장
-                </ConfirmSubmitButton>
-                <a
-                  className="ml-2 inline-block rounded border px-4 py-2 text-sm"
-                  href={`/admin/${slug}/programs/${program.id}`}
-                >
-                  상세/시간표
-                </a>
-              </form>
-              <form action={deleteProgramAction} className="mt-3">
-                <input type="hidden" name="slug" value={slug} />
-                <input type="hidden" name="id" value={program.id} />
-                <ConfirmSubmitButton className="rounded border px-3 py-1 text-sm text-red-700" message="이 수업을 삭제할까요?">
-                  삭제
-                </ConfirmSubmitButton>
-              </form>
-            </article>
-          ))}
-          {programs.length === 0 ? (
-            <div className="rounded-lg border bg-white p-5 text-sm text-slate-500">등록된 수업이 없습니다.</div>
-          ) : null}
+        <div className="overflow-x-auto rounded-lg border bg-white">
+          <table className="w-full min-w-[860px] text-left text-sm">
+            <thead className="bg-slate-50 text-slate-600">
+              <tr>
+                <th className="px-4 py-3 font-medium">수업명</th>
+                <th className="px-4 py-3 font-medium">구분</th>
+                <th className="px-4 py-3 font-medium">대상</th>
+                <th className="px-4 py-3 font-medium">과목</th>
+                <th className="px-4 py-3 font-medium">담당 강사</th>
+                <th className="px-4 py-3 font-medium">상태</th>
+                <th className="px-4 py-3 text-right font-medium">관리</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {programs.map((program) => (
+                <tr key={program.id}>
+                  <td className="px-4 py-3 font-medium">{program.title}</td>
+                  <td className="px-4 py-3">{programModeLabels[program.mode]}</td>
+                  <td className="px-4 py-3">{targetLevelLabels[program.targetLevel]}</td>
+                  <td className="px-4 py-3">{program.subject ?? '-'}</td>
+                  <td className="px-4 py-3">{program.teacher?.name ?? '-'}</td>
+                  <td className="px-4 py-3">
+                    {program.isActive ? (
+                      <span className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700">공개</span>
+                    ) : (
+                      <span className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-500">비공개</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-end gap-2">
+                      <a className="rounded border px-3 py-1" href={`/admin/${slug}/programs/${program.id}`}>
+                        상세
+                      </a>
+                      <a className="rounded border px-3 py-1" href={`/admin/${slug}/programs/${program.id}/edit`}>
+                        수정
+                      </a>
+                      <form action={deleteProgramAction}>
+                        <input type="hidden" name="slug" value={slug} />
+                        <input type="hidden" name="id" value={program.id} />
+                        <ConfirmSubmitButton className="rounded border px-3 py-1 text-red-700" message="이 수업을 삭제할까요?">
+                          삭제
+                        </ConfirmSubmitButton>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {programs.length === 0 ? <p className="p-4 text-sm text-slate-500">등록된 수업이 없습니다.</p> : null}
         </div>
-      </section>
-
-      <section className="rounded-lg border bg-white p-5">
-        <h2 className="mb-4 font-semibold">수업 추가</h2>
-        <form action={createProgramAction} className="space-y-4">
-          <input type="hidden" name="slug" value={slug} />
-          <ProgramFields teachers={teachers} />
-          <ConfirmSubmitButton
-            className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white"
-            message="수업을 저장할까요?"
-          >
-            저장
-          </ConfirmSubmitButton>
-        </form>
-      </section>
     </main>
   )
 }

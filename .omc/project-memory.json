@@ -161,6 +161,18 @@
       "type": "file"
     },
     {
+      "path": "src\\app\\globals.css",
+      "accessCount": 9,
+      "lastAccessed": 1779245783611,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(public)\\[slug]\\layout.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1779245754541,
+      "type": "file"
+    },
+    {
       "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\actions.ts",
       "accessCount": 3,
       "lastAccessed": 1779180931673,
@@ -176,18 +188,6 @@
       "path": "src\\app\\(student)\\student\\[slug]\\page.tsx",
       "accessCount": 2,
       "lastAccessed": 1779180999258,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\globals.css",
-      "accessCount": 2,
-      "lastAccessed": 1779238658245,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\(public)\\[slug]\\layout.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1779238672369,
       "type": "file"
     },
     {
@@ -284,6 +284,18 @@
       "path": "src\\lib\\auth\\authorization.ts",
       "accessCount": 1,
       "lastAccessed": 1779180665775,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(student)\\student\\[slug]\\layout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779245537473,
+      "type": "file"
+    },
+    {
+      "path": "src\\components\\public\\public-header.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1779245738798,
       "type": "file"
     }
   ],

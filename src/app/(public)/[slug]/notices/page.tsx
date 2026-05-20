@@ -1,4 +1,5 @@
 import { getAcademyBySlug } from '@/lib/utils/tenant'
+import { publicPath } from '@/lib/utils/public-path'
 import { noticeService } from '@/lib/services/notice.service'
 
 type NoticesPageProps = {
@@ -25,15 +26,13 @@ export default async function NoticesPage({ params }: NoticesPageProps) {
           <div>
             {items.map((notice) => (
               <article key={notice.id} className="pub-post">
-                <div className="pub-post-placeholder" />
                 <div>
                   <div className="pub-meta">
-                    NOTICE{notice.isPinned ? ' · 고정' : ''}
+                    공지{notice.isPinned ? ' · 고정' : ''}
                   </div>
                   <h2 className="pub-post-title">
-                    <a href={`/${slug}/notices/${notice.id}`}>{notice.title}</a>
+                    <a href={publicPath(slug, `/notices/${notice.id}`)}>{notice.title}</a>
                   </h2>
-                  <p className="pub-post-desc">{notice.content}</p>
                 </div>
               </article>
             ))}

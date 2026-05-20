@@ -1,5 +1,7 @@
 import { getAcademyBySlug } from '@/lib/utils/tenant'
+import { TeacherCard } from '@/components/public/teacher-card'
 import { teacherService } from '@/lib/services/teacher.service'
+import { publicPath } from '@/lib/utils/public-path'
 
 type TeachersPageProps = {
   params: Promise<{ slug: string }>
@@ -24,16 +26,7 @@ export default async function TeachersPage({ params }: TeachersPageProps) {
         {teachers.length > 0 ? (
           <div className="pub-instructors">
             {teachers.map((teacher) => (
-              <article key={teacher.id}>
-                <div className="pub-teacher-placeholder">👤</div>
-                <div className="pub-role">
-                  {teacher.subject?.toUpperCase() ?? 'INSTRUCTOR'}
-                </div>
-                <h2 className="pub-teacher-name">{teacher.name}</h2>
-                <p className="pub-teacher-bio">
-                  {teacher.bio || '소개를 준비 중입니다.'}
-                </p>
-              </article>
+              <TeacherCard href={publicPath(slug, `/teachers/${teacher.id}`)} key={teacher.id} teacher={teacher} titleLevel="h2" />
             ))}
           </div>
         ) : (

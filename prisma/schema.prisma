@@ -16,6 +16,9 @@ model Academy {
   phone       String?
   email       String?
   mapUrl      String?
+  heroImageUrl String?
+  naverBlogUrl String?
+  instagramUrl String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -29,8 +32,26 @@ model Academy {
   schedules   Schedule[]
   inquiries   Inquiry[]
   files       FileAsset[]
+  galleryImages AcademyGalleryImage[]
+  attendanceSetting AttendanceSetting?
+  attendanceRecords AttendanceRecord[]
 
   @@index([slug])
+}
+
+model AcademyGalleryImage {
+  id          String   @id @default(cuid())
+  academyId   String
+  imageUrl    String
+  title       String?
+  description String?  @db.Text
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  academy     Academy  @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  @@index([academyId, order])
 }
 
 model AcademyTheme {
@@ -73,6 +94,8 @@ model User {
   student      Student?
   homeworks    Homework[]
   progressLogs ProgressLog[]
+  testResults  TestResult[]
+  attendanceUpdates AttendanceRecord[]
   accounts     Account[]
   sessions     Session[]
 
@@ -150,6 +173,9 @@ model Teacher {
   name      String
   subject   String
   bio       String?  @db.Text
+  profileImageUrl String?
+  introVideoUrl   String?
+  introVideoUrls  String?  @db.Text
   order     Int      @default(0)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -182,6 +208,7 @@ model Program {
   enrollments Enrollment[]
   homeworks   Homework[]
   progressLogs ProgressLog[]
+  testResults TestResult[]
 
   @@index([academyId, mode, targetLevel, order])
   @@index([academyId, teacherId])
@@ -224,6 +251,7 @@ model Homework {
   id        String    @id @default(cuid())
   academyId String
   programId String
+  studentId String?
   authorId  String
   title     String
   content   String    @db.Text
@@ -232,9 +260,11 @@ model Homework {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   program   Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  student   Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   author    User      @relation(fields: [authorId], references: [id])
 
   @@index([academyId, programId, createdAt])
+  @@index([academyId, studentId])
   @@index([authorId])
 }
 
@@ -242,6 +272,7 @@ model ProgressLog {
   id        String   @id @default(cuid())
   academyId String
   programId String
+  studentId String?
   authorId  String
   classDate DateTime
   content   String   @db.Text
@@ -250,9 +281,34 @@ model ProgressLog {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
   author    User     @relation(fields: [authorId], references: [id])
 
   @@index([academyId, programId, classDate])
+  @@index([academyId, studentId])
+  @@index([authorId])
+}
+
+model TestResult {
+  id        String   @id @default(cuid())
+  academyId String
+  programId String
+  studentId String
+  authorId  String
+  testName  String
+  score     String
+  testedAt  DateTime
+  memo      String?  @db.Text
+  isVisible Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id])
+
+  @@index([academyId, programId, testedAt])
+  @@index([academyId, studentId, testedAt])
+  @@index([academyId, testName])
   @@index([authorId])
 }
 
@@ -288,6 +344,10 @@ model Student {
   academy     Academy      @relation(fields: [academyId], references: [id])
   user        User?        @relation(fields: [userId], references: [id])
   enrollments Enrollment[]
+  homeworks   Homework[]
+  progressLogs ProgressLog[]
+  testResults TestResult[]
+  attendanceRecords AttendanceRecord[]
 
   @@index([academyId, name])
 }
@@ -318,6 +378,58 @@ enum InquiryStatus {
   PENDING
   IN_PROGRESS
   DONE
+}
+
+model AttendanceSetting {
+  id           String   @id @default(cuid())
+  academyId    String   @unique
+  isEnabled    Boolean  @default(false)
+  latitude     Float?
+  longitude    Float?
+  radiusMeters Int      @default(100)
+  startTime    String?
+  endTime      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  academy      Academy  @relation(fields: [academyId], references: [id], onDelete: Cascade)
+}
+
+model AttendanceRecord {
+  id             String           @id @default(cuid())
+  academyId      String
+  studentId      String
+  attendanceDate DateTime
+  checkedAt      DateTime?
+  status         AttendanceStatus @default(PRESENT)
+  latitude       Float?
+  longitude      Float?
+  accuracyMeters Float?
+  distanceMeters Float?
+  source         AttendanceSource @default(STUDENT_LOCATION)
+  memo           String?          @db.Text
+  updatedById    String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  academy        Academy          @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  student        Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  updatedBy      User?            @relation(fields: [updatedById], references: [id])
+
+  @@unique([studentId, attendanceDate])
+  @@index([academyId, attendanceDate, status])
+  @@index([academyId, studentId, attendanceDate])
+  @@index([updatedById])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  EXCUSED
+}
+
+enum AttendanceSource {
+  STUDENT_LOCATION
+  ADMIN_MANUAL
 }
 
 model FileAsset {

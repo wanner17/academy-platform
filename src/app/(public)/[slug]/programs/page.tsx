@@ -1,6 +1,7 @@
 import type { Program, ProgramMode } from '@prisma/client'
 import { programModeLabels, targetLevelLabels } from '@/lib/program-labels'
 import { programService } from '@/lib/services/program.service'
+import { publicPath } from '@/lib/utils/public-path'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 
 type ProgramsPageProps = {
@@ -25,7 +26,7 @@ export default async function ProgramsPage({ params, searchParams }: ProgramsPag
     <>
       <div className="pub-page-hero">
         <div className="pub-page-hero-inner">
-          <div className="pub-label">CURRICULUM</div>
+          <div className="pub-label">수업 안내</div>
           <h1 className="pub-page-title">수업 안내</h1>
           <p className="pub-page-subtitle">
             내신 기간에는 학교별 수업, 비내신 기간에는 수준별 수업으로 운영합니다.
@@ -35,17 +36,17 @@ export default async function ProgramsPage({ params, searchParams }: ProgramsPag
 
       <div className="pub-page-content">
         {subjects.length > 0 && (
-          <nav className="pub-filter-nav" aria-label="과목 필터">
+          <nav className="pub-filter-nav" aria-label="과목 조회">
             <a
               className={`pub-filter-btn${!selectedSubject ? ' active' : ''}`}
-              href={`/${slug}/programs`}
+              href={publicPath(slug, '/programs')}
             >
-              ALL
+              전체
             </a>
             {subjects.map((item) => (
               <a
                 className={`pub-filter-btn${selectedSubject === item ? ' active' : ''}`}
-                href={`/${slug}/programs?subject=${encodeURIComponent(item)}`}
+                href={publicPath(slug, `/programs?subject=${encodeURIComponent(item)}`)}
                 key={item}
               >
                 {item.toUpperCase()}
@@ -91,7 +92,7 @@ function isSubject(value: string | null): value is string {
 
 function ProgramGrid({ programs, slug }: { programs: Program[]; slug: string }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 24 }}>
+    <div className="pub-program-grid">
       {programs.map((program) => (
         <article key={program.id} className="pub-card">
           <div>
@@ -110,7 +111,7 @@ function ProgramGrid({ programs, slug }: { programs: Program[]; slug: string }) 
           <p className="pub-card-body">
             {program.description || '수업 설명을 준비 중입니다.'}
           </p>
-          <a className="pub-card-link" href={`/${slug}/programs/${program.id}`}>
+          <a className="pub-card-link" href={publicPath(slug, `/programs/${program.id}`)}>
             상세 / 시간표 →
           </a>
         </article>

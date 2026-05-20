@@ -3,7 +3,7 @@ import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { noticeService } from '@/lib/services/notice.service'
 import { deleteNoticeAttachmentAction, updateNoticeAction } from '../../actions'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
-import { NoticeAttachmentInput } from '@/components/admin/notice-attachment-input'
+import { NoticeFields } from '@/components/admin/notice-fields'
 import { requireAdminPage } from '@/lib/auth/server'
 
 type EditNoticePageProps = {
@@ -27,34 +27,7 @@ export default async function EditNoticePage({ params }: EditNoticePageProps) {
         <form action={updateNoticeAction} className="space-y-4" encType="multipart/form-data">
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="id" value={notice.id} />
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">제목</span>
-            <input className="w-full rounded border px-3 py-2" defaultValue={notice.title} name="title" required />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">내용</span>
-            <textarea
-              className="min-h-56 w-full rounded border px-3 py-2"
-              defaultValue={notice.content}
-              name="content"
-              required
-            />
-          </label>
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="block">
-              <span className="mb-1 block text-sm font-medium">상태</span>
-              <select className="w-full rounded border px-3 py-2" defaultValue={notice.status} name="status">
-                <option value="DRAFT">초안</option>
-                <option value="PUBLISHED">게시</option>
-                <option value="ARCHIVED">보관</option>
-              </select>
-            </label>
-            <label className="flex items-end gap-2 text-sm">
-              <input defaultChecked={notice.isPinned} name="isPinned" type="checkbox" value="true" />
-              고정 공지
-            </label>
-          </div>
-          <NoticeAttachmentInput slug={slug} />
+          <NoticeFields defaults={notice} showStatus slug={slug} />
           <ConfirmSubmitButton
             className="rounded bg-blue-700 px-4 py-2 font-medium text-white"
             message="공지 수정 내용을 저장할까요?"

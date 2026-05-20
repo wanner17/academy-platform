@@ -1,0 +1,3 @@
+ALTER TABLE `Academy`
+  ADD COLUMN `naverBlogUrl` VARCHAR(191) NULL,
+  ADD COLUMN `instagramUrl` VARCHAR(191) NULL;

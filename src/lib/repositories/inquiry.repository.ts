@@ -56,4 +56,8 @@ export const inquiryRepository = {
   updateStatus(id: string, academyId: string, status: InquiryStatus) {
     return prisma.inquiry.updateMany({ where: { id, academyId }, data: { status } })
   },
+
+  updateMemo(id: string, academyId: string, memo?: string) {
+    return prisma.inquiry.updateMany({ where: { id, academyId }, data: { memo } })
+  },
 }

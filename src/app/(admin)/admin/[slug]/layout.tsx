@@ -23,17 +23,19 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
   const isAdmin = role ? isAcademyAdminRole(role) : false
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="admin-shell min-h-screen bg-slate-100">
       <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <a className="font-semibold" href={`/admin/${slug}`}>
+        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+          <a className="shrink-0 font-semibold" href={`/admin/${slug}`}>
             관리자
           </a>
-          <nav className="flex gap-4 text-sm text-slate-600">
+          <nav className="flex w-full gap-3 overflow-x-auto pb-1 text-sm text-slate-600 lg:w-auto lg:flex-wrap lg:justify-end lg:overflow-visible lg:pb-0">
             {isAdmin ? (
               <>
                 <a href={`/admin/${slug}/settings`}>기본 설정</a>
                 <a href={`/admin/${slug}/programs`}>수업 관리</a>
+                <a href={`/admin/${slug}/attendance`}>출석 관리</a>
+                <a href={`/admin/${slug}/tests`}>테스트 관리</a>
                 <a href={`/admin/${slug}/teachers`}>강사진 관리</a>
                 <a href={`/admin/${slug}/students`}>학생 관리</a>
                 <a href={`/admin/${slug}/notices`}>공지 관리</a>
@@ -42,10 +44,14 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
             ) : (
               <>
                 <a href={`/admin/${slug}/my`}>내 수업</a>
+                <a href={`/admin/${slug}/attendance`}>출석 관리</a>
+                <a href={`/admin/${slug}/tests`}>테스트 관리</a>
+                <a href={`/admin/${slug}/students`}>학생 관리</a>
+                <a href={`/admin/${slug}/inquiries`}>문의 관리</a>
                 <a href={`/admin/${slug}/profile`}>내 정보</a>
               </>
             )}
-            <a href={`/${slug}`}>공개 사이트</a>
+            <a href={`/${slug}`}>사용자 사이트</a>
             <LogoutButton />
           </nav>
         </div>
