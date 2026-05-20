@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { authConfig } from '@/lib/integrations/auth/config'
-import { publicPath } from '@/lib/utils/public-path'
+import { adminPath, publicPath, studentPath } from '@/lib/utils/public-path'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { PublicHeader } from '@/components/public/public-header'
 
@@ -22,8 +22,8 @@ export default async function PublicLayout({ children, params }: PublicLayoutPro
   const isStudent = session?.user.role === 'STUDENT'
   const isCurrentAcademyUser = session?.user.academySlug === slug
   const portalHref = isStudent
-    ? `/student/${session.user.academySlug}`
-    : `/admin/${session?.user.role === 'SUPER_ADMIN' ? slug : session?.user.academySlug}`
+    ? studentPath(session.user.academySlug ?? slug)
+    : adminPath(session?.user.role === 'SUPER_ADMIN' ? slug : session?.user.academySlug ?? slug)
   const portalLabel = isStudent ? '나의 강의실' : '관리자 페이지'
   const authHref = session?.user && (isCurrentAcademyUser || session.user.role === 'SUPER_ADMIN')
     ? portalHref

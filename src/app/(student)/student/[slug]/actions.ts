@@ -7,6 +7,7 @@ import { requireStudentPage } from '@/lib/auth/server'
 import { prisma } from '@/lib/db/prisma'
 import { attendanceService, type StudentCheckInInput } from '@/lib/services/attendance.service'
 import { studentService } from '@/lib/services/student.service'
+import { studentPath } from '@/lib/utils/public-path'
 
 export async function updateStudentPasswordAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
@@ -31,8 +32,8 @@ export async function updateStudentPasswordAction(formData: FormData) {
     data: { passwordHash: await bcrypt.hash(newPassword, 12) },
   })
 
-  revalidatePath(`/student/${slug}`)
-  redirect(`/student/${slug}`)
+  revalidatePath(studentPath(slug))
+  redirect(studentPath(slug))
 }
 
 export async function checkInAttendanceAction(slug: string, input: StudentCheckInInput) {

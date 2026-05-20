@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { PublicLoginForm } from '@/components/public-login-form'
 import { authConfig } from '@/lib/integrations/auth/config'
+import { adminPath } from '@/lib/utils/public-path'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 
 type PublicLoginPageProps = {
@@ -14,7 +15,7 @@ export default async function PublicLoginPage({ params }: PublicLoginPageProps) 
     getAcademyBySlug(slug),
     getServerSession(authConfig),
   ])
-  const callbackUrl = `/admin?slug=${encodeURIComponent(slug)}`
+  const callbackUrl = adminPath(slug)
 
   if (session?.user) {
     redirect(callbackUrl)

@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authConfig } from '@/lib/integrations/auth/config'
 import { LoginForm } from '@/components/admin/login-form'
+import { adminPath, studentPath } from '@/lib/utils/public-path'
 
 type LoginPageProps = {
   searchParams: Promise<{ callbackUrl?: string }>
@@ -13,8 +14,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   if (session?.user) {
     if (callbackUrl?.startsWith('/admin?slug=')) redirect(callbackUrl)
     if (session.user.academySlug) {
-      if (session.user.role === 'STUDENT') redirect(`/student/${session.user.academySlug}`)
-      redirect(`/admin/${session.user.academySlug}`)
+      if (session.user.role === 'STUDENT') redirect(studentPath(session.user.academySlug))
+      redirect(adminPath(session.user.academySlug))
     }
   }
 

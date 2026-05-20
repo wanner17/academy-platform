@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authConfig } from '@/lib/integrations/auth/config'
+import { adminPath, studentPath } from '@/lib/utils/public-path'
 
 type AdminIndexPageProps = {
   searchParams: Promise<{ slug?: string }>
@@ -18,8 +19,8 @@ export default async function AdminIndexPage({ searchParams }: AdminIndexPagePro
   }
 
   if (session.user.role === 'STUDENT') {
-    redirect(`/student/${targetSlug}`)
+    redirect(studentPath(targetSlug))
   }
 
-  redirect(`/admin/${targetSlug}`)
+  redirect(adminPath(targetSlug))
 }

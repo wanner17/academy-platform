@@ -10,6 +10,7 @@ import { homeworkService } from '@/lib/services/homework.service'
 import { progressService } from '@/lib/services/progress.service'
 import { studentService } from '@/lib/services/student.service'
 import { testResultService } from '@/lib/services/test-result.service'
+import { studentPath } from '@/lib/utils/public-path'
 import { updateStudentPasswordAction } from './actions'
 
 type StudentHomePageProps = {
@@ -86,8 +87,8 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
 
           <StudentCalendarNav
             currentLabel={`${selectedMonth.getFullYear()}년 ${selectedMonth.getMonth() + 1}월 출석내역`}
-            nextHref={`/student/${slug}?month=${toMonthParam(nextMonth)}`}
-            prevHref={`/student/${slug}?month=${toMonthParam(prevMonth)}`}
+            nextHref={`${studentPath(slug)}?month=${toMonthParam(nextMonth)}`}
+            prevHref={`${studentPath(slug)}?month=${toMonthParam(prevMonth)}`}
           />
           <div className="student-attendance-calendar">
             {['일', '월', '화', '수', '목', '금', '토'].map((day) => (

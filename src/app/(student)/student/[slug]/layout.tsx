@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { PublicHeader } from '@/components/public/public-header'
 import { requireStudentPage } from '@/lib/auth/server'
-import { publicPath } from '@/lib/utils/public-path'
+import { publicPath, studentPath } from '@/lib/utils/public-path'
 
 type StudentLayoutProps = {
   children: React.ReactNode
@@ -23,7 +23,7 @@ export default async function StudentLayout({ children, params }: StudentLayoutP
     <div className="student-shell">
       <PublicHeader
         academyName={academyName}
-        authHref={`/student/${slug}`}
+        authHref={studentPath(slug)}
         authLabel="나의 강의실"
         contactHref={publicPath(slug, '/contact')}
         homeHref={publicPath(slug)}

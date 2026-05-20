@@ -297,6 +297,30 @@
       "accessCount": 1,
       "lastAccessed": 1779245738798,
       "type": "file"
+    },
+    {
+      "path": "next.config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779266263207,
+      "type": "file"
+    },
+    {
+      "path": ".env.example",
+      "accessCount": 1,
+      "lastAccessed": 1779266267858,
+      "type": "file"
+    },
+    {
+      "path": ".env.local",
+      "accessCount": 1,
+      "lastAccessed": 1779266267977,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\storage\\r2-storage-provider.ts",
+      "accessCount": 1,
+      "lastAccessed": 1779267053299,
+      "type": "file"
     }
   ],
   "userDirectives": []
