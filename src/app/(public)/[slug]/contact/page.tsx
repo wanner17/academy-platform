@@ -13,74 +13,90 @@ export default async function ContactPage({ params, searchParams }: ContactPageP
   const academy = await getAcademyBySlug(slug)
 
   return (
-    <main className="mx-auto grid max-w-5xl gap-6 px-6 py-10 md:grid-cols-[320px_1fr]">
-      <aside className="rounded-lg border bg-white p-5">
-        <h1 className="mb-2 text-2xl font-bold">상담문의</h1>
-        <p className="mb-6 text-sm text-slate-600">연락처와 문의 내용을 남기면 학원 담당자가 확인합니다.</p>
-        <dl className="space-y-4 text-sm">
-          {academy.phone ? (
-            <div>
-              <dt className="font-medium">전화</dt>
-              <dd className="mt-1 text-slate-600">{academy.phone}</dd>
-            </div>
-          ) : null}
-          {academy.email ? (
-            <div>
-              <dt className="font-medium">이메일</dt>
-              <dd className="mt-1 text-slate-600">{academy.email}</dd>
-            </div>
-          ) : null}
-          {academy.address ? (
-            <div>
-              <dt className="font-medium">주소</dt>
-              <dd className="mt-1 text-slate-600">{academy.address}</dd>
-            </div>
-          ) : null}
-        </dl>
-      </aside>
+    <>
+      <div className="pub-page-hero">
+        <div className="pub-page-hero-inner">
+          <div className="pub-label">CONTACT</div>
+          <h1 className="pub-page-title">상담 문의</h1>
+          <p className="pub-page-subtitle">연락처와 문의 내용을 남기면 담당자가 확인합니다.</p>
+        </div>
+      </div>
 
-      <section>
-        {submitted === '1' ? (
-          <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-            문의가 접수되었습니다.
-          </div>
-        ) : null}
+      <div className="pub-page-content">
+        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 60, alignItems: 'start' }}>
+          <aside className="pub-side">
+            <h3 className="pub-side-title">연락처</h3>
+            <div className="pub-side-line" />
+            {academy.phone && (
+              <div className="pub-notice-item">
+                <div className="pub-label" style={{ marginBottom: 4 }}>PHONE</div>
+                {academy.phone}
+              </div>
+            )}
+            {academy.email && (
+              <div className="pub-notice-item">
+                <div className="pub-label" style={{ marginBottom: 4 }}>EMAIL</div>
+                {academy.email}
+              </div>
+            )}
+            {academy.address && (
+              <div className="pub-notice-item">
+                <div className="pub-label" style={{ marginBottom: 4 }}>ADDRESS</div>
+                {academy.address}
+              </div>
+            )}
+          </aside>
 
-        <form action={createInquiryAction} className="space-y-4 rounded-lg border bg-white p-5">
-          <input type="hidden" name="slug" value={slug} />
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">이름</span>
-            <input className="w-full rounded border px-3 py-2" name="name" required />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">연락처</span>
-            <input
-              className="w-full rounded border px-3 py-2"
-              name="phone"
-              placeholder="010-1234-5678"
-              required
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">이메일</span>
-            <input className="w-full rounded border px-3 py-2" name="email" type="email" />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">제목</span>
-            <input className="w-full rounded border px-3 py-2" name="subject" />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">문의 내용</span>
-            <textarea className="min-h-36 w-full rounded border px-3 py-2" name="content" required />
-          </label>
-          <ConfirmSubmitButton
-            className="rounded bg-blue-700 px-4 py-2 font-medium text-white"
-            message="문의 내용을 접수할까요?"
-          >
-            문의 접수
-          </ConfirmSubmitButton>
-        </form>
-      </section>
-    </main>
+          <section>
+            {submitted === '1' && (
+              <div className="pub-success-msg">
+                문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.
+              </div>
+            )}
+
+            <form action={createInquiryAction} className="pub-form-wrap">
+              <input type="hidden" name="slug" value={slug} />
+
+              <label>
+                <span className="pub-form-label">NAME</span>
+                <input className="pub-form-input" name="name" required />
+              </label>
+
+              <label>
+                <span className="pub-form-label">PHONE</span>
+                <input
+                  className="pub-form-input"
+                  name="phone"
+                  placeholder="010-1234-5678"
+                  required
+                />
+              </label>
+
+              <label>
+                <span className="pub-form-label">EMAIL</span>
+                <input className="pub-form-input" name="email" type="email" />
+              </label>
+
+              <label>
+                <span className="pub-form-label">SUBJECT</span>
+                <input className="pub-form-input" name="subject" />
+              </label>
+
+              <label>
+                <span className="pub-form-label">MESSAGE</span>
+                <textarea className="pub-form-textarea" name="content" required />
+              </label>
+
+              <ConfirmSubmitButton
+                className="pub-form-submit"
+                message="문의 내용을 접수할까요?"
+              >
+                SUBMIT INQUIRY
+              </ConfirmSubmitButton>
+            </form>
+          </section>
+        </div>
+      </div>
+    </>
   )
 }

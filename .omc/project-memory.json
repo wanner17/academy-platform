@@ -179,6 +179,60 @@
       "type": "file"
     },
     {
+      "path": "src\\app\\globals.css",
+      "accessCount": 2,
+      "lastAccessed": 1779238658245,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(public)\\[slug]\\layout.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779238672369,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(public)\\[slug]\\page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779238695159,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(public)\\[slug]\\teachers\\page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779238704352,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(public)\\[slug]\\schedule\\page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779238715861,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(public)\\[slug]\\notices\\page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779238725402,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(public)\\[slug]\\programs\\page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779238744843,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(public)\\[slug]\\contact\\page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779238760792,
+      "type": "file"
+    },
+    {
+      "path": "src\\app\\(public)\\[slug]\\notices\\[id]\\page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1779238779405,
+      "type": "file"
+    },
+    {
       "path": "src\\lib\\repositories\\homework.repository.ts",
       "accessCount": 1,
       "lastAccessed": 1779180654674,

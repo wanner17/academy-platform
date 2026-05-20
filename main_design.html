@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Core Academy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brown: #4a281b;
+      --deep: #2b160f;
+      --gold: #c99b56;
+      --paper: #f7f4f1;
+      --line: #e6ded7;
+      --text: #2e1811;
+      --muted: #9a8e88;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #fff;
+      color: var(--text);
+      font-family: 'Noto Serif KR', serif;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 58px;
+      background: rgba(250,248,246,.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+
+    .logo {
+      font-size: 24px;
+      letter-spacing: 4px;
+      font-weight: 700;
+      color: var(--brown);
+      white-space: nowrap;
+    }
+
+    .nav {
+      display: flex;
+      gap: 38px;
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      color: #8b7e78;
+      letter-spacing: .9px;
+    }
+
+    .admission {
+      padding: 17px 29px;
+      background: var(--brown);
+      color: #fff;
+      border-radius: 2px;
+      font-family: Inter, sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+    }
+
+    .hero {
+      min-height: 700px;
+      background: radial-gradient(circle at 38% 44%, #5a321f 0%, var(--brown) 42%, #472417 100%);
+      display: grid;
+      grid-template-columns: 41% 59%;
+      padding: 10px 90px 92px;
+      gap: 42px;
+      color: #fff;
+    }
+
+    .hero-copy {
+      padding: 100px 0 0 88px;
+    }
+
+    .system {
+      font-family: Inter, sans-serif;
+      color: rgba(255,255,255,.32);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 0;
+    }
+
+    .eyebrow {
+      font-family: Inter, sans-serif;
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      margin-bottom: 26px;
+    }
+
+    h1 {
+      margin: 0 0 34px;
+      font-size: clamp(50px, 5vw, 76px);
+      line-height: .98;
+      letter-spacing: -3px;
+      font-weight: 600;
+    }
+
+    .hero p {
+      max-width: 520px;
+      color: rgba(255,255,255,.68);
+      font-size: 16px;
+      line-height: 1.9;
+      margin-bottom: 46px;
+    }
+
+    .hero-actions { display: flex; gap: 26px; align-items: center; }
+    .btn-text, .btn-outline {
+      height: 52px;
+      min-width: 188px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Inter, sans-serif;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      font-size: 12px;
+    }
+    .btn-outline { border: 1px solid rgba(255,255,255,.36); }
+
+    .access {
+      margin-top: 75px;
+      font-family: Inter, sans-serif;
+      color: rgba(255,255,255,.32);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .hero-image {
+      align-self: start;
+      height: 590px;
+      margin-top: 0;
+      border-radius: 4px;
+      background:
+        linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.18)),
+        url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1500&q=80') center/cover;
+      box-shadow: 0 30px 80px rgba(0,0,0,.18);
+    }
+
+    .schedule-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        max-width: none;
+        width: 100%;
+        margin: 0;
+        padding: 48px 180px 54px;
+        text-align: center;
+        gap: 0;
+        background: #f7f4f1;
+        border-bottom: 1px solid #e6ded7;
+    }
+
+    .schedule-strip > div {
+        padding: 0 42px;
+        border-right: 1px solid #e2d9d2;
+    }
+
+    .schedule-strip > div:last-child {
+        border-right: none;
+    }
+
+    .time {
+      font-family: Inter, sans-serif;
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+    }
+
+    .class-name { font-size: 19px; font-weight: 700; }
+    .class-name.muted { color: #9c918c; }
+
+    .section {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 120px 0 110px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 26px;
+      margin-bottom: 78px;
+    }
+
+    .label {
+      font-family: Inter, sans-serif;
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 48px;
+      line-height: 1;
+      font-weight: 400;
+      margin: 0;
+      letter-spacing: -1.5px;
+    }
+
+    .view-all {
+      font-family: Inter, sans-serif;
+      color: #8c7f79;
+      font-size: 13px;
+      letter-spacing: 2px;
+      border-bottom: 1px solid var(--gold);
+      padding-bottom: 8px;
+    }
+
+    .instructors {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 38px;
+    }
+
+    .teacher-img {
+      width: 100%;
+      height: 340px;
+      object-fit: cover;
+      filter: grayscale(100%);
+      margin-bottom: 27px;
+    }
+
+    .role {
+      font-family: Inter, sans-serif;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+    }
+
+    .teacher h3 {
+      font-size: 27px;
+      margin: 0 0 21px;
+      font-weight: 500;
+    }
+
+    .teacher p, .post p {
+      color: #9b918c;
+      line-height: 1.9;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .journal-wrap {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 74px;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 90px 0 120px;
+    }
+
+    .posts h2 { border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 54px; }
+
+    .post {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 38px;
+      padding: 0 0 40px;
+      margin-bottom: 40px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .post img {
+      width: 230px;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .meta {
+      font-family: Inter, sans-serif;
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    .post h3 {
+      font-size: 28px;
+      line-height: 1.45;
+      margin: 0 0 18px;
+      font-weight: 500;
+    }
+
+    .side {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 50px 40px;
+      align-self: start;
+    }
+    .side h3 { font-size: 20px; margin: 0 0 15px; }
+    .side-line { width: 58px; height: 2px; background: var(--brown); margin-bottom: 42px; }
+    .notice-item { padding: 18px 0; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.6; }
+    .cs {
+      margin-top: 46px;
+      padding: 34px 22px;
+      background: #fff;
+      border: 1px solid var(--line);
+      text-align: center;
+    }
+    .cs .phone { font-size: 22px; margin: 16px 0; }
+    .cs p { color: #9b918c; margin: 0; line-height: 1.7; font-size: 13px; }
+
+    .floating {
+      position: fixed;
+      right: 46px;
+      bottom: 48px;
+      z-index: 30;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 50px rgba(74,40,27,.10);
+      display: flex;
+      align-items: center;
+      gap: 17px;
+      padding: 19px 25px;
+      min-width: 250px;
+    }
+    .icon {
+      width: 40px;
+      height: 40px;
+      background: var(--brown);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+    }
+    .floating small {
+      display: block;
+      font-family: Inter, sans-serif;
+      color: #b2a7a1;
+      font-size: 10px;
+      letter-spacing: 1.6px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+    .floating strong { font-size: 16px; }
+
+    .footer {
+      background: var(--deep);
+      color: #fff;
+      padding: 100px 0 45px;
+    }
+    .footer-inner {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.6fr .8fr .8fr;
+      gap: 70px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding-bottom: 70px;
+    }
+    .footer .logo { color: #fff; margin-bottom: 34px; display: block; }
+    .footer p, .footer a { color: rgba(255,255,255,.42); font-size: 13px; line-height: 1.9; }
+    .foot-title { font-family: Inter,sans-serif; color: var(--gold); font-size: 11px; font-weight: 800; letter-spacing: 4px; margin-bottom: 28px; }
+    .copyright { text-align: center; color: rgba(255,255,255,.22); font-family: Inter,sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 1px; padding-top: 38px; }
+
+    @media (max-width: 900px) {
+      .header { height: auto; padding: 24px; gap: 20px; flex-wrap: wrap; }
+      .nav { order: 3; width: 100%; overflow-x: auto; gap: 22px; }
+      .hero { grid-template-columns: 1fr; padding: 40px 24px 70px; }
+      .hero-copy { padding: 30px 0 0; }
+      .hero-image { height: 320px; }
+      .schedule-strip, .instructors, .journal-wrap, .post, .footer-inner { grid-template-columns: 1fr; }
+      .section, .journal-wrap, .footer-inner { max-width: none; margin: 0 24px; }
+      .floating { right: 18px; bottom: 18px; min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a class="logo" href="#">THE CORE ACADEMY</a>
+    <nav class="nav">
+      <a href="#curriculum">CURRICULUM</a>
+      <a href="#instructors">INSTRUCTORS</a>
+      <a href="#success">SUCCESS STORIES</a>
+      <a href="#schedule">SCHEDULE</a>
+      <a href="#notice">NOTICE</a>
+    </nav>
+    <a class="admission" href="#">ADMISSION 2025</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="system">// SYSTEM_ACTIVE: 2024.11.02</div>
+        <div class="eyebrow">PREMIUM PRIVATE EDUCATION</div>
+        <h1>본질을 꿰뚫는<br>최상위의 시선.</h1>
+        <p>우리는 단순한 지식 전달을 넘어, 입시라는 거대한 파도 속에서 흔들리지 않는 중심(Core)을 만듭니다. 상위 0.1%를 향한 독보적인 커리큘럼.</p>
+        <div class="hero-actions">
+          <a class="btn-text" href="#">GET CONSULTATION</a>
+          <a class="btn-outline" href="#">WATCH INTRO</a>
+        </div>
+        <div class="access">// ACCESS_LEVEL: ELITE_CORE</div>
+      </div>
+      <div class="hero-image" aria-label="academy interior"></div>
+    </section>
+
+    <section id="schedule" class="schedule-strip">
+      <div><div class="time">09:00 - 12:00</div><div class="class-name">수능 국어 심화 (문학)</div></div>
+      <div><div class="time">13:30 - 16:30</div><div class="class-name muted">미적분 킬러 문항 정복</div></div>
+      <div><div class="time">19:00 - 22:00</div><div class="class-name">영어 절대평가 1등급 완성</div></div>
+      <div><div class="time">LIVE NOW</div><div class="class-name">입시 전략 컨설팅 4차</div></div>
+    </section>
+
+    <section id="instructors" class="section">
+      <div class="section-head">
+        <div>
+          <div class="label">THE FACULTY</div>
+          <h2>Master Instructors</h2>
+        </div>
+        <a class="view-all" href="#">VIEW ALL PROFILES →</a>
+      </div>
+      <div class="instructors">
+        <article class="teacher">
+          <img class="teacher-img" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=700&q=80" alt="instructor">
+          <div class="role">MATHEMATICS</div>
+          <h3>Dr. Kang, Min-ho</h3>
+          <p>서울대 수리과학부. 전 문항 분석 및 킬러 문항 해결의 절대 기준.</p>
+        </article>
+        <article class="teacher">
+          <img class="teacher-img" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=700&q=80" alt="instructor">
+          <div class="role">KOREAN LANGUAGE</div>
+          <h3>Sarah Jung</h3>
+          <p>독해의 알고리즘. 지문 속 숨은 논리를 찾아내는 압도적 강의력.</p>
+        </article>
+        <article class="teacher">
+          <img class="teacher-img" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=700&q=80" alt="instructor">
+          <div class="role">STRATEGY</div>
+          <h3>Lee, Sung-hoon</h3>
+          <p>입시 데이터 마스터. 수치로 증명하는 1:1 맞춤형 진학 설계.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="journal-wrap" id="notice">
+      <div class="posts">
+        <h2>Academic Journal</h2>
+        <article class="post">
+          <img src="https://images.unsplash.com/photo-1456406644174-8ddd4cd52a06?auto=format&fit=crop&w=600&q=80" alt="study">
+          <div>
+            <div class="meta">BOARD • 2 HOURS AGO</div>
+            <h3>2025학년도 6월 모평 가이드라인</h3>
+            <p>이번 6월 모의평가는 전반적으로 변별력이 확보된 문항들이 출제되었습니다. 특히 국어 영역에서의 비문학 ...</p>
+          </div>
+        </article>
+        <article class="post">
+          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80" alt="classroom">
+          <div>
+            <div class="meta">SUCCESS • 2 DAYS AGO</div>
+            <h3>[합격수기] 4등급에서 의대 합격까지의 여정</h3>
+            <p>처음 더 코어를 찾았을 때 제 점수는 참담했습니다. 하지만 단계별 맞춤 시스템을 통해 제가 가진 약점을 정확...</p>
+          </div>
+        </article>
+      </div>
+      <aside class="side">
+        <h3>Notice</h3>
+        <div class="side-line"></div>
+        <div class="notice-item">[공지] 7월 여름방학 집중 캠프 모집안내</div>
+        <div class="notice-item">[안내] 6월 모의평가 분석 설명회 예약</div>
+        <div class="notice-item">[시설] 스터디 카페 좌석 배정 시스템 점검</div>
+        <div class="cs">
+          <div class="label">CS CENTER</div>
+          <div class="phone">1600-0000</div>
+          <p>09:00 - 22:00 (Sat/Sun<br>10:00 - 18:00)</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <a class="floating" href="#">
+    <span class="icon">□</span>
+    <span><small>FREE CONSULTATION</small><strong>방문 상담 예약하기</strong></span>
+  </a>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <span class="logo">THE CORE ACADEMY</span>
+        <p>서울특별시 강남구 대치동 123-45 (테헤란로 에듀빌딩)<br>사업자등록번호: 123-45-67890 | 대표: 김철수</p>
+      </div>
+      <div>
+        <div class="foot-title">INFORMATION</div>
+        <p><a href="#">개인정보처리방침</a><br><a href="#">이용약관</a><br><a href="#">교습비 안내</a></p>
+      </div>
+      <div>
+        <div class="foot-title">FOLLOW US</div>
+        <p><a href="#">Instagram</a><br><a href="#">Naver Blog</a><br><a href="#">Youtube</a></p>
+      </div>
+    </div>
+    <div class="copyright">© 2024 THE CORE. ALL RIGHTS RESERVED.</div>
+  </footer>
+</body>
+</html>

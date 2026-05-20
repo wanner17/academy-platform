@@ -11,22 +11,39 @@ export default async function NoticesPage({ params }: NoticesPageProps) {
   const { items } = await noticeService.getPublicNotices(academy.id)
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="mb-6 text-2xl font-bold">공지사항</h1>
-      <div className="divide-y rounded-lg border bg-white">
-        {items.map((notice) => (
-          <article key={notice.id} className="p-5">
-            <div className="mb-2 flex items-center gap-2">
-              {notice.isPinned ? <span className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700">고정</span> : null}
-              <h2 className="font-semibold">
-                <a href={`/${slug}/notices/${notice.id}`}>{notice.title}</a>
-              </h2>
-            </div>
-            <p className="line-clamp-3 whitespace-pre-wrap text-sm text-slate-600">{notice.content}</p>
-          </article>
-        ))}
-        {items.length === 0 ? <p className="p-5 text-sm text-slate-500">공지 없음</p> : null}
+    <>
+      <div className="pub-page-hero">
+        <div className="pub-page-hero-inner">
+          <div className="pub-label">BOARD</div>
+          <h1 className="pub-page-title">공지사항</h1>
+          <p className="pub-page-subtitle">학원의 주요 공지 및 안내를 확인하세요.</p>
+        </div>
       </div>
-    </main>
+
+      <div className="pub-page-content">
+        {items.length > 0 ? (
+          <div>
+            {items.map((notice) => (
+              <article key={notice.id} className="pub-post">
+                <div className="pub-post-placeholder" />
+                <div>
+                  <div className="pub-meta">
+                    NOTICE{notice.isPinned ? ' · 고정' : ''}
+                  </div>
+                  <h2 className="pub-post-title">
+                    <a href={`/${slug}/notices/${notice.id}`}>{notice.title}</a>
+                  </h2>
+                  <p className="pub-post-desc">{notice.content}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="pub-card" style={{ textAlign: 'center', padding: '80px 40px' }}>
+            <p style={{ color: 'var(--muted)', fontSize: 16 }}>등록된 공지가 없습니다.</p>
+          </div>
+        )}
+      </div>
+    </>
   )
 }

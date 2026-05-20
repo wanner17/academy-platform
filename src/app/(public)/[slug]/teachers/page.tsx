@@ -11,23 +11,37 @@ export default async function TeachersPage({ params }: TeachersPageProps) {
   const teachers = await teacherService.getPublicTeachers(academy.id)
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
-      <h1 className="mb-2 text-2xl font-bold">강사진</h1>
-      <p className="mb-6 text-slate-600">학생을 지도하는 선생님들을 소개합니다.</p>
-      <div className="grid gap-4 md:grid-cols-2">
-        {teachers.map((teacher) => (
-          <article key={teacher.id} className="rounded-lg border bg-white p-5">
-            <p className="mb-2 text-sm font-medium text-blue-700">{teacher.subject}</p>
-            <h2 className="mb-3 text-xl font-semibold">{teacher.name}</h2>
-            <p className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
-              {teacher.bio || '소개를 준비 중입니다.'}
-            </p>
-          </article>
-        ))}
-        {teachers.length === 0 ? (
-          <div className="rounded-lg border bg-white p-5 text-sm text-slate-500">등록된 강사진이 없습니다.</div>
-        ) : null}
+    <>
+      <div className="pub-page-hero">
+        <div className="pub-page-hero-inner">
+          <div className="pub-label">THE FACULTY</div>
+          <h1 className="pub-page-title">강사진</h1>
+          <p className="pub-page-subtitle">학생을 지도하는 전문 선생님들을 소개합니다.</p>
+        </div>
       </div>
-    </main>
+
+      <div className="pub-page-content">
+        {teachers.length > 0 ? (
+          <div className="pub-instructors">
+            {teachers.map((teacher) => (
+              <article key={teacher.id}>
+                <div className="pub-teacher-placeholder">👤</div>
+                <div className="pub-role">
+                  {teacher.subject?.toUpperCase() ?? 'INSTRUCTOR'}
+                </div>
+                <h2 className="pub-teacher-name">{teacher.name}</h2>
+                <p className="pub-teacher-bio">
+                  {teacher.bio || '소개를 준비 중입니다.'}
+                </p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="pub-card" style={{ textAlign: 'center', padding: '80px 40px' }}>
+            <p style={{ color: 'var(--muted)', fontSize: 16 }}>등록된 강사진이 없습니다.</p>
+          </div>
+        )}
+      </div>
+    </>
   )
 }

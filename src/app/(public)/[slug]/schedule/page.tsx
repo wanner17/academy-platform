@@ -13,39 +13,58 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
   const schedules = await scheduleService.getPublicSchedules(academy.id)
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="mb-2 text-2xl font-bold">시간표</h1>
-      <p className="mb-6 text-slate-600">요일별 수업 시간과 담당 선생님을 확인하세요.</p>
-      <div className="grid gap-4 lg:grid-cols-7">
-        {dayLabels.map((label, dayOfWeek) => (
-          <section key={label} className="rounded-lg border bg-white p-4">
-            <h2 className="mb-3 font-semibold">{label}요일</h2>
-            <div className="space-y-3">
-              <ScheduleItems schedules={schedules.filter((schedule) => schedule.dayOfWeek === dayOfWeek)} />
-            </div>
-          </section>
-        ))}
+    <>
+      <div className="pub-page-hero">
+        <div className="pub-page-hero-inner">
+          <div className="pub-label">TIMETABLE</div>
+          <h1 className="pub-page-title">시간표</h1>
+          <p className="pub-page-subtitle">요일별 수업 시간과 담당 선생님을 확인하세요.</p>
+        </div>
       </div>
-    </main>
+
+      <div className="pub-page-content">
+        <div className="pub-schedule-grid">
+          {dayLabels.map((label, dayOfWeek) => (
+            <section key={label} className="pub-day-col">
+              <div className="pub-day-header">{label}</div>
+              <div className="pub-day-body">
+                <DayItems
+                  schedules={schedules.filter((s) => s.dayOfWeek === dayOfWeek)}
+                />
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
+    </>
   )
 }
 
-function ScheduleItems({ schedules }: { schedules: Schedule[] }) {
+function DayItems({ schedules }: { schedules: Schedule[] }) {
   if (schedules.length === 0) {
-    return <p className="text-sm text-slate-400">수업 없음</p>
+    return <p className="pub-empty">수업 없음</p>
   }
 
-  return schedules.map((schedule) => (
-    <article className="rounded border-l-4 bg-slate-50 p-3" key={schedule.id} style={{ borderLeftColor: schedule.color ?? '#2563EB' }}>
-      <p className="text-sm font-semibold">
-        {schedule.startTime} - {schedule.endTime}
-      </p>
-      <h3 className="mt-1 font-medium">{schedule.title}</h3>
-      <div className="mt-2 space-y-1 text-xs text-slate-600">
-        {schedule.subject ? <p>과목: {schedule.subject}</p> : null}
-        {schedule.teacher ? <p>강사: {schedule.teacher}</p> : null}
-        {schedule.room ? <p>교실: {schedule.room}</p> : null}
-      </div>
-    </article>
-  ))
+  return (
+    <>
+      {schedules.map((schedule) => (
+        <div
+          key={schedule.id}
+          className="pub-schedule-card"
+          style={{ borderLeftColor: schedule.color ?? 'var(--gold)' }}
+        >
+          <div className="pub-schedule-card-time">
+            {schedule.startTime} – {schedule.endTime}
+          </div>
+          <div className="pub-schedule-card-title">{schedule.title}</div>
+          <div className="pub-schedule-card-meta">
+            {schedule.subject ? <span>{schedule.subject}</span> : null}
+            {schedule.subject && schedule.teacher ? ' · ' : null}
+            {schedule.teacher ? <span>{schedule.teacher}</span> : null}
+            {schedule.room ? <div>{schedule.room}</div> : null}
+          </div>
+        </div>
+      ))}
+    </>
+  )
 }

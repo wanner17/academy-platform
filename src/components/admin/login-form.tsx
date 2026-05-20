@@ -17,7 +17,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
           email: form.get('email'),
           password: form.get('password'),
           redirect: false,
-          callbackUrl: callbackUrl ?? '/admin/demo',
+          callbackUrl: callbackUrl ?? '/admin',
         })
 
         if (result?.error) {
@@ -25,7 +25,7 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
           return
         }
 
-        window.location.href = result?.url ?? callbackUrl ?? '/admin/demo'
+        window.location.href = result?.url ?? callbackUrl ?? '/admin'
       }}
     >
       <label className="block">

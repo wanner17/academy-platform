@@ -12,32 +12,50 @@ export default async function NoticeDetailPage({ params }: NoticeDetailPageProps
   const notice = await noticeService.getPublicNoticeById(id, academy.id).catch(() => null)
   if (!notice) notFound()
 
+  const date = new Intl.DateTimeFormat('ko-KR', { dateStyle: 'long' }).format(notice.createdAt)
+
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
-      <a className="mb-6 inline-block text-sm text-blue-700" href={`/${slug}/notices`}>
-        공지 목록
-      </a>
-      <article className="rounded-lg border bg-white p-6">
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          {notice.isPinned ? <span className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700">고정</span> : null}
-          <time className="text-sm text-slate-500">
-            {new Intl.DateTimeFormat('ko-KR', { dateStyle: 'medium' }).format(notice.createdAt)}
-          </time>
+    <>
+      <div className="pub-page-hero">
+        <div className="pub-page-hero-inner">
+          <div className="pub-label">NOTICE</div>
+          <h1 className="pub-page-title" style={{ fontSize: 'clamp(28px, 3vw, 46px)' }}>
+            {notice.title}
+          </h1>
+          <p className="pub-page-subtitle">{date}</p>
         </div>
-        <h1 className="mb-6 text-3xl font-bold">{notice.title}</h1>
-        <p className="whitespace-pre-wrap leading-7 text-slate-700">{notice.content}</p>
-        {notice.attachments.length > 0 ? (
-          <div className="mt-8 border-t pt-6">
-            <h2 className="mb-4 font-semibold">첨부</h2>
-            <div className="space-y-4">
+      </div>
+
+      <div className="pub-page-content" style={{ maxWidth: 760 }}>
+        <a className="pub-back-link" href={`/${slug}/notices`}>
+          ← BACK TO NOTICES
+        </a>
+
+        <div className="pub-notice-header">
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            {notice.isPinned && (
+              <span className="pub-card-tag" style={{ marginBottom: 0 }}>고정</span>
+            )}
+            <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 12, color: 'var(--muted)', letterSpacing: '1px' }}>
+              {date}
+            </span>
+          </div>
+        </div>
+
+        <div className="pub-notice-body">{notice.content}</div>
+
+        {notice.attachments.length > 0 && (
+          <div style={{ marginTop: 64, borderTop: '1px solid var(--line)', paddingTop: 48 }}>
+            <div className="pub-label" style={{ marginBottom: 24 }}>ATTACHMENTS</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {notice.attachments.map((attachment) => (
-                <AttachmentItem attachment={attachment} key={attachment.id} />
+                <AttachmentItem attachment={attachment} key={attachment.objectKey} />
               ))}
             </div>
           </div>
-        ) : null}
-      </article>
-    </main>
+        )}
+      </div>
+    </>
   )
 }
 
@@ -57,16 +75,32 @@ function AttachmentItem({
 
   if (isImage) {
     return (
-      <a className="block" href={href} target="_blank">
+      <a href={href} target="_blank" style={{ display: 'block' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img alt={label} className="max-h-[560px] w-full rounded border object-contain" src={href} />
+        <img
+          alt={label}
+          src={href}
+          style={{ maxHeight: 560, width: '100%', objectFit: 'contain', border: '1px solid var(--line)' }}
+        />
       </a>
     )
   }
 
   return (
-    <a className="block rounded border p-3 text-sm text-blue-700" href={href} target="_blank">
-      {label}
+    <a
+      href={href}
+      target="_blank"
+      style={{
+        display: 'block',
+        padding: '16px 24px',
+        border: '1px solid var(--line)',
+        fontFamily: 'Inter, sans-serif',
+        fontSize: 13,
+        letterSpacing: '1px',
+        color: 'var(--brown)',
+      }}
+    >
+      ↓ {label}
     </a>
   )
 }
