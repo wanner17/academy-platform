@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db/prisma'
 import { attendanceService, type StudentCheckInInput } from '@/lib/services/attendance.service'
 import { studentService } from '@/lib/services/student.service'
 import { studentPath } from '@/lib/utils/public-path'
+import { formatKoreaTime } from '@/lib/utils/korea-time'
 
 export async function updateStudentPasswordAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
@@ -43,7 +44,7 @@ export async function checkInAttendanceAction(slug: string, input: StudentCheckI
     const record = await attendanceService.checkInStudent(academy.id, student.id, input)
     return {
       ok: true,
-      message: `출석 완료: ${record.checkedAt?.toLocaleTimeString('ko-KR') ?? ''}`,
+      message: `출석 완료: ${record.checkedAt ? formatKoreaTime(record.checkedAt) : ''}`,
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : '출석 처리에 실패했습니다.'

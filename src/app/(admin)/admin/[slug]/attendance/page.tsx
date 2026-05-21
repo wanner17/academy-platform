@@ -4,6 +4,7 @@ import { attendanceSourceLabels, attendanceStatusLabels } from '@/lib/attendance
 import { requireMemberPage } from '@/lib/auth/server'
 import { attendanceService, toDateInputValue } from '@/lib/services/attendance.service'
 import { studentService } from '@/lib/services/student.service'
+import { formatKoreaTime } from '@/lib/utils/korea-time'
 import { markAttendanceAction, updateAttendanceSettingAction } from './actions'
 
 type AdminAttendancePageProps = {
@@ -151,7 +152,7 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
                 <td className="px-4 py-3 font-medium">{student.name}</td>
                 <td className="px-4 py-3">{[student.schoolName, student.grade].filter(Boolean).join(' ') || '-'}</td>
                 <td className="px-4 py-3">{record ? attendanceStatusLabels[record.status] : '미처리'}</td>
-                <td className="px-4 py-3">{record?.checkedAt?.toLocaleTimeString('ko-KR') ?? '-'}</td>
+                <td className="px-4 py-3">{record?.checkedAt ? formatKoreaTime(record.checkedAt) : '-'}</td>
                 <td className="px-4 py-3">{record?.distanceMeters !== null && record?.distanceMeters !== undefined ? `${Math.round(record.distanceMeters)}m` : '-'}</td>
                 <td className="px-4 py-3">{record ? attendanceSourceLabels[record.source] : '-'}</td>
                 <td className="px-4 py-3">{record?.memo ?? '-'}</td>

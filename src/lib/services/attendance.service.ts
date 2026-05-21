@@ -1,5 +1,6 @@
 import type { AttendanceStatus } from '@prisma/client'
 import { prisma } from '@/lib/db/prisma'
+import { getKoreaMinutes, getKoreaDateParts, toStoredKoreaDate } from '@/lib/utils/korea-time'
 
 export type AttendanceSettingInput = {
   endTime?: string
@@ -53,8 +54,8 @@ export const attendanceService = {
   },
 
   getStudentRecordsForMonth(academyId: string, studentId: string, year: number, monthIndex: number) {
-    const start = new Date(year, monthIndex, 1)
-    const end = new Date(year, monthIndex + 1, 1)
+    const start = new Date(Date.UTC(year, monthIndex, 1))
+    const end = new Date(Date.UTC(year, monthIndex + 1, 1))
     return prisma.attendanceRecord.findMany({
       where: {
         academyId,
@@ -131,14 +132,12 @@ export const attendanceService = {
 }
 
 export function toAttendanceDate(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  return toStoredKoreaDate(date)
 }
 
 export function toDateInputValue(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  const { day, month, year } = getKoreaDateParts(date)
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
 export function getDistanceMeters(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -161,7 +160,7 @@ function isFiniteCoordinate(latitude: number, longitude: number) {
 
 function isWithinAttendanceTime(startTime: string | null | undefined, endTime: string | null | undefined, date: Date) {
   if (!startTime && !endTime) return true
-  const minutes = date.getHours() * 60 + date.getMinutes()
+  const minutes = getKoreaMinutes(date)
   const start = startTime ? parseTime(startTime) : 0
   const end = endTime ? parseTime(endTime) : 24 * 60 - 1
   if (start === null || end === null) return false

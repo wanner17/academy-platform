@@ -11,6 +11,7 @@ import { progressService } from '@/lib/services/progress.service'
 import { studentService } from '@/lib/services/student.service'
 import { testResultService } from '@/lib/services/test-result.service'
 import { studentPath } from '@/lib/utils/public-path'
+import { formatKoreaTime, getKoreaDateParts, toKoreaDateKey } from '@/lib/utils/korea-time'
 import { updateStudentPasswordAction } from './actions'
 
 type StudentHomePageProps = {
@@ -38,7 +39,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
     attendanceService.getStudentRecordForDate(academy.id, student.id, new Date()),
     attendanceService.getStudentRecordsForMonth(academy.id, student.id, selectedMonth.getFullYear(), selectedMonth.getMonth()),
   ])
-  const attendanceByDate = new Map(monthlyAttendance.map((record) => [toDateKey(record.attendanceDate), record]))
+  const attendanceByDate = new Map(monthlyAttendance.map((record) => [toKoreaDateKey(record.attendanceDate), record]))
   const calendarCells = getCalendarCells(selectedMonth)
 
   return (
@@ -67,7 +68,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
               <h3>오늘 출석</h3>
               <p>
                 {todayAttendance
-                  ? `${attendanceStatusLabels[todayAttendance.status]} · ${todayAttendance.checkedAt?.toLocaleTimeString('ko-KR') ?? '관리자 처리'}`
+                  ? `${attendanceStatusLabels[todayAttendance.status]} · ${todayAttendance.checkedAt ? formatKoreaTime(todayAttendance.checkedAt) : '관리자 처리'}`
                   : attendanceSetting?.isEnabled
                     ? '학원 위치에서 출석 버튼을 누르세요.'
                     : '출석 기능이 아직 열려 있지 않습니다.'}
@@ -96,7 +97,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
             ))}
             {calendarCells.map((day, index) => {
               const record = day ? attendanceByDate.get(toDateKey(day)) : null
-              const isToday = day ? toDateKey(day) === toDateKey(new Date()) : false
+              const isToday = day ? toDateKey(day) === toKoreaDateKey(new Date()) : false
               const cellClassName = `student-calendar-day${day ? '' : ' is-empty'}${isToday ? ' is-today' : ''}`
               return (
                 <div className={cellClassName} key={day ? toDateKey(day) : `empty-${index}`}>
@@ -110,7 +111,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
                       ) : null}
                       {record?.checkedAt ? (
                         <span className="student-calendar-time">
-                          {record.checkedAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                          {formatKoreaTime(record.checkedAt, { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       ) : null}
                     </>
@@ -279,11 +280,16 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
 }
 
 function parseMonthParam(value: string | undefined) {
-  if (!value || !/^\d{4}-\d{2}$/.test(value)) return new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+  if (!value || !/^\d{4}-\d{2}$/.test(value)) return getCurrentKoreaMonth()
   const [year, month] = value.split('-').map(Number)
   if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
-    return new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+    return getCurrentKoreaMonth()
   }
+  return new Date(year, month - 1, 1)
+}
+
+function getCurrentKoreaMonth() {
+  const { month, year } = getKoreaDateParts(new Date())
   return new Date(year, month - 1, 1)
 }
 
