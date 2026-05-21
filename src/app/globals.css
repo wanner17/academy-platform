@@ -33,6 +33,84 @@ body {
 
 a { color: inherit; text-decoration: none; }
 
+.error-page {
+  align-items: center;
+  background: var(--paper);
+  display: flex;
+  min-height: 100vh;
+  padding: 48px 20px;
+}
+
+.error-panel {
+  border-top: 3px solid var(--gold);
+  margin: 0 auto;
+  max-width: 620px;
+  width: 100%;
+}
+
+.error-code {
+  color: var(--gold);
+  font-family: Inter, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 18px;
+}
+
+.error-panel h1 {
+  color: var(--ink);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 42px;
+  line-height: 1.2;
+  margin: 24px 0 16px;
+}
+
+.error-panel p {
+  color: #6f625c;
+  font-size: 16px;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.error-digest {
+  color: var(--muted) !important;
+  font-family: Inter, sans-serif;
+  font-size: 13px !important;
+  margin-top: 14px !important;
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.error-primary,
+.error-secondary {
+  align-items: center;
+  appearance: none;
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+}
+
+.error-primary {
+  background: var(--ink);
+  color: #fff;
+}
+
+.error-secondary {
+  background: transparent;
+  color: var(--ink);
+}
+
 .admin-shell :is(a, button)[class*="bg-blue-"] {
   color: #fff !important;
   -webkit-text-fill-color: #fff;
@@ -1429,6 +1507,25 @@ a { color: inherit; text-decoration: none; }
   margin: 0;
 }
 
+.student-attendance-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.student-attendance-list li {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.student-attendance-schedule {
+  font-weight: 700;
+}
+
 .student-attendance-meta {
   color: var(--brown) !important;
   margin-top: 6px !important;
@@ -1913,11 +2010,20 @@ a { color: inherit; text-decoration: none; }
   border-radius: 20px;
   padding: 4px 10px;
   font-size: 11px;
+  line-height: 1.35;
   letter-spacing: 0.2px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.student-calendar-record {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 7px;
 }
 
 .student-calendar-status::before {
@@ -2506,5 +2612,3 @@ a { color: inherit; text-decoration: none; }
     transform: translateY(0);
   }
 }
-
-

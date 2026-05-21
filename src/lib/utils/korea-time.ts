@@ -47,5 +47,5 @@ export function toStoredKoreaDate(date: Date) {
 }
 
 export function getKoreaDayOfWeek(date: Date): number {
-  return toStoredKoreaDate(date).getUTCDay()
+  return (toStoredKoreaDate(date).getUTCDay() + 6) % 7
 }

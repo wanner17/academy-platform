@@ -32,6 +32,10 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
   const nextMonth = addMonths(selectedMonth, 1)
 
   const now = new Date()
+  await attendanceService.backfillAbsencesForMonth(academy.id, selectedMonth.getFullYear(), selectedMonth.getMonth(), {
+    now,
+    studentId: student.id,
+  })
   const [homeworks, progressLogs, testResults, attendanceSetting, todayAttendances, monthlyAttendance, todaySchedules] = await Promise.all([
     homeworkService.getVisibleHomeworksForPrograms(academy.id, programIds, student.id),
     progressService.getVisibleProgressLogsForPrograms(academy.id, programIds, student.id),
@@ -120,7 +124,10 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
                       <span className="student-calendar-date">{day.getDate()}</span>
                       {dayRecords.map((record) => (
                         <span key={record.id} className={`student-calendar-status status-${record.status.toLowerCase()}`}>
-                          {record.schedule?.title ? `${record.schedule.title.slice(0, 4)} ` : ''}{attendanceStatusLabels[record.status]}
+                          {record.schedule?.subject || record.schedule?.title
+                            ? `${record.schedule.subject ?? record.schedule.title} `
+                            : ''}
+                          {attendanceStatusLabels[record.status]}
                         </span>
                       ))}
                     </>

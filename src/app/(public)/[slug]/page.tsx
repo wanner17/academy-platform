@@ -10,6 +10,8 @@ import { StatCounters } from '@/components/public/stat-counters'
 import { CourseFinderQuiz } from '@/components/public/course-finder-quiz'
 import { TestimonialsSlider } from '@/components/public/testimonials-slider'
 import { parseStatCounters, parseTestimonials } from '@/lib/homepage-sections'
+import { getKoreaDayOfWeek, getKoreaMinutes } from '@/lib/utils/korea-time'
+import { dayLabels } from '@/lib/schedule-labels'
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -28,6 +30,7 @@ export default async function AcademyHomePage({ params }: PageProps) {
   ])
   const statCounters = parseStatCounters(academy.statCounters)
   const testimonials = parseTestimonials(academy.testimonials)
+  const upcomingSchedules = getUpcomingSchedules(schedules).slice(0, 4)
 
   return (
     <>
@@ -57,12 +60,12 @@ export default async function AcademyHomePage({ params }: PageProps) {
       </section>
 
       {/* Schedule Strip */}
-      {schedules.length > 0 && (
+      {upcomingSchedules.length > 0 && (
         <section className="pub-schedule-strip">
-          {schedules.slice(0, 4).map((schedule) => (
+          {upcomingSchedules.map((schedule) => (
             <div key={schedule.id} className="pub-schedule-item">
               <div className="pub-time">
-                {schedule.startTime} – {schedule.endTime}
+                {dayLabels[schedule.dayOfWeek]} {schedule.startTime} – {schedule.endTime}
               </div>
               <div className="pub-class-name">{schedule.title}</div>
             </div>
@@ -174,4 +177,35 @@ export default async function AcademyHomePage({ params }: PageProps) {
       </div>
     </>
   )
+}
+
+function getUpcomingSchedules<T extends { dayOfWeek: number; startTime: string }>(schedules: T[]) {
+  const now = new Date()
+  const today = getKoreaDayOfWeek(now)
+  const currentMinutes = getKoreaMinutes(now)
+
+  return [...schedules]
+    .map((schedule) => ({
+      schedule,
+      sortKey: getUpcomingSortKey(schedule.dayOfWeek, schedule.startTime, today, currentMinutes),
+    }))
+    .sort((a, b) => a.sortKey - b.sortKey)
+    .map(({ schedule }) => schedule)
+}
+
+function getUpcomingSortKey(dayOfWeek: number, startTime: string, today: number, currentMinutes: number) {
+  const startMinutes = parseTimeToMinutes(startTime)
+  const dayOffset = (dayOfWeek - today + 7) % 7
+
+  if (dayOffset === 0 && startMinutes < currentMinutes) {
+    return 7 * 24 * 60 + startMinutes
+  }
+
+  return dayOffset * 24 * 60 + startMinutes
+}
+
+function parseTimeToMinutes(value: string) {
+  const [hour, minute] = value.split(':').map(Number)
+  if (!Number.isInteger(hour) || !Number.isInteger(minute)) return 0
+  return hour * 60 + minute
 }

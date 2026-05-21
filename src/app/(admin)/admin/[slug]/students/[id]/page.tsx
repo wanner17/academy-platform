@@ -38,6 +38,7 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
   const student = await studentService.getStudentById(studentId, academy.id)
   const programIds = student.enrollments.map((e) => e.programId)
 
+  await attendanceService.backfillAbsencesForMonth(academy.id, year, monthIndex, { studentId })
   const [exams, monthlyAttendance, monthlyHomework, allTestResults] = await Promise.all([
     schoolExamService.getByStudent(academy.id, studentId),
     attendanceService.getStudentRecordsForMonth(academy.id, studentId, year, monthIndex),
@@ -53,7 +54,11 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
   })
 
   // Attendance calendar data
-  const attendanceByDate = new Map(monthlyAttendance.map((r) => [toKoreaDateKey(r.attendanceDate), r]))
+  const attendanceByDate = monthlyAttendance.reduce((map, record) => {
+    const key = toKoreaDateKey(record.attendanceDate)
+    map.set(key, [...(map.get(key) ?? []), record])
+    return map
+  }, new Map<string, typeof monthlyAttendance>())
   const calendarCells = getCalendarCells(selectedMonth)
   const present = monthlyAttendance.filter((r) => r.status === 'PRESENT').length
   const late = monthlyAttendance.filter((r) => r.status === 'LATE').length
@@ -165,7 +170,7 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
             <div className="student-calendar-weekday" key={day}>{day}</div>
           ))}
           {calendarCells.map((day, index) => {
-            const record = day ? attendanceByDate.get(toDateKey(day)) : null
+            const dayRecords = day ? (attendanceByDate.get(toDateKey(day)) ?? []) : []
             const isToday = day ? toDateKey(day) === toKoreaDateKey(new Date()) : false
             const cellClass = `student-calendar-day${day ? '' : ' is-empty'}${isToday ? ' is-today' : ''}`
             return (
@@ -173,16 +178,21 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
                 {day ? (
                   <>
                     <span className="student-calendar-date">{day.getDate()}</span>
-                    {record ? (
-                      <span className={`student-calendar-status status-${record.status.toLowerCase()}`}>
-                        {attendanceStatusLabels[record.status]}
+                    {dayRecords.map((record) => (
+                      <span className="student-calendar-record" key={record.id}>
+                        <span className={`student-calendar-status status-${record.status.toLowerCase()}`}>
+                          {record.schedule?.subject || record.schedule?.title
+                            ? `${record.schedule.subject ?? record.schedule.title} `
+                            : ''}
+                          {attendanceStatusLabels[record.status]}
+                        </span>
+                        {record.checkedAt ? (
+                          <span className="student-calendar-time">
+                            {formatKoreaTime(record.checkedAt, { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        ) : null}
                       </span>
-                    ) : null}
-                    {record?.checkedAt ? (
-                      <span className="student-calendar-time">
-                        {formatKoreaTime(record.checkedAt, { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    ) : null}
+                    ))}
                   </>
                 ) : null}
               </div>

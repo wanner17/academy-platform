@@ -40,6 +40,141 @@ export const attendanceService = {
     })
   },
 
+  async backfillAbsencesForDate(
+    academyId: string,
+    date: Date,
+    options: { now?: Date; studentId?: string } = {},
+  ) {
+    const now = options.now ?? new Date()
+    const attendanceDate = toAttendanceDate(date)
+    await this.deleteAutoAbsencesBeforeEnrollment(academyId, attendanceDate, options.studentId)
+    const today = toAttendanceDate(now)
+    const attendanceTime = attendanceDate.getTime()
+    const todayTime = today.getTime()
+
+    if (attendanceTime > todayTime) return 0
+
+    const dayOfWeek = getKoreaDayOfWeek(date)
+    const currentMinutes = attendanceTime === todayTime ? getKoreaMinutes(now) : null
+    const enrollments = await prisma.enrollment.findMany({
+      where: { academyId, status: 'ACTIVE', ...(options.studentId ? { studentId: options.studentId } : {}), student: { isActive: true } },
+      select: {
+        createdAt: true,
+        studentId: true,
+        program: {
+          select: {
+            schedules: {
+              where: { dayOfWeek, isActive: true },
+              select: { endTime: true, id: true },
+            },
+          },
+        },
+      },
+    })
+
+    const expectedPairs = enrollments.flatMap((enrollment) => (
+      enrollment.program.schedules
+        .filter(() => attendanceDate.getTime() >= toAttendanceDate(enrollment.createdAt).getTime())
+        .filter((schedule) => currentMinutes === null || isScheduleEnded(schedule.endTime, currentMinutes))
+        .map((schedule) => ({ scheduleId: schedule.id, studentId: enrollment.studentId }))
+    ))
+
+    if (expectedPairs.length === 0) return 0
+
+    const existingRecords = await prisma.attendanceRecord.findMany({
+      where: {
+        attendanceDate,
+        OR: expectedPairs.map(({ scheduleId, studentId }) => ({ scheduleId, studentId })),
+      },
+      select: { scheduleId: true, studentId: true },
+    })
+    const existingKeys = new Set(existingRecords.map((record) => `${record.studentId}:${record.scheduleId}`))
+    const missingRecords = expectedPairs.filter(({ scheduleId, studentId }) => !existingKeys.has(`${studentId}:${scheduleId}`))
+
+    if (missingRecords.length === 0) return 0
+
+    const result = await prisma.attendanceRecord.createMany({
+      data: missingRecords.map(({ scheduleId, studentId }) => ({
+        academyId,
+        attendanceDate,
+        memo: '자동 결석 처리',
+        scheduleId,
+        source: 'ADMIN_MANUAL',
+        status: 'ABSENT',
+        studentId,
+      })),
+      skipDuplicates: true,
+    })
+
+    return result.count
+  },
+
+  async deleteAutoAbsencesBeforeEnrollment(academyId: string, attendanceDate: Date, studentId?: string) {
+    const records = await prisma.attendanceRecord.findMany({
+      where: {
+        academyId,
+        attendanceDate,
+        memo: '자동 결석 처리',
+        status: 'ABSENT',
+        ...(studentId ? { studentId } : {}),
+        scheduleId: { not: null },
+      },
+      select: {
+        id: true,
+        schedule: { select: { programId: true } },
+        studentId: true,
+      },
+    })
+
+    if (records.length === 0) return 0
+
+    const enrollmentPairs = records
+      .filter((record) => record.schedule?.programId)
+      .map((record) => ({ programId: record.schedule!.programId!, studentId: record.studentId }))
+
+    if (enrollmentPairs.length === 0) return 0
+
+    const enrollments = await prisma.enrollment.findMany({
+      where: {
+        academyId,
+        OR: enrollmentPairs,
+      },
+      select: { createdAt: true, programId: true, studentId: true },
+    })
+    const enrollmentDates = new Map(
+      enrollments.map((enrollment) => [`${enrollment.studentId}:${enrollment.programId}`, toAttendanceDate(enrollment.createdAt).getTime()]),
+    )
+    const deleteIds = records
+      .filter((record) => {
+        const programId = record.schedule?.programId
+        if (!programId) return false
+        const enrolledAt = enrollmentDates.get(`${record.studentId}:${programId}`)
+        return enrolledAt !== undefined && attendanceDate.getTime() < enrolledAt
+      })
+      .map((record) => record.id)
+
+    if (deleteIds.length === 0) return 0
+
+    const result = await prisma.attendanceRecord.deleteMany({ where: { id: { in: deleteIds } } })
+    return result.count
+  },
+
+  async backfillAbsencesForMonth(
+    academyId: string,
+    year: number,
+    monthIndex: number,
+    options: { now?: Date; studentId?: string } = {},
+  ) {
+    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+    let created = 0
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      created += await this.backfillAbsencesForDate(academyId, new Date(year, monthIndex, day), options)
+    }
+
+    return created
+  },
+
   getRecordsByDate(academyId: string, date: Date) {
     const attendanceDate = toAttendanceDate(date)
     return prisma.attendanceRecord.findMany({
@@ -104,7 +239,18 @@ export const attendanceService = {
     const distanceMeters = getDistanceMeters(setting.latitude, setting.longitude, input.latitude, input.longitude)
     if (distanceMeters > setting.radiusMeters) throw new Error('Outside attendance radius')
 
-    const schedule = await prisma.schedule.findFirst({ where: { id: scheduleId, academyId, isActive: true } })
+    const schedule = await prisma.schedule.findFirst({
+      where: {
+        academyId,
+        id: scheduleId,
+        isActive: true,
+        program: {
+          enrollments: {
+            some: { academyId, studentId, status: 'ACTIVE' },
+          },
+        },
+      },
+    })
     if (!schedule) throw new Error('수업을 찾을 수 없습니다')
 
     const now = new Date()
@@ -154,6 +300,21 @@ export const attendanceService = {
     const scheduleId = input.scheduleId ?? null
     const now = new Date()
     const checkedAt = input.status === 'PRESENT' || input.status === 'LATE' ? now : null
+
+    if (scheduleId) {
+      const schedule = await prisma.schedule.findFirst({
+        where: {
+          academyId,
+          id: scheduleId,
+          program: {
+            enrollments: {
+              some: { academyId, studentId: input.studentId, status: 'ACTIVE' },
+            },
+          },
+        },
+      })
+      if (!schedule) throw new Error('학생에게 배정된 수업이 아닙니다')
+    }
 
     const existing = await prisma.attendanceRecord.findFirst({
       where: { studentId: input.studentId, scheduleId, attendanceDate },
@@ -224,6 +385,11 @@ function isLate(startTime: string, now: Date): boolean {
   return nowMinutes > start + LATE_GRACE_MINUTES
 }
 
+function isScheduleEnded(endTime: string, currentMinutes: number) {
+  const end = parseTime(endTime)
+  if (end === null) return false
+  return currentMinutes > end
+}
 
 function parseTime(value: string) {
   const [hour, minute] = value.split(':').map(Number)

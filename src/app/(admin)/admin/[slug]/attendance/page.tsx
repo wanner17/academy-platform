@@ -5,7 +5,7 @@ import { requireMemberPage } from '@/lib/auth/server'
 import { attendanceService, toDateInputValue } from '@/lib/services/attendance.service'
 import { scheduleService } from '@/lib/services/schedule.service'
 import { studentService } from '@/lib/services/student.service'
-import { formatKoreaTime } from '@/lib/utils/korea-time'
+import { formatKoreaTime, getKoreaDayOfWeek } from '@/lib/utils/korea-time'
 import { markAttendanceAction, updateAttendanceSettingAction } from './actions'
 
 type AdminAttendancePageProps = {
@@ -19,9 +19,11 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
   const { academy } = await requireMemberPage(slug)
   const selectedDate = filters.date ? new Date(`${filters.date}T00:00:00`) : new Date()
   const dateValue = toDateInputValue(selectedDate)
+  const selectedDayOfWeek = getKoreaDayOfWeek(selectedDate)
   const query = filters.q?.trim().toLowerCase() || ''
   const selectedStatus = filters.status ?? ''
 
+  await attendanceService.backfillAbsencesForDate(academy.id, selectedDate)
   const [setting, records, students, schedules] = await Promise.all([
     attendanceService.getSetting(academy.id),
     attendanceService.getRecordsByDate(academy.id, selectedDate),
@@ -30,14 +32,39 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
   ])
 
   const activeStudents = students.filter((student) => student.isActive)
-  const studentIdsWithRecords = new Set(records.map((r) => r.studentId))
+  const recordsByStudentSchedule = new Map(
+    records
+      .filter((record) => record.scheduleId)
+      .map((record) => [`${record.studentId}:${record.scheduleId}`, record] as const),
+  )
 
-  const rows = [
-    ...records.map((record) => ({ student: record.student, record })),
-    ...activeStudents
-      .filter((s) => !studentIdsWithRecords.has(s.id))
-      .map((student) => ({ student, record: undefined as typeof records[number] | undefined })),
-  ].filter(({ student, record }) => {
+  const expectedRows = activeStudents.flatMap((student) => {
+    const activeProgramIds = new Set(
+      student.enrollments
+        .filter((enrollment) => enrollment.status === 'ACTIVE')
+        .map((enrollment) => enrollment.programId),
+    )
+
+    return schedules
+      .filter((schedule) => (
+        schedule.isActive &&
+        schedule.programId &&
+        schedule.dayOfWeek === selectedDayOfWeek &&
+        activeProgramIds.has(schedule.programId)
+      ))
+      .map((schedule) => ({
+        record: recordsByStudentSchedule.get(`${student.id}:${schedule.id}`),
+        schedule,
+        student,
+      }))
+  })
+
+  const expectedKeys = new Set(expectedRows.map(({ schedule, student }) => `${student.id}:${schedule.id}`))
+  const extraRecordRows = records
+    .filter((record) => !record.scheduleId || !expectedKeys.has(`${record.studentId}:${record.scheduleId}`))
+    .map((record) => ({ record, schedule: record.schedule, student: record.student }))
+
+  const rows = [...expectedRows, ...extraRecordRows].filter(({ student, record }) => {
     const matchesQuery = query
       ? [student.name, student.schoolName ?? '', student.grade ?? '', student.user?.email ?? ''].some((v) =>
           v.toLowerCase().includes(query),
@@ -157,36 +184,32 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
             </tr>
           </thead>
           <tbody className="divide-y">
-            {rows.map(({ student, record }, idx) => (
-              <tr key={record?.id ?? `no-record-${student.id}-${idx}`}>
+            {rows.map(({ student, record, schedule }, idx) => (
+              <tr key={record?.id ?? `no-record-${student.id}-${schedule?.id ?? idx}`}>
                 <td className="px-4 py-3 font-medium">{student.name}</td>
                 <td className="px-4 py-3">{[student.schoolName, student.grade].filter(Boolean).join(' ') || '-'}</td>
-                <td className="px-4 py-3 text-slate-600">{record?.schedule ? `${record.schedule.title} (${record.schedule.startTime})` : '-'}</td>
+                <td className="px-4 py-3 text-slate-600">{schedule ? `${schedule.title} (${schedule.startTime})` : '-'}</td>
                 <td className="px-4 py-3">{record ? attendanceStatusLabels[record.status] : '미처리'}</td>
                 <td className="px-4 py-3">{record?.checkedAt ? formatKoreaTime(record.checkedAt) : '-'}</td>
                 <td className="px-4 py-3">{record?.distanceMeters !== null && record?.distanceMeters !== undefined ? `${Math.round(record.distanceMeters)}m` : '-'}</td>
                 <td className="px-4 py-3">{record ? attendanceSourceLabels[record.source] : '-'}</td>
                 <td className="px-4 py-3">{record?.memo ?? '-'}</td>
                 <td className="px-4 py-3">
-                  {record ? (
-                    <form action={markAttendanceAction} className="flex justify-end gap-2">
-                      <input name="slug" type="hidden" value={slug} />
-                      <input name="date" type="hidden" value={dateValue} />
-                      <input name="studentId" type="hidden" value={student.id} />
-                      <input name="scheduleId" type="hidden" value={record.scheduleId ?? ''} />
-                      <select className="rounded border px-2 py-1 text-sm" defaultValue={record.status} name="status">
-                        {Object.entries(attendanceStatusLabels).map(([value, label]) => (
-                          <option key={value} value={value}>{label}</option>
-                        ))}
-                      </select>
-                      <input className="w-32 rounded border px-2 py-1 text-sm" defaultValue={record.memo ?? ''} name="memo" placeholder="메모" />
-                      <ConfirmSubmitButton className="rounded border px-3 py-1 text-sm" message="출석 상태를 변경할까요?">
-                        저장
-                      </ConfirmSubmitButton>
-                    </form>
-                  ) : (
-                    <span className="block text-right text-sm text-slate-400">위 폼으로 처리</span>
-                  )}
+                  <form action={markAttendanceAction} className="flex justify-end gap-2">
+                    <input name="slug" type="hidden" value={slug} />
+                    <input name="date" type="hidden" value={dateValue} />
+                    <input name="studentId" type="hidden" value={student.id} />
+                    <input name="scheduleId" type="hidden" value={schedule?.id ?? ''} />
+                    <select className="rounded border px-2 py-1 text-sm" defaultValue={record?.status ?? 'PRESENT'} name="status">
+                      {Object.entries(attendanceStatusLabels).map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
+                    </select>
+                    <input className="w-32 rounded border px-2 py-1 text-sm" defaultValue={record?.memo ?? ''} name="memo" placeholder="메모" />
+                    <ConfirmSubmitButton className="rounded border px-3 py-1 text-sm" message="출석 상태를 저장할까요?">
+                      저장
+                    </ConfirmSubmitButton>
+                  </form>
                 </td>
               </tr>
             ))}
