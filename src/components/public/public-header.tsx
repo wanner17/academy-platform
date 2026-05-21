@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 
 type PublicHeaderProps = {
   academyName: string
@@ -29,6 +30,7 @@ export function PublicHeader({
 }: PublicHeaderProps) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,6 +56,11 @@ export function PublicHeader({
 
   const close = () => setOpen(false)
 
+  const isActive = (href: string) => {
+    if (href === homeHref) return pathname === href
+    return pathname.startsWith(href)
+  }
+
   return (
     <header className={`pub-header${scrolled ? ' pub-header--scrolled' : ''}`}>
       <a className="pub-logo" href={homeHref}>
@@ -61,11 +68,11 @@ export function PublicHeader({
       </a>
 
       <nav className="pub-nav">
-        <a href={programsHref}>수업 안내</a>
-        <a href={teachersHref}>강사진</a>
-        <a href={scheduleHref}>시간표</a>
-        <a href={noticesHref}>공지사항</a>
-        <a href={authHref}>{authLabel}</a>
+        <a className={isActive(programsHref) ? 'active' : ''} href={programsHref}>수업 안내</a>
+        <a className={isActive(teachersHref) ? 'active' : ''} href={teachersHref}>강사진</a>
+        <a className={isActive(scheduleHref) ? 'active' : ''} href={scheduleHref}>시간표</a>
+        <a className={isActive(noticesHref) ? 'active' : ''} href={noticesHref}>공지사항</a>
+        <a className={isActive(authHref) ? 'active' : ''} href={authHref}>{authLabel}</a>
       </nav>
 
       <a className="pub-cta" href={contactHref}>상담 문의</a>
@@ -80,11 +87,17 @@ export function PublicHeader({
 
       <div className={`pub-mobile-overlay${open ? ' pub-mobile-overlay--open' : ''}`} onClick={close}>
         <nav className="pub-mobile-nav" onClick={e => e.stopPropagation()}>
-          <a href={programsHref} onClick={close}>수업 안내</a>
-          <a href={teachersHref} onClick={close}>강사진</a>
-          <a href={scheduleHref} onClick={close}>시간표</a>
-          <a href={noticesHref} onClick={close}>공지사항</a>
-          <a href={authHref} onClick={close}>{authLabel}</a>
+          <button className="pub-mobile-close" onClick={close} aria-label="닫기">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          <a className={isActive(programsHref) ? 'active' : ''} href={programsHref} onClick={close}>수업 안내</a>
+          <a className={isActive(teachersHref) ? 'active' : ''} href={teachersHref} onClick={close}>강사진</a>
+          <a className={isActive(scheduleHref) ? 'active' : ''} href={scheduleHref} onClick={close}>시간표</a>
+          <a className={isActive(noticesHref) ? 'active' : ''} href={noticesHref} onClick={close}>공지사항</a>
+          <a className={isActive(authHref) ? 'active' : ''} href={authHref} onClick={close}>{authLabel}</a>
           <a className="pub-mobile-cta" href={contactHref} onClick={close}>상담 문의</a>
         </nav>
       </div>
