@@ -129,7 +129,9 @@ export async function createHomeworkAction(formData: FormData) {
     studentId,
     title: String(formData.get('title') ?? ''),
     content: String(formData.get('content') ?? ''),
+    startDate: formData.get('startDate') ? new Date(String(formData.get('startDate'))) : undefined,
     dueDate: formData.get('dueDate') ? new Date(String(formData.get('dueDate'))) : undefined,
+    isCompleted: formData.get('isCompleted') === 'true',
     isVisible: formData.get('isVisible') !== 'false',
   })
 
@@ -150,7 +152,9 @@ export async function updateHomeworkAction(formData: FormData) {
     studentId,
     title: String(formData.get('title') ?? ''),
     content: String(formData.get('content') ?? ''),
+    startDate: formData.get('startDate') ? new Date(String(formData.get('startDate'))) : undefined,
     dueDate: formData.get('dueDate') ? new Date(String(formData.get('dueDate'))) : undefined,
+    isCompleted: formData.get('isCompleted') === 'true',
     isVisible: formData.get('isVisible') !== 'false',
   })
 

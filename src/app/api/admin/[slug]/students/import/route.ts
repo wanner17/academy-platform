@@ -44,15 +44,12 @@ export async function POST(request: Request, { params }: RouteProps) {
       if (password.length < 8) throw new Error('비밀번호는 8자 이상이어야 합니다')
 
       const existing = await prisma.user.findFirst({ where: { academyId: academy.id, email } })
-      if (existing) {
-        if (existing.role !== 'STUDENT') throw new Error('다른 계정에서 사용 중인 이메일입니다')
-        userId = existing.id
-      } else {
-        const user = await prisma.user.create({
-          data: { academyId: academy.id, email, name, passwordHash: await bcrypt.hash(password, 12), role: 'STUDENT' },
-        })
-        userId = user.id
-      }
+      if (existing) throw new Error('이미 사용 중인 이메일입니다')
+
+      const user = await prisma.user.create({
+        data: { academyId: academy.id, email, name, passwordHash: await bcrypt.hash(password, 12), role: 'STUDENT' },
+      })
+      userId = user.id
 
       await studentService.createStudent(academy.id, {
         name,

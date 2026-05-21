@@ -4,8 +4,10 @@ export type CreateHomeworkInput = {
   authorId: string
   content: string
   dueDate?: Date
+  isCompleted?: boolean
   isVisible?: boolean
   programId: string
+  startDate?: Date
   studentId?: string
   title: string
 }
@@ -31,6 +33,20 @@ export const homeworkRepository = {
       },
       include: { program: true, student: true },
       orderBy: [{ dueDate: 'desc' }, { createdAt: 'desc' }],
+    })
+  },
+
+  findForStudentInMonth(academyId: string, studentId: string, programIds: string[], year: number, monthIndex: number) {
+    const start = new Date(Date.UTC(year, monthIndex, 1))
+    const end = new Date(Date.UTC(year, monthIndex + 1, 1))
+    return prisma.homework.findMany({
+      where: {
+        academyId,
+        OR: [{ studentId }, { studentId: null, programId: { in: programIds } }],
+        dueDate: { gte: start, lt: end },
+      },
+      include: { program: true, student: true },
+      orderBy: { dueDate: 'asc' },
     })
   },
 

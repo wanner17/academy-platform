@@ -5,10 +5,16 @@ import { homeworkService } from '@/lib/services/homework.service'
 import { programService } from '@/lib/services/program.service'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
+import { getKoreaDateParts } from '@/lib/utils/korea-time'
 import { createHomeworkAction, deleteHomeworkAction } from '../actions'
 
 type ProgramHomeworksPageProps = {
   params: Promise<{ slug: string; id: string }>
+}
+
+function getTodayStr() {
+  const { day, month, year } = getKoreaDateParts(new Date())
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
 export default async function ProgramHomeworksPage({ params }: ProgramHomeworksPageProps) {
@@ -17,6 +23,7 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
   const program = await programService.getProgramById(id, academy.id)
   if (!isAcademyAdminRole(user.role) && program.teacher?.userId !== user.id) redirect(`/admin/${slug}/my`)
 
+  const today = getTodayStr()
   const [homeworks, students] = await Promise.all([
     homeworkService.getProgramHomeworks(academy.id, program.id),
     studentService.getAdminStudents(academy.id),
@@ -40,6 +47,10 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">{hw.title}</span>
                     <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{hw.student?.name ?? '전체'}</span>
+                    {hw.isCompleted
+                      ? <span className="rounded bg-green-50 px-2 py-0.5 text-xs text-green-700">완료</span>
+                      : <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">미완료</span>}
+                    {hw.startDate ? <span className="rounded bg-violet-50 px-2 py-0.5 text-xs text-violet-700">시작 {hw.startDate.toLocaleDateString('ko-KR')}</span> : null}
                     {hw.dueDate ? <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">마감 {hw.dueDate.toLocaleDateString('ko-KR')}</span> : null}
                     {!hw.isVisible ? <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">비공개</span> : null}
                   </div>
@@ -90,8 +101,16 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
             <textarea className="min-h-24 w-full rounded border px-3 py-2 text-sm" name="content" required />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">마감일 (선택)</span>
-            <input className="w-full rounded border px-3 py-2 text-sm" name="dueDate" type="date" />
+            <span className="mb-1 block text-sm font-medium">시작일</span>
+            <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={today} name="startDate" required type="date" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">마감일</span>
+            <input className="w-full rounded border px-3 py-2 text-sm" name="dueDate" required type="date" />
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input name="isCompleted" type="checkbox" value="true" />
+            숙제 완료
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input defaultChecked name="isVisible" type="checkbox" value="true" />

@@ -14,6 +14,11 @@ export const homeworkService = {
     return homeworkRepository.findVisibleByPrograms(academyId, programIds, studentId)
   },
 
+  getStudentHomeworksForMonth(academyId: string, studentId: string, programIds: string[], year: number, monthIndex: number) {
+    if (programIds.length === 0) return Promise.resolve([])
+    return homeworkRepository.findForStudentInMonth(academyId, studentId, programIds, year, monthIndex)
+  },
+
   async getHomeworkById(id: string, academyId: string) {
     const homework = await homeworkRepository.findById(id, academyId)
     if (!homework) throw new Error('Homework not found')

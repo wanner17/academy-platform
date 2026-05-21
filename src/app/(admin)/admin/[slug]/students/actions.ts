@@ -14,9 +14,18 @@ export async function createStudentAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
   const session = await getServerSession(authConfig)
   const { academy } = await requireAcademyMember(session, slug)
-  const studentUserId = await createStudentUserIfRequested(academy.id, formData)
 
-  await studentService.createStudent(academy.id, readStudentForm(formData, studentUserId))
+  let errorMessage: string | null = null
+  try {
+    const studentUserId = await createStudentUserIfRequested(academy.id, formData)
+    await studentService.createStudent(academy.id, readStudentForm(formData, studentUserId))
+  } catch (err) {
+    errorMessage = err instanceof Error ? err.message : '오류가 발생했습니다'
+  }
+
+  if (errorMessage) {
+    redirect(`/admin/${slug}/students/new?error=${encodeURIComponent(errorMessage)}`)
+  }
 
   revalidateStudentPaths(slug)
   redirect(`/admin/${slug}/students`)
@@ -31,6 +40,28 @@ export async function updateStudentAction(formData: FormData) {
   const studentUserId = student.userId ?? (await createStudentUserIfRequested(academy.id, formData))
 
   await studentService.updateStudent(id, academy.id, readStudentForm(formData, studentUserId))
+
+  revalidateStudentPaths(slug)
+  redirect(`/admin/${slug}/students`)
+}
+
+export async function withdrawStudentAction(formData: FormData) {
+  const slug = String(formData.get('slug') ?? '')
+  const id = String(formData.get('id') ?? '')
+  const session = await getServerSession(authConfig)
+  const { academy } = await requireAcademyMember(session, slug)
+  await studentService.withdrawStudent(id, academy.id)
+
+  revalidateStudentPaths(slug)
+  redirect(`/admin/${slug}/students`)
+}
+
+export async function restoreStudentAction(formData: FormData) {
+  const slug = String(formData.get('slug') ?? '')
+  const id = String(formData.get('id') ?? '')
+  const session = await getServerSession(authConfig)
+  const { academy } = await requireAcademyMember(session, slug)
+  await studentService.restoreStudent(id, academy.id)
 
   revalidateStudentPaths(slug)
   redirect(`/admin/${slug}/students`)
@@ -109,10 +140,7 @@ async function createStudentUserIfRequested(academyId: string, formData: FormDat
   if (password.length < 8) throw new Error('Student password must be at least 8 characters')
 
   const existing = await prisma.user.findFirst({ where: { academyId, email } })
-  if (existing) {
-    if (existing.role !== 'STUDENT') throw new Error('This email is already used by another account')
-    return existing.id
-  }
+  if (existing) throw new Error('이미 사용 중인 이메일입니다')
 
   const user = await prisma.user.create({
     data: {

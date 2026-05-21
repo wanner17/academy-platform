@@ -54,6 +54,20 @@ export const studentRepository = {
     return prisma.student.updateMany({ where: { id, academyId }, data })
   },
 
+  withdraw(id: string, academyId: string) {
+    return prisma.student.updateMany({
+      where: { id, academyId },
+      data: { isActive: false, withdrawnAt: new Date() },
+    })
+  },
+
+  restore(id: string, academyId: string) {
+    return prisma.student.updateMany({
+      where: { id, academyId },
+      data: { isActive: true, withdrawnAt: null },
+    })
+  },
+
   delete(id: string, academyId: string) {
     return prisma.student.deleteMany({ where: { id, academyId } })
   },

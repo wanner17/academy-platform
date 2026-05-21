@@ -3,11 +3,11 @@ import { StudentExcelImport } from '@/components/admin/student-excel-import'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
-import { deleteStudentAction } from './actions'
+import { deleteStudentAction, restoreStudentAction, withdrawStudentAction } from './actions'
 
 type AdminStudentsPageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ active?: string; grade?: string; programId?: string; q?: string; schoolName?: string }>
+  searchParams: Promise<{ grade?: string; programId?: string; q?: string; schoolName?: string; status?: string }>
 }
 
 export default async function AdminStudentsPage({ params, searchParams }: AdminStudentsPageProps) {
@@ -20,18 +20,20 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
   const selectedSchool = filters.schoolName?.trim() || ''
   const selectedGrade = filters.grade?.trim() || ''
   const selectedProgramId = filters.programId?.trim() || ''
-  const selectedActive = filters.active === 'true' ? true : filters.active === 'false' ? false : undefined
-  const schools = Array.from(new Set(allStudents.map((student) => student.schoolName).filter(isString))).sort((a, b) =>
+  const selectedStatus = filters.status?.trim() || ''
+
+  const schools = Array.from(new Set(allStudents.map((s) => s.schoolName).filter(isString))).sort((a, b) =>
     a.localeCompare(b, 'ko-KR'),
   )
-  const grades = Array.from(new Set(allStudents.map((student) => student.grade).filter(isString))).sort((a, b) =>
+  const grades = Array.from(new Set(allStudents.map((s) => s.grade).filter(isString))).sort((a, b) =>
     a.localeCompare(b, 'ko-KR'),
   )
   const programs = Array.from(
     new Map(
-      allStudents.flatMap((student) => student.enrollments.map((enrollment) => [enrollment.programId, enrollment.program])),
+      allStudents.flatMap((s) => s.enrollments.map((e) => [e.programId, e.program])),
     ).values(),
   ).sort((a, b) => a.title.localeCompare(b.title, 'ko-KR'))
+
   const students = allStudents.filter((student) => {
     const matchesQuery = query
       ? [
@@ -41,15 +43,19 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
           student.phone ?? '',
           student.parentPhone ?? '',
           student.user?.email ?? '',
-        ].some((value) => value.toLowerCase().includes(query))
+        ].some((v) => v.toLowerCase().includes(query))
       : true
     const matchesSchool = selectedSchool ? student.schoolName === selectedSchool : true
     const matchesGrade = selectedGrade ? student.grade === selectedGrade : true
     const matchesProgram = selectedProgramId
-      ? student.enrollments.some((enrollment) => enrollment.programId === selectedProgramId)
+      ? student.enrollments.some((e) => e.programId === selectedProgramId)
       : true
-    const matchesActive = selectedActive === undefined ? true : student.isActive === selectedActive
-    return matchesQuery && matchesSchool && matchesGrade && matchesProgram && matchesActive
+    const matchesStatus =
+      selectedStatus === 'active' ? student.isActive && !student.withdrawnAt :
+      selectedStatus === 'inactive' ? !student.isActive && !student.withdrawnAt :
+      selectedStatus === 'withdrawn' ? Boolean(student.withdrawnAt) :
+      true
+    return matchesQuery && matchesSchool && matchesGrade && matchesProgram && matchesStatus
   })
 
   return (
@@ -66,6 +72,7 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
           </a>
         </div>
       </div>
+
       <section className="mb-6 rounded-lg border bg-white p-4">
         <form className="grid gap-3 md:grid-cols-4" method="get">
           <label className="block md:col-span-2">
@@ -76,41 +83,30 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
             <span className="mb-1 block text-sm font-medium">학교</span>
             <select className="w-full rounded border px-3 py-2" defaultValue={selectedSchool} name="schoolName">
               <option value="">전체</option>
-              {schools.map((school) => (
-                <option key={school} value={school}>
-                  {school}
-                </option>
-              ))}
+              {schools.map((school) => <option key={school} value={school}>{school}</option>)}
             </select>
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">학년</span>
             <select className="w-full rounded border px-3 py-2" defaultValue={selectedGrade} name="grade">
               <option value="">전체</option>
-              {grades.map((grade) => (
-                <option key={grade} value={grade}>
-                  {grade}
-                </option>
-              ))}
+              {grades.map((grade) => <option key={grade} value={grade}>{grade}</option>)}
             </select>
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">수강 수업</span>
             <select className="w-full rounded border px-3 py-2" defaultValue={selectedProgramId} name="programId">
               <option value="">전체</option>
-              {programs.map((program) => (
-                <option key={program.id} value={program.id}>
-                  {program.title}
-                </option>
-              ))}
+              {programs.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
             </select>
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">상태</span>
-            <select className="w-full rounded border px-3 py-2" defaultValue={filters.active ?? ''} name="active">
+            <select className="w-full rounded border px-3 py-2" defaultValue={selectedStatus} name="status">
               <option value="">전체</option>
-              <option value="true">활성</option>
-              <option value="false">비활성</option>
+              <option value="active">활성</option>
+              <option value="inactive">비활성</option>
+              <option value="withdrawn">탈퇴</option>
             </select>
           </label>
           <div className="flex items-end gap-2">
@@ -124,8 +120,9 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
         </form>
         <p className="mt-3 text-sm text-slate-500">총 {students.length}명</p>
       </section>
+
       <div className="overflow-x-auto rounded-lg border bg-white">
-        <table className="w-full min-w-[920px] text-left text-sm">
+        <table className="w-full min-w-[960px] text-left text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
               <th className="px-4 py-3 font-medium">이름</th>
@@ -139,7 +136,7 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
           </thead>
           <tbody className="divide-y">
             {students.map((student) => (
-              <tr key={student.id}>
+              <tr key={student.id} className={student.withdrawnAt ? 'bg-slate-50 text-slate-400' : ''}>
                 <td className="px-4 py-3 font-medium">
                   <a className="hover:text-blue-700 hover:underline" href={`/admin/${slug}/students/${student.id}`}>
                     {student.name}
@@ -150,7 +147,12 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
                 <td className="px-4 py-3">{student.user?.email ?? '-'}</td>
                 <td className="px-4 py-3">{student.enrollments.length}개</td>
                 <td className="px-4 py-3">
-                  {student.isActive ? (
+                  {student.withdrawnAt ? (
+                    <div>
+                      <span className="rounded bg-red-50 px-2 py-1 text-xs text-red-600">탈퇴</span>
+                      <div className="mt-0.5 text-xs text-slate-400">{student.withdrawnAt.toLocaleDateString('ko-KR')}</div>
+                    </div>
+                  ) : student.isActive ? (
                     <span className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700">활성</span>
                   ) : (
                     <span className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-500">비활성</span>
@@ -158,16 +160,37 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
-                    <a className="rounded border px-3 py-1" href={`/admin/${slug}/students/${student.id}`}>
-                      상세
-                    </a>
-                    <a className="rounded border px-3 py-1" href={`/admin/${slug}/students/${student.id}/edit`}>
-                      수정
-                    </a>
+                    <a className="rounded border px-3 py-1" href={`/admin/${slug}/students/${student.id}`}>상세</a>
+                    {!student.withdrawnAt && (
+                      <a className="rounded border px-3 py-1" href={`/admin/${slug}/students/${student.id}/edit`}>수정</a>
+                    )}
+                    {student.withdrawnAt ? (
+                      <form action={restoreStudentAction}>
+                        <input type="hidden" name="slug" value={slug} />
+                        <input type="hidden" name="id" value={student.id} />
+                        <ConfirmSubmitButton
+                          className="rounded border border-green-200 px-3 py-1 text-green-700"
+                          message={`${student.name} 학생을 복귀시킬까요?`}
+                        >
+                          복귀
+                        </ConfirmSubmitButton>
+                      </form>
+                    ) : (
+                      <form action={withdrawStudentAction}>
+                        <input type="hidden" name="slug" value={slug} />
+                        <input type="hidden" name="id" value={student.id} />
+                        <ConfirmSubmitButton
+                          className="rounded border border-orange-200 px-3 py-1 text-orange-700"
+                          message={`${student.name} 학생을 탈퇴 처리할까요? 이력은 보존됩니다.`}
+                        >
+                          탈퇴
+                        </ConfirmSubmitButton>
+                      </form>
+                    )}
                     <form action={deleteStudentAction}>
                       <input type="hidden" name="slug" value={slug} />
                       <input type="hidden" name="id" value={student.id} />
-                      <ConfirmSubmitButton className="rounded border px-3 py-1 text-red-700" message="이 학생을 삭제할까요?">
+                      <ConfirmSubmitButton className="rounded border px-3 py-1 text-red-700" message="이 학생을 완전히 삭제할까요? 복구할 수 없습니다.">
                         삭제
                       </ConfirmSubmitButton>
                     </form>

@@ -34,6 +34,16 @@ export const studentService = {
     return studentRepository.update(id, academyId, normalizeStudentInput(data))
   },
 
+  async withdrawStudent(id: string, academyId: string) {
+    await this.getStudentById(id, academyId)
+    return studentRepository.withdraw(id, academyId)
+  },
+
+  async restoreStudent(id: string, academyId: string) {
+    await this.getStudentById(id, academyId)
+    return studentRepository.restore(id, academyId)
+  },
+
   async deleteStudent(id: string, academyId: string) {
     await this.getStudentById(id, academyId)
     return studentRepository.delete(id, academyId)

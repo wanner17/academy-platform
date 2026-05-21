@@ -258,10 +258,12 @@ model Homework {
   programId String
   studentId String?
   authorId  String
-  title     String
-  content   String    @db.Text
-  dueDate   DateTime?
-  isVisible Boolean   @default(true)
+  title       String
+  content     String    @db.Text
+  startDate   DateTime?
+  dueDate     DateTime?
+  isCompleted Boolean   @default(false)
+  isVisible   Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   program   Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
@@ -344,6 +346,7 @@ model Student {
   parentPhone String?
   memo        String?      @db.Text
   isActive    Boolean      @default(true)
+  withdrawnAt DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   academy     Academy      @relation(fields: [academyId], references: [id])
