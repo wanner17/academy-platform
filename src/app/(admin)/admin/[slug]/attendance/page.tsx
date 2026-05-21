@@ -3,6 +3,7 @@ import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
 import { attendanceSourceLabels, attendanceStatusLabels } from '@/lib/attendance-labels'
 import { requireMemberPage } from '@/lib/auth/server'
 import { attendanceService, toDateInputValue } from '@/lib/services/attendance.service'
+import { scheduleService } from '@/lib/services/schedule.service'
 import { studentService } from '@/lib/services/student.service'
 import { formatKoreaTime } from '@/lib/utils/korea-time'
 import { markAttendanceAction, updateAttendanceSettingAction } from './actions'
@@ -20,24 +21,31 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
   const dateValue = toDateInputValue(selectedDate)
   const query = filters.q?.trim().toLowerCase() || ''
   const selectedStatus = filters.status ?? ''
-  const [setting, records, students] = await Promise.all([
+
+  const [setting, records, students, schedules] = await Promise.all([
     attendanceService.getSetting(academy.id),
     attendanceService.getRecordsByDate(academy.id, selectedDate),
     studentService.getAdminStudents(academy.id),
+    scheduleService.getAdminSchedules(academy.id),
   ])
-  const recordByStudentId = new Map(records.map((record) => [record.studentId, record]))
+
   const activeStudents = students.filter((student) => student.isActive)
-  const rows = activeStudents
-    .map((student) => ({ student, record: recordByStudentId.get(student.id) }))
-    .filter(({ student, record }) => {
-      const matchesQuery = query
-        ? [student.name, student.schoolName ?? '', student.grade ?? '', student.user?.email ?? ''].some((value) =>
-            value.toLowerCase().includes(query),
-          )
-        : true
-      const matchesStatus = selectedStatus ? record?.status === selectedStatus : true
-      return matchesQuery && matchesStatus
-    })
+  const studentIdsWithRecords = new Set(records.map((r) => r.studentId))
+
+  const rows = [
+    ...records.map((record) => ({ student: record.student, record })),
+    ...activeStudents
+      .filter((s) => !studentIdsWithRecords.has(s.id))
+      .map((student) => ({ student, record: undefined as typeof records[number] | undefined })),
+  ].filter(({ student, record }) => {
+    const matchesQuery = query
+      ? [student.name, student.schoolName ?? '', student.grade ?? '', student.user?.email ?? ''].some((v) =>
+          v.toLowerCase().includes(query),
+        )
+      : true
+    const matchesStatus = selectedStatus ? record?.status === selectedStatus : true
+    return matchesQuery && matchesStatus
+  })
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -48,39 +56,29 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
 
       <section className="mb-6 grid gap-6 lg:grid-cols-[360px_1fr]">
         <form action={updateAttendanceSettingAction} className="rounded-lg border bg-white p-5">
-            <input name="slug" type="hidden" value={slug} />
-            <h2 className="mb-4 font-semibold">위치 출석 설정</h2>
-            <div className="space-y-4">
-              <label className="flex items-center gap-2 text-sm">
-                <input defaultChecked={setting?.isEnabled ?? false} name="isEnabled" type="checkbox" value="true" />
-                학생 위치 출석 사용
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium">학원 위도</span>
-                <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.latitude ?? ''} name="latitude" placeholder="37.5665" />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium">학원 경도</span>
-                <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.longitude ?? ''} name="longitude" placeholder="126.9780" />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium">허용 반경(m)</span>
-                <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.radiusMeters ?? 100} max={2000} min={10} name="radiusMeters" type="number" />
-              </label>
-              <div className="grid gap-3 md:grid-cols-2">
-                <label className="block">
-                  <span className="mb-1 block text-sm font-medium">시작 시간</span>
-                  <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.startTime ?? ''} name="startTime" type="time" />
-                </label>
-                <label className="block">
-                  <span className="mb-1 block text-sm font-medium">종료 시간</span>
-                  <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.endTime ?? ''} name="endTime" type="time" />
-                </label>
-              </div>
-              <ConfirmSubmitButton className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white" message="출석 설정을 저장할까요?">
-                설정 저장
-              </ConfirmSubmitButton>
-            </div>
+          <input name="slug" type="hidden" value={slug} />
+          <h2 className="mb-4 font-semibold">위치 출석 설정</h2>
+          <div className="space-y-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input defaultChecked={setting?.isEnabled ?? false} name="isEnabled" type="checkbox" value="true" />
+              학생 위치 출석 사용
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">학원 위도</span>
+              <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.latitude ?? ''} name="latitude" placeholder="37.5665" />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">학원 경도</span>
+              <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.longitude ?? ''} name="longitude" placeholder="126.9780" />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">허용 반경(m)</span>
+              <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.radiusMeters ?? 100} max={2000} min={10} name="radiusMeters" type="number" />
+            </label>
+            <ConfirmSubmitButton className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white" message="출석 설정을 저장할까요?">
+              설정 저장
+            </ConfirmSubmitButton>
+          </div>
         </form>
 
         <section className="rounded-lg border bg-white p-5">
@@ -100,6 +98,17 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
               </select>
             </label>
             <label className="block">
+              <span className="mb-1 block text-sm font-medium">수업</span>
+              <select className="w-full rounded border px-3 py-2 text-sm" name="scheduleId">
+                <option value="">수업 없음</option>
+                {schedules.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.title} ({s.startTime}~{s.endTime})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
               <span className="mb-1 block text-sm font-medium">상태</span>
               <select className="w-full rounded border px-3 py-2 text-sm" name="status" required>
                 {Object.entries(attendanceStatusLabels).map(([value, label]) => (
@@ -107,7 +116,7 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
                 ))}
               </select>
             </label>
-            <label className="block md:col-span-2">
+            <label className="block">
               <span className="mb-1 block text-sm font-medium">메모</span>
               <input className="w-full rounded border px-3 py-2 text-sm" name="memo" placeholder="선택" />
             </label>
@@ -133,11 +142,12 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
       </section>
 
       <div className="overflow-x-auto rounded-lg border bg-white">
-        <table className="w-full min-w-[980px] text-left text-sm">
+        <table className="w-full min-w-[1080px] text-left text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
               <th className="px-4 py-3 font-medium">학생</th>
               <th className="px-4 py-3 font-medium">학교/학년</th>
+              <th className="px-4 py-3 font-medium">수업</th>
               <th className="px-4 py-3 font-medium">상태</th>
               <th className="px-4 py-3 font-medium">출석 시간</th>
               <th className="px-4 py-3 font-medium">거리</th>
@@ -147,35 +157,41 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
             </tr>
           </thead>
           <tbody className="divide-y">
-            {rows.map(({ student, record }) => (
-              <tr key={student.id}>
+            {rows.map(({ student, record }, idx) => (
+              <tr key={record?.id ?? `no-record-${student.id}-${idx}`}>
                 <td className="px-4 py-3 font-medium">{student.name}</td>
                 <td className="px-4 py-3">{[student.schoolName, student.grade].filter(Boolean).join(' ') || '-'}</td>
+                <td className="px-4 py-3 text-slate-600">{record?.schedule ? `${record.schedule.title} (${record.schedule.startTime})` : '-'}</td>
                 <td className="px-4 py-3">{record ? attendanceStatusLabels[record.status] : '미처리'}</td>
                 <td className="px-4 py-3">{record?.checkedAt ? formatKoreaTime(record.checkedAt) : '-'}</td>
                 <td className="px-4 py-3">{record?.distanceMeters !== null && record?.distanceMeters !== undefined ? `${Math.round(record.distanceMeters)}m` : '-'}</td>
                 <td className="px-4 py-3">{record ? attendanceSourceLabels[record.source] : '-'}</td>
                 <td className="px-4 py-3">{record?.memo ?? '-'}</td>
                 <td className="px-4 py-3">
-                  <form action={markAttendanceAction} className="flex justify-end gap-2">
-                    <input name="slug" type="hidden" value={slug} />
-                    <input name="date" type="hidden" value={dateValue} />
-                    <input name="studentId" type="hidden" value={student.id} />
-                    <select className="rounded border px-2 py-1 text-sm" defaultValue={record?.status ?? 'PRESENT'} name="status">
-                      {Object.entries(attendanceStatusLabels).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
-                      ))}
-                    </select>
-                    <input className="w-32 rounded border px-2 py-1 text-sm" defaultValue={record?.memo ?? ''} name="memo" placeholder="메모" />
-                    <ConfirmSubmitButton className="rounded border px-3 py-1 text-sm" message="출석 상태를 변경할까요?">
-                      저장
-                    </ConfirmSubmitButton>
-                  </form>
+                  {record ? (
+                    <form action={markAttendanceAction} className="flex justify-end gap-2">
+                      <input name="slug" type="hidden" value={slug} />
+                      <input name="date" type="hidden" value={dateValue} />
+                      <input name="studentId" type="hidden" value={student.id} />
+                      <input name="scheduleId" type="hidden" value={record.scheduleId ?? ''} />
+                      <select className="rounded border px-2 py-1 text-sm" defaultValue={record.status} name="status">
+                        {Object.entries(attendanceStatusLabels).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                      <input className="w-32 rounded border px-2 py-1 text-sm" defaultValue={record.memo ?? ''} name="memo" placeholder="메모" />
+                      <ConfirmSubmitButton className="rounded border px-3 py-1 text-sm" message="출석 상태를 변경할까요?">
+                        저장
+                      </ConfirmSubmitButton>
+                    </form>
+                  ) : (
+                    <span className="block text-right text-sm text-slate-400">위 폼으로 처리</span>
+                  )}
                 </td>
               </tr>
             ))}
             {rows.length === 0 ? (
-              <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={8}>표시할 학생이 없습니다.</td></tr>
+              <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={9}>표시할 학생이 없습니다.</td></tr>
             ) : null}
           </tbody>
         </table>

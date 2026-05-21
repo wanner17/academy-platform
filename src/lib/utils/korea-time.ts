@@ -45,3 +45,7 @@ export function toStoredKoreaDate(date: Date) {
   const { day, month, year } = getKoreaDateParts(date)
   return new Date(Date.UTC(year, month - 1, day))
 }
+
+export function getKoreaDayOfWeek(date: Date): number {
+  return toStoredKoreaDate(date).getUTCDay()
+}

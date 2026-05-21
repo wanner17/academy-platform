@@ -245,8 +245,9 @@ model Schedule {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  academy   Academy  @relation(fields: [academyId], references: [id])
-  program   Program? @relation(fields: [programId], references: [id])
+  academy           Academy           @relation(fields: [academyId], references: [id])
+  program           Program?          @relation(fields: [programId], references: [id])
+  attendanceRecords AttendanceRecord[]
 
   @@index([academyId, dayOfWeek, startTime])
   @@index([academyId, programId])
@@ -396,8 +397,6 @@ model AttendanceSetting {
   latitude     Float?
   longitude    Float?
   radiusMeters Int      @default(100)
-  startTime    String?
-  endTime      String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   academy      Academy  @relation(fields: [academyId], references: [id], onDelete: Cascade)
@@ -407,6 +406,7 @@ model AttendanceRecord {
   id             String           @id @default(cuid())
   academyId      String
   studentId      String
+  scheduleId     String?
   attendanceDate DateTime
   checkedAt      DateTime?
   status         AttendanceStatus @default(PRESENT)
@@ -421,11 +421,13 @@ model AttendanceRecord {
   updatedAt      DateTime         @updatedAt
   academy        Academy          @relation(fields: [academyId], references: [id], onDelete: Cascade)
   student        Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  schedule       Schedule?        @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
   updatedBy      User?            @relation(fields: [updatedById], references: [id])
 
-  @@unique([studentId, attendanceDate])
+  @@unique([studentId, scheduleId, attendanceDate])
   @@index([academyId, attendanceDate, status])
   @@index([academyId, studentId, attendanceDate])
+  @@index([scheduleId])
   @@index([updatedById])
 }
 

@@ -5,7 +5,7 @@ import { StudentCalendarNav } from '@/components/student-calendar-nav'
 import { attendanceStatusLabels } from '@/lib/attendance-labels'
 import { programModeLabels, targetLevelLabels } from '@/lib/program-labels'
 import { requireStudentPage } from '@/lib/auth/server'
-import { attendanceService } from '@/lib/services/attendance.service'
+import { attendanceService, isWithinCheckInWindow } from '@/lib/services/attendance.service'
 import { homeworkService } from '@/lib/services/homework.service'
 import { progressService } from '@/lib/services/progress.service'
 import { studentService } from '@/lib/services/student.service'
@@ -31,15 +31,21 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
   const prevMonth = addMonths(selectedMonth, -1)
   const nextMonth = addMonths(selectedMonth, 1)
 
-  const [homeworks, progressLogs, testResults, attendanceSetting, todayAttendance, monthlyAttendance] = await Promise.all([
+  const now = new Date()
+  const [homeworks, progressLogs, testResults, attendanceSetting, todayAttendances, monthlyAttendance, todaySchedules] = await Promise.all([
     homeworkService.getVisibleHomeworksForPrograms(academy.id, programIds, student.id),
     progressService.getVisibleProgressLogsForPrograms(academy.id, programIds, student.id),
     testResultService.getStudentVisibleTestResults(academy.id, student.id),
     attendanceService.getSetting(academy.id),
-    attendanceService.getStudentRecordForDate(academy.id, student.id, new Date()),
+    attendanceService.getStudentRecordsForDate(academy.id, student.id, now),
     attendanceService.getStudentRecordsForMonth(academy.id, student.id, selectedMonth.getFullYear(), selectedMonth.getMonth()),
+    attendanceService.getTodaySchedulesForStudent(student.id, now),
   ])
-  const attendanceByDate = new Map(monthlyAttendance.map((record) => [toKoreaDateKey(record.attendanceDate), record]))
+  const attendancesByDate = monthlyAttendance.reduce((map, record) => {
+    const key = toKoreaDateKey(record.attendanceDate)
+    map.set(key, [...(map.get(key) ?? []), record])
+    return map
+  }, new Map<string, typeof monthlyAttendance>())
   const calendarCells = getCalendarCells(selectedMonth)
 
   return (
@@ -64,26 +70,34 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
             <LogoutButton className="student-inline-logout" />
           </div>
           <div className="student-attendance-card">
-            <div>
-              <h3>오늘 출석</h3>
-              <p>
-                {todayAttendance
-                  ? `${attendanceStatusLabels[todayAttendance.status]} · ${todayAttendance.checkedAt ? formatKoreaTime(todayAttendance.checkedAt) : '관리자 처리'}`
-                  : attendanceSetting?.isEnabled
-                    ? '학원 위치에서 출석 버튼을 누르세요.'
-                    : '출석 기능이 아직 열려 있지 않습니다.'}
-              </p>
-              {attendanceSetting?.startTime || attendanceSetting?.endTime ? (
-                <p className="student-attendance-meta">
-                  가능 시간: {attendanceSetting.startTime ?? '00:00'} - {attendanceSetting.endTime ?? '23:59'}
-                </p>
-              ) : null}
-            </div>
-            <StudentAttendanceButton
-              disabled={!attendanceSetting?.isEnabled}
-              hasRecord={Boolean(todayAttendance)}
-              slug={slug}
-            />
+            <h3>오늘 출석</h3>
+            {todaySchedules.length > 0 ? (
+              <ul className="student-attendance-list">
+                {todaySchedules.map((schedule) => {
+                  const record = todayAttendances.find((r) => r.scheduleId === schedule.id)
+                  const withinWindow = isWithinCheckInWindow(schedule.startTime, schedule.endTime, now)
+                  return (
+                    <li key={schedule.id}>
+                      <span className="student-attendance-schedule">{schedule.title}</span>
+                      {record ? (
+                        <>
+                          <span>{attendanceStatusLabels[record.status]}</span>
+                          {record.checkedAt ? (
+                            <span className="student-attendance-time">{formatKoreaTime(record.checkedAt)}</span>
+                          ) : (
+                            <span className="student-attendance-time">관리자 처리</span>
+                          )}
+                        </>
+                      ) : attendanceSetting?.isEnabled && withinWindow ? (
+                        <StudentAttendanceButton disabled={false} hasRecord={false} scheduleId={schedule.id} slug={slug} />
+                      ) : null}
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <p>{attendanceSetting?.isEnabled ? '오늘 수업이 없습니다.' : '출석 기능이 아직 열려 있지 않습니다.'}</p>
+            )}
           </div>
 
           <StudentCalendarNav
@@ -96,24 +110,19 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
               <div className="student-calendar-weekday" key={day}>{day}</div>
             ))}
             {calendarCells.map((day, index) => {
-              const record = day ? attendanceByDate.get(toDateKey(day)) : null
-              const isToday = day ? toDateKey(day) === toKoreaDateKey(new Date()) : false
+              const dayRecords = day ? (attendancesByDate.get(toKoreaDateKey(day)) ?? []) : []
+              const isToday = day ? toKoreaDateKey(day) === toKoreaDateKey(new Date()) : false
               const cellClassName = `student-calendar-day${day ? '' : ' is-empty'}${isToday ? ' is-today' : ''}`
               return (
-                <div className={cellClassName} key={day ? toDateKey(day) : `empty-${index}`}>
+                <div className={cellClassName} key={day ? toKoreaDateKey(day) : `empty-${index}`}>
                   {day ? (
                     <>
                       <span className="student-calendar-date">{day.getDate()}</span>
-                      {record ? (
-                        <span className={`student-calendar-status status-${record.status.toLowerCase()}`}>
-                          {attendanceStatusLabels[record.status]}
+                      {dayRecords.map((record) => (
+                        <span key={record.id} className={`student-calendar-status status-${record.status.toLowerCase()}`}>
+                          {record.schedule?.title ? `${record.schedule.title.slice(0, 4)} ` : ''}{attendanceStatusLabels[record.status]}
                         </span>
-                      ) : null}
-                      {record?.checkedAt ? (
-                        <span className="student-calendar-time">
-                          {formatKoreaTime(record.checkedAt, { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      ) : null}
+                      ))}
                     </>
                   ) : null}
                 </div>
@@ -301,9 +310,6 @@ function toMonthParam(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }
 
-function toDateKey(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
 
 function getCalendarCells(month: Date) {
   const firstDay = new Date(month.getFullYear(), month.getMonth(), 1)

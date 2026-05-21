@@ -37,11 +37,11 @@ export async function updateStudentPasswordAction(formData: FormData) {
   redirect(studentPath(slug))
 }
 
-export async function checkInAttendanceAction(slug: string, input: StudentCheckInInput) {
+export async function checkInAttendanceAction(slug: string, input: StudentCheckInInput, scheduleId: string) {
   try {
     const { academy, user } = await requireStudentPage(slug)
     const student = await studentService.getStudentByUserId(user.id, academy.id)
-    const record = await attendanceService.checkInStudent(academy.id, student.id, input)
+    const record = await attendanceService.checkInStudent(academy.id, student.id, input, scheduleId)
     return {
       ok: true,
       message: `출석 완료: ${record.checkedAt ? formatKoreaTime(record.checkedAt) : ''}`,

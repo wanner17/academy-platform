@@ -19,12 +19,10 @@ export async function updateAttendanceSettingAction(formData: FormData) {
   }
 
   await attendanceService.upsertSetting(academy.id, {
-    endTime: String(formData.get('endTime') ?? '') || undefined,
     isEnabled: formData.get('isEnabled') === 'true',
     latitude,
     longitude,
     radiusMeters,
-    startTime: String(formData.get('startTime') ?? '') || undefined,
   })
 
   revalidateAttendancePaths(slug)
@@ -46,6 +44,7 @@ export async function markAttendanceAction(formData: FormData) {
   await attendanceService.markManual(academy.id, {
     attendanceDate,
     memo: String(formData.get('memo') ?? '') || undefined,
+    scheduleId: String(formData.get('scheduleId') ?? '').trim() || undefined,
     status,
     studentId: student.id,
     updatedById: user.id,

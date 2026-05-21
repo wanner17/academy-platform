@@ -6,10 +6,11 @@ import { checkInAttendanceAction } from '@/app/(student)/student/[slug]/actions'
 type StudentAttendanceButtonProps = {
   disabled: boolean
   hasRecord: boolean
+  scheduleId: string
   slug: string
 }
 
-export function StudentAttendanceButton({ disabled, hasRecord, slug }: StudentAttendanceButtonProps) {
+export function StudentAttendanceButton({ disabled, hasRecord, scheduleId, slug }: StudentAttendanceButtonProps) {
   const [message, setMessage] = useState('')
   const [pending, startTransition] = useTransition()
 
@@ -27,7 +28,7 @@ export function StudentAttendanceButton({ disabled, hasRecord, slug }: StudentAt
             accuracyMeters: position.coords.accuracy,
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-          })
+          }, scheduleId)
           setMessage(result.message)
         })
       },
