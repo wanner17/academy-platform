@@ -16,8 +16,8 @@ export default async function TeachersPage({ params }: TeachersPageProps) {
     <>
       <div className="pub-page-hero">
         <div className="pub-page-hero-inner">
-          <div className="pub-label">THE FACULTY</div>
-          <h1 className="pub-page-title">강사진</h1>
+          <div className="pub-label">강사진 소개</div>
+          <h1 className="pub-page-title">상위권을 만드는 대표 강사진</h1>
           <p className="pub-page-subtitle">학생을 지도하는 전문 선생님들을 소개합니다.</p>
         </div>
       </div>

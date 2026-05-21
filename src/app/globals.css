@@ -1638,3 +1638,778 @@ a { color: inherit; text-decoration: none; }
   .student-calendar-status { font-size: 11px; padding: 4px 5px; }
   .student-calendar-time { font-size: 11px; }
 }
+
+/* ── PREMIUM STYLING & ANIMATIONS ADDITIONS ── */
+
+/* 1. Custom Confirm Modal Dialog */
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(43, 22, 15, 0.45);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modal-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.custom-modal-content {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 36px 32px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 24px 70px rgba(43, 22, 15, 0.16);
+  font-family: 'Noto Serif KR', serif;
+  text-align: center;
+  transform: scale(0.95);
+  opacity: 0;
+  border-top: 4px solid var(--gold);
+  animation: modal-scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s forwards;
+}
+
+.custom-modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 16px;
+  letter-spacing: -0.5px;
+}
+
+.custom-modal-message {
+  font-size: 15px;
+  color: #7f746e;
+  line-height: 1.65;
+  margin: 0 0 32px;
+  font-family: Inter, sans-serif;
+}
+
+.custom-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.custom-modal-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  padding: 13px 26px;
+  border: 0;
+  cursor: pointer;
+  min-width: 110px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-transform: uppercase;
+}
+
+.custom-modal-btn.cancel {
+  background: #f4f0ec;
+  color: var(--text);
+}
+
+.custom-modal-btn.cancel:hover {
+  background: #e8e2dc;
+  transform: translateY(-1px);
+}
+
+.custom-modal-btn.confirm {
+  background: var(--brown);
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+}
+
+.custom-modal-btn.confirm:hover {
+  background: var(--deep);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 40, 27, 0.15);
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 2. Scroll-triggered shrink header transition */
+.pub-header {
+  transition: height 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pub-header--scrolled {
+  height: 72px;
+  background: rgba(250, 248, 246, 0.96);
+  box-shadow: 0 4px 30px rgba(43, 22, 15, 0.05);
+}
+
+/* 3. Card Hover Lift & Glow Animations */
+.pub-card, .pub-gallery-grid figure, .pub-post, .student-attendance-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pub-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(74, 40, 27, 0.08);
+  border-color: var(--gold);
+}
+
+.pub-gallery-grid figure:hover {
+  transform: scale(1.02);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+}
+
+.pub-gallery-grid img {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pub-gallery-grid figure:hover img {
+  transform: scale(1.05);
+}
+
+/* 4. Student Portal Calendar Enhancements */
+.student-attendance-calendar {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e8dfd8;
+  box-shadow: 0 4px 20px rgba(74, 40, 27, 0.02);
+}
+
+.student-calendar-day {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  position: relative;
+}
+
+.student-calendar-day:hover:not(.is-empty) {
+  background-color: #faf8f6;
+  z-index: 2;
+}
+
+/* Highlighting today's cell */
+.student-calendar-day.is-today {
+  border: 2px solid var(--gold) !important;
+  background: rgba(201, 155, 86, 0.04);
+}
+
+.student-calendar-day.is-today::before {
+  content: 'TODAY';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-family: Inter, sans-serif;
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 0.5px;
+}
+
+/* Pill badges for attendance statuses */
+.student-calendar-status {
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.student-calendar-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.student-calendar-status.status-present::before { background: #167345; }
+.student-calendar-status.status-late::before { background: #946200; }
+.student-calendar-status.status-absent::before { background: #b91c1c; }
+.student-calendar-status.status-excused::before { background: #3157a4; }
+
+/* 5. Mobile Navigation Overlay & Animations */
+.pub-mobile-overlay {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block !important; /* Force render to allow transition */
+}
+
+.pub-mobile-overlay--open {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.pub-mobile-nav {
+  transform: translateY(-20px);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pub-mobile-overlay--open .pub-mobile-nav {
+  transform: translateY(0);
+}
+
+.student-attendance-action button {
+  border-radius: 6px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.student-attendance-action button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(46, 24, 17, 0.15);
+}
+
+.student-attendance-action button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* ── NEW INTERACTIVE PUBLIC PAGE COMPONENTS ── */
+
+/* 1. Stat Counters */
+.pub-stat-section {
+  padding: 60px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.pub-stat-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .pub-stat-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.pub-stat-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-counter-number {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 768px) {
+  .stat-counter-number {
+    font-size: 48px;
+  }
+}
+
+.pub-stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+/* 2. Course Finder Quiz */
+.pub-quiz-section {
+  padding: 80px 20px;
+  background: #faf8f6;
+}
+
+.pub-quiz-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.pub-quiz-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.pub-quiz-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(43, 22, 15, 0.04);
+  overflow: hidden;
+}
+
+.pub-quiz-progress-bar {
+  height: 4px;
+  background: #f4f0ec;
+  width: 100%;
+}
+
+.pub-quiz-progress-fill {
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.3s ease;
+}
+
+.pub-quiz-step-content {
+  padding: 40px 30px;
+}
+
+@media (min-width: 768px) {
+  .pub-quiz-step-content {
+    padding: 50px 60px;
+  }
+}
+
+.pub-quiz-question {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.pub-quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pub-quiz-opt-btn {
+  display: flex;
+  align-items: center;
+  padding: 18px 24px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+}
+
+.pub-quiz-opt-btn:hover {
+  border-color: var(--gold);
+  background: rgba(201, 155, 86, 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(43, 22, 15, 0.04);
+}
+
+.pub-quiz-opt-btn .emoji {
+  font-size: 24px;
+  margin-right: 20px;
+}
+
+.pub-quiz-opt-btn .title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-right: 15px;
+  min-width: 90px;
+}
+
+.pub-quiz-opt-btn .desc {
+  font-size: 13px;
+  color: #7f746e;
+}
+
+@media (max-width: 576px) {
+  .pub-quiz-opt-btn {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+  }
+  .pub-quiz-opt-btn .emoji {
+    margin-bottom: 8px;
+  }
+  .pub-quiz-opt-btn .title {
+    margin-bottom: 4px;
+  }
+}
+
+.pub-quiz-back-btn {
+  display: block;
+  margin: 30px auto 0;
+  background: none;
+  border: none;
+  color: #7f746e;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.pub-quiz-back-btn:hover {
+  color: var(--gold);
+}
+
+.pub-quiz-results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .pub-quiz-results-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.pub-quiz-result-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 24px;
+  background: #fff;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.pub-quiz-result-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(43, 22, 15, 0.05);
+  border-color: var(--gold);
+}
+
+.pub-quiz-result-card .badge-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.prog-subject-badge {
+  background: var(--gold);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.prog-mode-badge {
+  background: #f4f0ec;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.pub-quiz-result-card .prog-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.pub-quiz-result-card .prog-target {
+  font-size: 12px;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+.pub-quiz-result-card .prog-desc {
+  font-size: 13px;
+  color: #7f746e;
+  line-height: 1.5;
+  margin-bottom: 18px;
+  flex-grow: 1;
+}
+
+.prog-teacher-row {
+  font-size: 12px;
+  margin-bottom: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.prog-teacher-row .label {
+  color: #7f746e;
+  margin-right: 6px;
+}
+
+.prog-teacher-row .name {
+  font-weight: 600;
+}
+
+.prog-detail-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brown);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.prog-detail-link:hover {
+  color: var(--gold);
+}
+
+.pub-quiz-no-results {
+  text-align: center;
+  padding: 30px 10px;
+}
+
+.pub-quiz-no-results .no-result-text {
+  font-size: 14px;
+  color: #7f746e;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.pub-quiz-cta-link {
+  display: inline-block;
+  background: var(--brown);
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.pub-quiz-cta-link:hover {
+  background: var(--deep);
+  transform: translateY(-1px);
+}
+
+.pub-quiz-restart-btn {
+  display: block;
+  margin: 40px auto 0;
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pub-quiz-restart-btn:hover {
+  background: var(--brown);
+}
+
+/* 3. Testimonials Slider */
+.pub-testimonial-section {
+  padding: 80px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+.pub-testimonial-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.pub-testimonial-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.pub-slider-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pub-slider-container {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 15px 5px;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+
+.pub-slider-container::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Webkit */
+}
+
+.pub-testimonial-card {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(43, 22, 15, 0.02);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .pub-testimonial-card {
+    flex: 0 0 calc(50% - 12px);
+  }
+}
+
+@media (min-width: 992px) {
+  .pub-testimonial-card {
+    flex: 0 0 calc(33.333% - 16px);
+  }
+}
+
+.pub-testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(43, 22, 15, 0.06);
+  border-color: var(--gold);
+}
+
+.stars-row {
+  color: #ffc107;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.testimonial-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 24px;
+  flex-grow: 1;
+  font-style: italic;
+}
+
+.testimonial-footer {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.author-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.author-relation {
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.author-subtext {
+  font-size: 11px;
+  color: #9c918a;
+}
+
+.pub-slider-nav-btn {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 12px rgba(43, 22, 15, 0.05);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.pub-slider-nav-btn:hover {
+  background: var(--gold);
+  color: #fff;
+  border-color: var(--gold);
+}
+
+.pub-slider-nav-btn.left {
+  left: -22px;
+}
+
+.pub-slider-nav-btn.right {
+  right: -22px;
+}
+
+@media (max-width: 768px) {
+  .pub-slider-nav-btn {
+    display: none; /* Hide buttons on mobile in favor of swipe */
+  }
+}
+
+/* 4. Schedule Live Filter */
+.pub-schedule-filter-tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+
+.pub-schedule-tab {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #7f746e;
+}
+
+.pub-schedule-tab:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.pub-schedule-tab.active {
+  background: var(--gold);
+  color: #fff;
+  border-color: var(--gold);
+  box-shadow: 0 4px 10px rgba(201, 155, 86, 0.15);
+}
+
+.pub-schedule-card {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.pub-schedule-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(43, 22, 15, 0.07);
+}
+
+/* Utility Animations */
+.animate-fade-in {
+  animation: quiz-fade-in 0.35s ease forwards;
+}
+
+@keyframes quiz-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+

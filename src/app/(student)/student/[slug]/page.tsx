@@ -96,8 +96,10 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
             ))}
             {calendarCells.map((day, index) => {
               const record = day ? attendanceByDate.get(toDateKey(day)) : null
+              const isToday = day ? toDateKey(day) === toDateKey(new Date()) : false
+              const cellClassName = `student-calendar-day${day ? '' : ' is-empty'}${isToday ? ' is-today' : ''}`
               return (
-                <div className={`student-calendar-day${day ? '' : ' is-empty'}`} key={day ? toDateKey(day) : `empty-${index}`}>
+                <div className={cellClassName} key={day ? toDateKey(day) : `empty-${index}`}>
                   {day ? (
                     <>
                       <span className="student-calendar-date">{day.getDate()}</span>

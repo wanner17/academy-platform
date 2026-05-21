@@ -28,6 +28,10 @@ export const academyService = {
       heroImageUrl,
       naverBlogUrl,
       instagramUrl,
+      showStatCounters: data.showStatCounters,
+      statCounters: data.statCounters,
+      showTestimonials: data.showTestimonials,
+      testimonials: data.testimonials,
     })
   },
 }

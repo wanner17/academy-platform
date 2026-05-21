@@ -1,10 +1,12 @@
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { AcademyGalleryFields } from '@/components/admin/academy-gallery-fields'
 import { MainHeroImageField } from '@/components/admin/main-hero-image-field'
+import { HomepageSectionFields } from '@/components/admin/homepage-section-fields'
 import { updateAcademySettingsAction } from './actions'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
 import { requireAdminPage } from '@/lib/auth/server'
 import { academyGalleryService } from '@/lib/services/academy-gallery.service'
+import { parseStatCounters, parseTestimonials } from '@/lib/homepage-sections'
 
 type SettingsPageProps = {
   params: Promise<{ slug: string }>
@@ -18,6 +20,8 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
   const { error } = await searchParams
   const academy = await getAcademyBySlug(slug)
   const galleryImages = await academyGalleryService.getAdminImages(academy.id)
+  const statCounters = parseStatCounters(academy.statCounters)
+  const testimonials = parseTestimonials(academy.testimonials)
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
@@ -98,6 +102,12 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
           </div>
           <MainHeroImageField imageUrl={academy.heroImageUrl} slug={slug} />
         </section>
+        <HomepageSectionFields
+          showStatCounters={academy.showStatCounters}
+          showTestimonials={academy.showTestimonials}
+          statCounters={statCounters}
+          testimonials={testimonials}
+        />
         <AcademyGalleryFields images={galleryImages} slug={slug} />
         <ConfirmSubmitButton
           className="rounded bg-blue-700 px-4 py-2 font-medium text-white"

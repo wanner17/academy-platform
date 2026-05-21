@@ -5,6 +5,11 @@ import { noticeService } from '@/lib/services/notice.service'
 import { teacherService } from '@/lib/services/teacher.service'
 import { scheduleService } from '@/lib/services/schedule.service'
 import { publicPath } from '@/lib/utils/public-path'
+import { programService } from '@/lib/services/program.service'
+import { StatCounters } from '@/components/public/stat-counters'
+import { CourseFinderQuiz } from '@/components/public/course-finder-quiz'
+import { TestimonialsSlider } from '@/components/public/testimonials-slider'
+import { parseStatCounters, parseTestimonials } from '@/lib/homepage-sections'
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -14,12 +19,15 @@ export default async function AcademyHomePage({ params }: PageProps) {
   const { slug } = await params
   const academy = await getAcademyBySlug(slug)
 
-  const [{ items: notices }, teachers, schedules, galleryImages] = await Promise.all([
+  const [{ items: notices }, teachers, schedules, galleryImages, programs] = await Promise.all([
     noticeService.getPublicNotices(academy.id, 1, 5),
     teacherService.getPublicTeachers(academy.id),
     scheduleService.getPublicSchedules(academy.id),
     academyGalleryService.getPublicImages(academy.id),
+    programService.getPublicPrograms(academy.id),
   ])
+  const statCounters = parseStatCounters(academy.statCounters)
+  const testimonials = parseTestimonials(academy.testimonials)
 
   return (
     <>
@@ -62,6 +70,9 @@ export default async function AcademyHomePage({ params }: PageProps) {
         </section>
       )}
 
+      {/* Stat Counters */}
+      {academy.showStatCounters ? <StatCounters counters={statCounters} /> : null}
+
       {galleryImages.length > 0 && (
         <section className="pub-section pub-gallery-section">
           <div className="pub-section-head">
@@ -89,8 +100,8 @@ export default async function AcademyHomePage({ params }: PageProps) {
         <section className="pub-section">
           <div className="pub-section-head">
             <div>
-              <div className="pub-label">THE FACULTY</div>
-              <h2 className="pub-h2">Master Instructors</h2>
+              <div className="pub-label">강사진 소개</div>
+              <h2 className="pub-h2">상위권을 만드는 대표 강사진</h2>
             </div>
             <a className="pub-view-all" href={publicPath(slug, '/teachers')}>
               강사진 전체 보기 →
@@ -103,6 +114,12 @@ export default async function AcademyHomePage({ params }: PageProps) {
           </div>
         </section>
       )}
+
+      {/* Testimonials Slider */}
+      {academy.showTestimonials ? <TestimonialsSlider testimonials={testimonials} /> : null}
+
+      {/* Course Finder Quiz */}
+      <CourseFinderQuiz programs={programs} slug={slug} />
 
       {/* Journal + Sidebar */}
       <div className="pub-journal-wrap">

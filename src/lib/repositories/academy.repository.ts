@@ -9,6 +9,10 @@ export type UpdateAcademyInput = {
   mapUrl?: string
   heroImageUrl?: string
   naverBlogUrl?: string
+  showStatCounters?: boolean
+  statCounters?: string
+  showTestimonials?: boolean
+  testimonials?: string
   instagramUrl?: string
 }
 

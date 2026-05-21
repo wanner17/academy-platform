@@ -28,6 +28,20 @@ export function PublicHeader({
   authLabel,
 }: PublicHeaderProps) {
   const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true)
+      } else {
+        setScrolled(false)
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     if (open) {
@@ -41,7 +55,7 @@ export function PublicHeader({
   const close = () => setOpen(false)
 
   return (
-    <header className="pub-header">
+    <header className={`pub-header${scrolled ? ' pub-header--scrolled' : ''}`}>
       <a className="pub-logo" href={homeHref}>
         <Image alt={`${academyName} 로고`} height={50} priority src="/logo.png" width={220} />
       </a>
@@ -64,18 +78,16 @@ export function PublicHeader({
         <span /><span /><span />
       </button>
 
-      {open && (
-        <div className="pub-mobile-overlay" onClick={close}>
-          <nav className="pub-mobile-nav" onClick={e => e.stopPropagation()}>
-            <a href={programsHref} onClick={close}>수업 안내</a>
-            <a href={teachersHref} onClick={close}>강사진</a>
-            <a href={scheduleHref} onClick={close}>시간표</a>
-            <a href={noticesHref} onClick={close}>공지사항</a>
-            <a href={authHref} onClick={close}>{authLabel}</a>
-            <a className="pub-mobile-cta" href={contactHref} onClick={close}>상담 문의</a>
-          </nav>
-        </div>
-      )}
+      <div className={`pub-mobile-overlay${open ? ' pub-mobile-overlay--open' : ''}`} onClick={close}>
+        <nav className="pub-mobile-nav" onClick={e => e.stopPropagation()}>
+          <a href={programsHref} onClick={close}>수업 안내</a>
+          <a href={teachersHref} onClick={close}>강사진</a>
+          <a href={scheduleHref} onClick={close}>시간표</a>
+          <a href={noticesHref} onClick={close}>공지사항</a>
+          <a href={authHref} onClick={close}>{authLabel}</a>
+          <a className="pub-mobile-cta" href={contactHref} onClick={close}>상담 문의</a>
+        </nav>
+      </div>
     </header>
   )
 }

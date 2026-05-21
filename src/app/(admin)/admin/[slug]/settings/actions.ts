@@ -7,6 +7,7 @@ import { requireAcademyAdmin } from '@/lib/auth/authorization'
 import { authConfig } from '@/lib/integrations/auth/config'
 import { academyGalleryService } from '@/lib/services/academy-gallery.service'
 import { academyService } from '@/lib/services/academy.service'
+import { parseStatCounters, parseTestimonials } from '@/lib/homepage-sections'
 
 export async function updateAcademySettingsAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
@@ -24,6 +25,10 @@ export async function updateAcademySettingsAction(formData: FormData) {
       heroImageUrl: String(formData.get('heroImageUrl') ?? ''),
       naverBlogUrl: String(formData.get('naverBlogUrl') ?? ''),
       instagramUrl: String(formData.get('instagramUrl') ?? ''),
+      showStatCounters: formData.get('showStatCounters') === 'on',
+      statCounters: JSON.stringify(parseStatCounters(String(formData.get('statCounters') ?? '[]'))),
+      showTestimonials: formData.get('showTestimonials') === 'on',
+      testimonials: JSON.stringify(parseTestimonials(String(formData.get('testimonials') ?? '[]'))),
     })
     await academyGalleryService.replaceImages(academy.id, parseGalleryImages(String(formData.get('galleryImages') ?? '[]')))
   } catch (error) {

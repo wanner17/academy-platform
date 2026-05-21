@@ -1,7 +1,6 @@
-import type { Schedule } from '@prisma/client'
-import { dayLabels } from '@/lib/schedule-labels'
 import { scheduleService } from '@/lib/services/schedule.service'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
+import { InteractiveSchedule } from '@/components/public/interactive-schedule'
 
 type SchedulePageProps = {
   params: Promise<{ slug: string }>
@@ -23,48 +22,8 @@ export default async function SchedulePage({ params }: SchedulePageProps) {
       </div>
 
       <div className="pub-page-content">
-        <div className="pub-schedule-grid">
-          {dayLabels.map((label, dayOfWeek) => (
-            <section key={label} className="pub-day-col">
-              <div className="pub-day-header">{label}</div>
-              <div className="pub-day-body">
-                <DayItems
-                  schedules={schedules.filter((s) => s.dayOfWeek === dayOfWeek)}
-                />
-              </div>
-            </section>
-          ))}
-        </div>
+        <InteractiveSchedule schedules={schedules} />
       </div>
-    </>
-  )
-}
-
-function DayItems({ schedules }: { schedules: Schedule[] }) {
-  if (schedules.length === 0) {
-    return <p className="pub-empty">수업 없음</p>
-  }
-
-  return (
-    <>
-      {schedules.map((schedule) => (
-        <div
-          key={schedule.id}
-          className="pub-schedule-card"
-          style={{ borderLeftColor: schedule.color ?? 'var(--gold)' }}
-        >
-          <div className="pub-schedule-card-time">
-            {schedule.startTime} – {schedule.endTime}
-          </div>
-          <div className="pub-schedule-card-title">{schedule.title}</div>
-          <div className="pub-schedule-card-meta">
-            {schedule.subject ? <span>{schedule.subject}</span> : null}
-            {schedule.subject && schedule.teacher ? ' · ' : null}
-            {schedule.teacher ? <span>{schedule.teacher}</span> : null}
-            {schedule.room ? <div>{schedule.room}</div> : null}
-          </div>
-        </div>
-      ))}
     </>
   )
 }
