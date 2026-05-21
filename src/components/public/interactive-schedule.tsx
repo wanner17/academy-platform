@@ -4,39 +4,87 @@ import { useState } from 'react'
 import type { Schedule } from '@prisma/client'
 import { dayLabels } from '@/lib/schedule-labels'
 
+type PublicSchedule = Schedule & {
+  program: {
+    schoolName: string | null
+  } | null
+}
+
 type InteractiveScheduleProps = {
-  schedules: Schedule[]
+  schedules: PublicSchedule[]
 }
 
 export function InteractiveSchedule({ schedules }: InteractiveScheduleProps) {
-  const [selectedSubject, setSelectedSubject] = useState<string>('ALL')
+  const [selectedSchool, setSelectedSchool] = useState<string>('ALL')
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
 
-  // Get unique list of subjects
+  const schools = new Set<string>()
   const subjects = new Set<string>()
   schedules.forEach((s) => {
+    if (s.program?.schoolName) schools.add(s.program.schoolName)
     if (s.subject) subjects.add(s.subject)
   })
-  const subjectList = ['ALL', ...Array.from(subjects)]
+  const schoolList = ['ALL', ...Array.from(schools).sort((a, b) => a.localeCompare(b, 'ko'))]
+  const subjectList = Array.from(subjects).sort((a, b) => a.localeCompare(b, 'ko'))
+
+  const toggleSubject = (subject: string) => {
+    setSelectedSubjects((current) =>
+      current.includes(subject) ? current.filter((item) => item !== subject) : [...current, subject]
+    )
+  }
 
   const filteredSchedules = schedules.filter((s) => {
-    if (selectedSubject === 'ALL') return true
-    return s.subject === selectedSubject
+    if (selectedSchool !== 'ALL' && s.program?.schoolName !== selectedSchool) return false
+    if (selectedSubjects.length > 0 && (!s.subject || !selectedSubjects.includes(s.subject))) return false
+    return true
   })
 
   return (
     <>
-      {subjectList.length > 1 && (
-        <div className="pub-schedule-filter-tabs">
-          {subjectList.map((subject) => (
-            <button
-              key={subject}
-              className={`pub-schedule-tab${selectedSubject === subject ? ' active' : ''}`}
-              onClick={() => setSelectedSubject(subject)}
-              type="button"
-            >
-              {subject === 'ALL' ? '전체 과목' : subject}
-            </button>
-          ))}
+      {(schoolList.length > 1 || subjectList.length > 0) && (
+        <div className="pub-schedule-filter-panel">
+          {schoolList.length > 1 && (
+            <div className="pub-schedule-filter-group">
+              <div className="pub-schedule-filter-label">학교</div>
+              <div className="pub-schedule-filter-tabs">
+                {schoolList.map((school) => (
+                  <button
+                    key={school}
+                    className={`pub-schedule-tab${selectedSchool === school ? ' active' : ''}`}
+                    onClick={() => setSelectedSchool(school)}
+                    type="button"
+                  >
+                    {school === 'ALL' ? '전체 학교' : school}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {subjectList.length > 0 && (
+            <div className="pub-schedule-filter-group">
+              <div className="pub-schedule-filter-label">과목</div>
+              <div className="pub-schedule-filter-tabs">
+                <button
+                  className={`pub-schedule-tab${selectedSubjects.length === 0 ? ' active' : ''}`}
+                  onClick={() => setSelectedSubjects([])}
+                  type="button"
+                >
+                  전체 과목
+                </button>
+                {subjectList.map((subject) => (
+                  <button
+                    key={subject}
+                    className={`pub-schedule-tab${selectedSubjects.includes(subject) ? ' active' : ''}`}
+                    onClick={() => toggleSubject(subject)}
+                    type="button"
+                  >
+                    {subject}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -61,9 +109,12 @@ export function InteractiveSchedule({ schedules }: InteractiveScheduleProps) {
                       </div>
                       <div className="pub-schedule-card-title">{schedule.title}</div>
                       <div className="pub-schedule-card-meta">
-                        {schedule.subject ? <span>{schedule.subject}</span> : null}
-                        {schedule.subject && schedule.teacher ? ' · ' : null}
-                        {schedule.teacher ? <span>{schedule.teacher}</span> : null}
+                        <div>
+                          {schedule.subject ? <span>{schedule.subject}</span> : null}
+                          {schedule.subject && schedule.teacher ? ' · ' : null}
+                          {schedule.teacher ? <span>{schedule.teacher}</span> : null}
+                        </div>
+                        {schedule.program?.schoolName ? <div>{schedule.program.schoolName}</div> : null}
                         {schedule.room ? <div>{schedule.room}</div> : null}
                       </div>
                     </div>
