@@ -14,6 +14,16 @@ export type CreateStudentInput = {
 export type UpdateStudentInput = Partial<CreateStudentInput>
 
 export const studentRepository = {
+  async findDistinctSchools(academyId: string): Promise<string[]> {
+    const rows = await prisma.student.findMany({
+      where: { academyId, schoolName: { not: null } },
+      select: { schoolName: true },
+      distinct: ['schoolName'],
+      orderBy: { schoolName: 'asc' },
+    })
+    return rows.map((r) => r.schoolName as string)
+  },
+
   findAdmin(academyId: string) {
     return prisma.student.findMany({
       where: { academyId },

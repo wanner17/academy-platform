@@ -39,6 +39,7 @@ model Academy {
   galleryImages AcademyGalleryImage[]
   attendanceSetting AttendanceSetting?
   attendanceRecords AttendanceRecord[]
+  schoolExamResults SchoolExamResult[]
 
   @@index([slug])
 }
@@ -352,6 +353,7 @@ model Student {
   progressLogs ProgressLog[]
   testResults TestResult[]
   attendanceRecords AttendanceRecord[]
+  schoolExamResults SchoolExamResult[]
 
   @@index([academyId, name])
 }
@@ -434,6 +436,28 @@ enum AttendanceStatus {
 enum AttendanceSource {
   STUDENT_LOCATION
   ADMIN_MANUAL
+}
+
+model SchoolExamResult {
+  id         String   @id @default(cuid())
+  academyId  String
+  studentId  String
+  examType   String
+  subject    String
+  score      Int?
+  grade      Int?
+  examYear   Int
+  semester   Int
+  schoolYear Int?
+  memo       String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  academy    Academy  @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([academyId, studentId])
+  @@index([academyId, examYear, semester])
+  @@index([academyId, subject])
 }
 
 model FileAsset {

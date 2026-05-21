@@ -15,9 +15,10 @@ export default async function EditStudentPage({ params }: EditStudentPageProps) 
   const { slug, id } = await params
   await requireMemberPage(slug)
   const academy = await getAcademyBySlug(slug)
-  const [student, programs] = await Promise.all([
+  const [student, programs, schools] = await Promise.all([
     studentService.getStudentById(id, academy.id).catch(() => null),
     programService.getAdminPrograms(academy.id),
+    studentService.getDistinctSchools(academy.id),
   ])
   if (!student) notFound()
 
@@ -32,7 +33,7 @@ export default async function EditStudentPage({ params }: EditStudentPageProps) 
           <form action={updateStudentAction} className="space-y-4">
             <input type="hidden" name="slug" value={slug} />
             <input type="hidden" name="id" value={student.id} />
-            <StudentFields defaults={student} />
+            <StudentFields defaults={student} schools={schools} />
             <ConfirmSubmitButton className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white" message="학생 정보를 저장할까요?">
               저장
             </ConfirmSubmitButton>

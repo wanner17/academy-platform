@@ -43,6 +43,10 @@ export default async function AdminHomePage({ params }: AdminHomePageProps) {
           <h2 className="font-semibold text-slate-900 group-hover:text-rose-600 transition-colors duration-200">문의 관리</h2>
           <p className="mt-2 text-xs text-slate-500 leading-relaxed">방문자 상담 문의를 확인하고 상태를 변경합니다.</p>
         </a>
+        <a className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md border-t-4 border-t-teal-500" href={adminPath(slug, '/analytics')}>
+          <h2 className="font-semibold text-slate-900 group-hover:text-teal-600 transition-colors duration-200">학원 분석</h2>
+          <p className="mt-2 text-xs text-slate-500 leading-relaxed">KPI, 관리 필요 학생, 수업별 성적 추이를 확인합니다.</p>
+        </a>
       </div>
     </main>
   )

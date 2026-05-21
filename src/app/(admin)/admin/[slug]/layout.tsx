@@ -41,6 +41,7 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
                 <a href={adminPath(slug, '/students')}>학생 관리</a>
                 <a href={adminPath(slug, '/notices')}>공지 관리</a>
                 <a href={adminPath(slug, '/inquiries')}>문의 관리</a>
+                <a href={adminPath(slug, '/analytics')}>분석</a>
               </>
             ) : (
               <>
@@ -50,6 +51,7 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
                 <a href={adminPath(slug, '/students')}>학생 관리</a>
                 <a href={adminPath(slug, '/inquiries')}>문의 관리</a>
                 <a href={adminPath(slug, '/profile')}>내 정보</a>
+                <a href={adminPath(slug, '/analytics')}>분석</a>
               </>
             )}
             <a href={`/${slug}`}>사용자 사이트</a>

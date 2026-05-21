@@ -9,6 +9,10 @@ export const studentService = {
     return studentRepository.findAdmin(academyId)
   },
 
+  getDistinctSchools(academyId: string) {
+    return studentRepository.findDistinctSchools(academyId)
+  },
+
   async getStudentById(id: string, academyId: string) {
     const student = await studentRepository.findById(id, academyId)
     if (!student) throw new Error('Student not found')

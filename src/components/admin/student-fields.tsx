@@ -1,3 +1,5 @@
+import { SchoolSelect } from '@/components/admin/school-select'
+
 type StudentFieldsProps = {
   defaults?: {
     grade: string | null
@@ -9,9 +11,10 @@ type StudentFieldsProps = {
     schoolName: string | null
     user?: { email: string } | null
   }
+  schools?: string[]
 }
 
-export function StudentFields({ defaults }: StudentFieldsProps) {
+export function StudentFields({ defaults, schools = [] }: StudentFieldsProps) {
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2">
@@ -19,10 +22,14 @@ export function StudentFields({ defaults }: StudentFieldsProps) {
           <span className="mb-1 block text-sm font-medium">이름</span>
           <input className="w-full rounded border px-3 py-2" defaultValue={defaults?.name ?? ''} name="name" required />
         </label>
-        <label className="block">
+        <div className="block">
           <span className="mb-1 block text-sm font-medium">학교</span>
-          <input className="w-full rounded border px-3 py-2" defaultValue={defaults?.schoolName ?? ''} name="schoolName" />
-        </label>
+          {schools.length > 0 ? (
+            <SchoolSelect defaultValue={defaults?.schoolName} schools={schools} />
+          ) : (
+            <input className="w-full rounded border px-3 py-2" defaultValue={defaults?.schoolName ?? ''} name="schoolName" />
+          )}
+        </div>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         <label className="block">

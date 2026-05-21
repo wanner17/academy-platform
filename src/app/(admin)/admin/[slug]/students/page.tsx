@@ -1,4 +1,5 @@
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { StudentExcelImport } from '@/components/admin/student-excel-import'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
@@ -58,9 +59,12 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
           <h1 className="text-2xl font-bold">학생 관리</h1>
           <p className="mt-1 text-sm text-slate-600">학생 계정, 상태, 수강 수업을 리스트로 확인합니다.</p>
         </div>
-        <a className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white" href={`/admin/${slug}/students/new`}>
-          학생 등록
-        </a>
+        <div className="flex gap-2">
+          <StudentExcelImport slug={slug} />
+          <a className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white" href={`/admin/${slug}/students/new`}>
+            학생 등록
+          </a>
+        </div>
       </div>
       <section className="mb-6 rounded-lg border bg-white p-4">
         <form className="grid gap-3 md:grid-cols-4" method="get">
@@ -136,7 +140,11 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
           <tbody className="divide-y">
             {students.map((student) => (
               <tr key={student.id}>
-                <td className="px-4 py-3 font-medium">{student.name}</td>
+                <td className="px-4 py-3 font-medium">
+                  <a className="hover:text-blue-700 hover:underline" href={`/admin/${slug}/students/${student.id}`}>
+                    {student.name}
+                  </a>
+                </td>
                 <td className="px-4 py-3">{[student.schoolName, student.grade].filter(Boolean).join(' ') || '-'}</td>
                 <td className="px-4 py-3">{student.phone ?? student.parentPhone ?? '-'}</td>
                 <td className="px-4 py-3">{student.user?.email ?? '-'}</td>
@@ -150,6 +158,9 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
+                    <a className="rounded border px-3 py-1" href={`/admin/${slug}/students/${student.id}`}>
+                      상세
+                    </a>
                     <a className="rounded border px-3 py-1" href={`/admin/${slug}/students/${student.id}/edit`}>
                       수정
                     </a>
