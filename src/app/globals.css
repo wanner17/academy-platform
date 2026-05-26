@@ -1920,6 +1920,7 @@ a { color: inherit; text-decoration: none; }
 
   .student-attendance-calendar {
     grid-template-columns: repeat(7, minmax(76px, 1fr));
+    overflow: visible;
   }
 }
 
