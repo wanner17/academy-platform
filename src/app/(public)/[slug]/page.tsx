@@ -1,5 +1,6 @@
 import { getAcademyBySlug } from '@/lib/utils/tenant'
-import { TeacherCard } from '@/components/public/teacher-card'
+import { KakaoMap } from '@/components/public/kakao-map'
+import { InstructorsSlider } from '@/components/public/instructors-slider'
 import { academyGalleryService } from '@/lib/services/academy-gallery.service'
 import { noticeService } from '@/lib/services/notice.service'
 import { teacherService } from '@/lib/services/teacher.service'
@@ -110,11 +111,7 @@ export default async function AcademyHomePage({ params }: PageProps) {
               강사진 전체 보기 →
             </a>
           </div>
-          <div className="pub-instructors">
-            {teachers.slice(0, 3).map((teacher) => (
-              <TeacherCard href={publicPath(slug, `/teachers/${teacher.id}`)} key={teacher.id} teacher={teacher} />
-            ))}
-          </div>
+          <InstructorsSlider teachers={teachers} slug={slug} />
         </section>
       )}
 
@@ -123,6 +120,50 @@ export default async function AcademyHomePage({ params }: PageProps) {
 
       {/* Course Finder Quiz */}
       <CourseFinderQuiz programs={programs} slug={slug} />
+
+      {/* Location */}
+      {academy.address && academy.features?.showLocation !== false && (
+        <section className="pub-section">
+          <div className="pub-section-head">
+            <div>
+              <div className="pub-label">LOCATION</div>
+              <h2 className="pub-h2">오시는 길</h2>
+            </div>
+            <a
+              className="pub-view-all"
+              href={`https://map.kakao.com/link/search/${encodeURIComponent(academy.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              카카오맵에서 보기 →
+            </a>
+          </div>
+          <div className="pub-location-body">
+            <div className="pub-location-info">
+              <div className="pub-location-row">
+                <span>📍</span>
+                <span>{academy.address}</span>
+              </div>
+              {academy.phone && (
+                <div className="pub-location-row">
+                  <span>📞</span>
+                  <span>{academy.phone}</span>
+                </div>
+              )}
+              {academy.email && (
+                <div className="pub-location-row">
+                  <span>✉</span>
+                  <span>{academy.email}</span>
+                </div>
+              )}
+              <a className="pub-cs-link" href={publicPath(slug, '/contact')}>
+                상담 신청하기 →
+              </a>
+            </div>
+            <KakaoMap address={academy.address} lat={academy.mapLatitude} lng={academy.mapLongitude} mapUrl={academy.mapUrl} name={academy.name} />
+          </div>
+        </section>
+      )}
 
       {/* Journal + Sidebar */}
       <div className="pub-journal-wrap">

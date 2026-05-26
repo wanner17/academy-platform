@@ -22,6 +22,8 @@ export async function updateAcademySettingsAction(formData: FormData) {
       phone: String(formData.get('phone') ?? ''),
       email: String(formData.get('email') ?? ''),
       mapUrl: String(formData.get('mapUrl') ?? ''),
+      mapLatitude: formData.get('mapLatitude') ? Number(formData.get('mapLatitude')) : null,
+      mapLongitude: formData.get('mapLongitude') ? Number(formData.get('mapLongitude')) : null,
       heroImageUrl: String(formData.get('heroImageUrl') ?? ''),
       naverBlogUrl: String(formData.get('naverBlogUrl') ?? ''),
       instagramUrl: String(formData.get('instagramUrl') ?? ''),

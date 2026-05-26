@@ -16,6 +16,8 @@ model Academy {
   phone       String?
   email       String?
   mapUrl      String?
+  mapLatitude  Float?
+  mapLongitude Float?
   heroImageUrl String?
   naverBlogUrl String?
   instagramUrl String?

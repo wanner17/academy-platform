@@ -7,6 +7,8 @@ export type UpdateAcademyInput = {
   phone?: string
   email?: string
   mapUrl?: string
+  mapLatitude?: number | null
+  mapLongitude?: number | null
   heroImageUrl?: string
   naverBlogUrl?: string
   showStatCounters?: boolean

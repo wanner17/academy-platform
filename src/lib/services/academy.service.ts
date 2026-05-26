@@ -25,6 +25,8 @@ export const academyService = {
       phone,
       email,
       mapUrl,
+      mapLatitude: data.mapLatitude,
+      mapLongitude: data.mapLongitude,
       heroImageUrl,
       naverBlogUrl,
       instagramUrl,

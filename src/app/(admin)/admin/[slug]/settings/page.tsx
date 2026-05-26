@@ -1,5 +1,6 @@
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { AcademyGalleryFields } from '@/components/admin/academy-gallery-fields'
+import { MapPicker } from '@/components/admin/map-picker'
 import { MainHeroImageField } from '@/components/admin/main-hero-image-field'
 import { HomepageSectionFields } from '@/components/admin/homepage-section-fields'
 import { updateAcademySettingsAction } from './actions'
@@ -78,6 +79,14 @@ export default async function SettingsPage({ params, searchParams }: SettingsPag
             <span className="mb-1 block text-sm font-medium">지도 URL</span>
             <input className="w-full rounded border px-3 py-2" defaultValue={academy.mapUrl ?? ''} name="mapUrl" />
           </label>
+          <div className="block">
+            <span className="mb-2 block text-sm font-medium">핀 위치 지정</span>
+            <MapPicker
+              address={academy.address}
+              initialLat={academy.mapLatitude}
+              initialLng={academy.mapLongitude}
+            />
+          </div>
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-sm font-medium">네이버 블로그 URL</span>
