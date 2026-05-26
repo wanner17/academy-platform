@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import { LogoutButton } from '@/components/admin/logout-button'
+import { AdminNav } from '@/components/admin/admin-nav'
 import { authConfig } from '@/lib/integrations/auth/config'
 import { isAcademyAdminRole, requireAcademyMember } from '@/lib/auth/authorization'
 import { adminPath } from '@/lib/utils/public-path'
@@ -26,37 +26,11 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
   return (
     <div className="admin-shell min-h-screen bg-slate-100">
       <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
           <a className="shrink-0 font-semibold" href={adminPath(slug)}>
             관리자
           </a>
-          <nav className="flex w-full gap-3 overflow-x-auto pb-1 text-sm text-slate-600 lg:w-auto lg:flex-wrap lg:justify-end lg:overflow-visible lg:pb-0">
-            {isAdmin ? (
-              <>
-                <a href={adminPath(slug, '/settings')}>기본 설정</a>
-                <a href={adminPath(slug, '/programs')}>수업 관리</a>
-                <a href={adminPath(slug, '/attendance')}>출석 관리</a>
-                <a href={adminPath(slug, '/tests')}>테스트 관리</a>
-                <a href={adminPath(slug, '/teachers')}>강사진 관리</a>
-                <a href={adminPath(slug, '/students')}>학생 관리</a>
-                <a href={adminPath(slug, '/notices')}>공지 관리</a>
-                <a href={adminPath(slug, '/inquiries')}>문의 관리</a>
-                <a href={adminPath(slug, '/analytics')}>분석</a>
-              </>
-            ) : (
-              <>
-                <a href={adminPath(slug, '/my')}>내 수업</a>
-                <a href={adminPath(slug, '/attendance')}>출석 관리</a>
-                <a href={adminPath(slug, '/tests')}>테스트 관리</a>
-                <a href={adminPath(slug, '/students')}>학생 관리</a>
-                <a href={adminPath(slug, '/inquiries')}>문의 관리</a>
-                <a href={adminPath(slug, '/profile')}>내 정보</a>
-                <a href={adminPath(slug, '/analytics')}>분석</a>
-              </>
-            )}
-            <a href={`/${slug}`}>사용자 사이트</a>
-            <LogoutButton />
-          </nav>
+          <AdminNav isAdmin={isAdmin} slug={slug} />
         </div>
       </header>
       {children}

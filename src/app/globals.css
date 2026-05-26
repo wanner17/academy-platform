@@ -1906,7 +1906,7 @@ a { color: inherit; text-decoration: none; }
 
   .admin-shell .overflow-x-auto,
   .student-table-wrap,
-  .student-attendance-calendar {
+  .student-attendance-calendar-wrap {
     -webkit-overflow-scrolling: touch;
   }
 
@@ -1914,9 +1914,12 @@ a { color: inherit; text-decoration: none; }
     padding: 16px;
   }
 
+  .student-attendance-calendar-wrap {
+    overflow-x: auto;
+  }
+
   .student-attendance-calendar {
     grid-template-columns: repeat(7, minmax(76px, 1fr));
-    overflow-x: auto;
   }
 }
 

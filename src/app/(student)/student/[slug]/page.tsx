@@ -109,6 +109,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
             nextHref={`${studentPath(slug)}?month=${toMonthParam(nextMonth)}`}
             prevHref={`${studentPath(slug)}?month=${toMonthParam(prevMonth)}`}
           />
+          <div className="student-attendance-calendar-wrap">
           <div className="student-attendance-calendar">
             {['일', '월', '화', '수', '목', '금', '토'].map((day) => (
               <div className="student-calendar-weekday" key={day}>{day}</div>
@@ -135,6 +136,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
                 </div>
               )
             })}
+          </div>
           </div>
         </section>
 
