@@ -8,13 +8,14 @@ import { homeworkService } from '@/lib/services/homework.service'
 import { schoolExamService } from '@/lib/services/school-exam.service'
 import { studentService } from '@/lib/services/student.service'
 import { testResultService } from '@/lib/services/test-result.service'
+import { formatPhone } from '@/lib/utils/phone'
 import { formatKoreaTime, getKoreaDateParts, toKoreaDateKey } from '@/lib/utils/korea-time'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { deleteSchoolExamAction } from './exams/actions'
 
 type PageProps = {
   params: Promise<{ slug: string; id: string }>
-  searchParams: Promise<{ month?: string }>
+  searchParams: Promise<{ from?: string; month?: string; programId?: string }>
 }
 
 type ChartDataPoint = Record<string, string | number>
@@ -25,7 +26,7 @@ function periodLabel(year: number, semester: number) {
 
 export default async function StudentDetailPage({ params, searchParams }: PageProps) {
   const { slug, id: studentId } = await params
-  const { month } = await searchParams
+  const { month, from, programId } = await searchParams
   await requireMemberPage(slug)
   const academy = await getAcademyBySlug(slug)
 
@@ -117,15 +118,22 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
       <div className="mb-6">
-        <a className="text-sm text-slate-500 hover:underline" href={`/admin/${slug}/students`}>
-          ← 학생 관리
-        </a>
+        {from === 'program' && programId ? (
+          <a className="text-sm text-slate-500 hover:underline" href={`/admin/${slug}/programs/${programId}`}>
+            ← 수업 상세
+          </a>
+        ) : (
+          <a className="text-sm text-slate-500 hover:underline" href={`/admin/${slug}/students`}>
+            ← 학생 관리
+          </a>
+        )}
         <div className="mt-2 flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold">{student.name}</h1>
             <p className="mt-1 text-sm text-slate-500">
               {[student.schoolName, student.grade].filter(Boolean).join(' ')}
-              {student.phone && ` · ${student.phone}`}
+              {student.phone && ` · ${formatPhone(student.phone)}`}
+              {student.parentPhone && ` · 학부모 ${formatPhone(student.parentPhone)}`}
             </p>
           </div>
           <a className="rounded border px-3 py-1.5 text-sm hover:bg-slate-50" href={`${basePath}/edit`}>

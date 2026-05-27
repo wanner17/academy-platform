@@ -1,16 +1,18 @@
 import type { AttendanceStatus } from '@prisma/client'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { Pagination } from '@/components/admin/pagination'
 import { attendanceSourceLabels, attendanceStatusLabels } from '@/lib/attendance-labels'
 import { requireMemberPage } from '@/lib/auth/server'
 import { attendanceService, toDateInputValue } from '@/lib/services/attendance.service'
 import { scheduleService } from '@/lib/services/schedule.service'
 import { studentService } from '@/lib/services/student.service'
 import { formatKoreaTime, getKoreaDayOfWeek } from '@/lib/utils/korea-time'
+import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
 import { markAttendanceAction, updateAttendanceSettingAction } from './actions'
 
 type AdminAttendancePageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ date?: string; q?: string; status?: AttendanceStatus }>
+  searchParams: Promise<{ date?: string; limit?: string; page?: string; q?: string; status?: AttendanceStatus }>
 }
 
 export default async function AdminAttendancePage({ params, searchParams }: AdminAttendancePageProps) {
@@ -22,6 +24,7 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
   const selectedDayOfWeek = getKoreaDayOfWeek(selectedDate)
   const query = filters.q?.trim().toLowerCase() || ''
   const selectedStatus = filters.status ?? ''
+  const { page, limit } = parsePaginationParams(filters)
 
   await attendanceService.backfillAbsencesForDate(academy.id, selectedDate)
   const [setting, records, students, schedules] = await Promise.all([
@@ -64,7 +67,7 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
     .filter((record) => !record.scheduleId || !expectedKeys.has(`${record.studentId}:${record.scheduleId}`))
     .map((record) => ({ record, schedule: record.schedule, student: record.student }))
 
-  const rows = [...expectedRows, ...extraRecordRows].filter(({ student, record }) => {
+  const allRows = [...expectedRows, ...extraRecordRows].filter(({ student, record }) => {
     const matchesQuery = query
       ? [student.name, student.schoolName ?? '', student.grade ?? '', student.user?.email ?? ''].some((v) =>
           v.toLowerCase().includes(query),
@@ -73,6 +76,8 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
     const matchesStatus = selectedStatus ? record?.status === selectedStatus : true
     return matchesQuery && matchesStatus
   })
+
+  const { items: rows, total, totalPages, page: currentPage } = paginateArray(allRows, page, limit)
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -166,34 +171,35 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
           </select>
           <button className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white" type="submit">조회</button>
         </form>
+        <p className="mt-3 text-sm text-slate-500">총 {total}명</p>
       </section>
 
       <div className="overflow-x-auto rounded-lg border bg-white">
-        <table className="w-full min-w-[1080px] text-left text-sm">
+        <table className="w-full min-w-[1200px] text-left text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
-              <th className="px-4 py-3 font-medium">학생</th>
-              <th className="px-4 py-3 font-medium">학교/학년</th>
-              <th className="px-4 py-3 font-medium">수업</th>
-              <th className="px-4 py-3 font-medium">상태</th>
-              <th className="px-4 py-3 font-medium">출석 시간</th>
-              <th className="px-4 py-3 font-medium">거리</th>
-              <th className="px-4 py-3 font-medium">처리 방식</th>
-              <th className="px-4 py-3 font-medium">메모</th>
-              <th className="px-4 py-3 text-right font-medium">관리</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">학생</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">학교/학년</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">수업</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">상태</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">출석 시간</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">거리</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">처리 방식</th>
+              <th className="whitespace-nowrap px-4 py-3 font-medium">메모</th>
+              <th className="whitespace-nowrap px-4 py-3 text-right font-medium">관리</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {rows.map(({ student, record, schedule }, idx) => (
               <tr key={record?.id ?? `no-record-${student.id}-${schedule?.id ?? idx}`}>
-                <td className="px-4 py-3 font-medium">{student.name}</td>
-                <td className="px-4 py-3">{[student.schoolName, student.grade].filter(Boolean).join(' ') || '-'}</td>
-                <td className="px-4 py-3 text-slate-600">{schedule ? `${schedule.title} (${schedule.startTime})` : '-'}</td>
-                <td className="px-4 py-3">{record ? attendanceStatusLabels[record.status] : '미처리'}</td>
-                <td className="px-4 py-3">{record?.checkedAt ? formatKoreaTime(record.checkedAt) : '-'}</td>
-                <td className="px-4 py-3">{record?.distanceMeters !== null && record?.distanceMeters !== undefined ? `${Math.round(record.distanceMeters)}m` : '-'}</td>
-                <td className="px-4 py-3">{record ? attendanceSourceLabels[record.source] : '-'}</td>
-                <td className="px-4 py-3">{record?.memo ?? '-'}</td>
+                <td className="whitespace-nowrap px-4 py-3 font-medium">{student.name}</td>
+                <td className="whitespace-nowrap px-4 py-3">{[student.schoolName, student.grade].filter(Boolean).join(' ') || '-'}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-slate-600">{schedule ? `${schedule.title} (${schedule.startTime})` : '-'}</td>
+                <td className="whitespace-nowrap px-4 py-3">{record ? attendanceStatusLabels[record.status] : '미처리'}</td>
+                <td className="whitespace-nowrap px-4 py-3">{record?.checkedAt ? formatKoreaTime(record.checkedAt) : '-'}</td>
+                <td className="whitespace-nowrap px-4 py-3">{record?.distanceMeters !== null && record?.distanceMeters !== undefined ? `${Math.round(record.distanceMeters)}m` : '-'}</td>
+                <td className="whitespace-nowrap px-4 py-3">{record ? attendanceSourceLabels[record.source] : '-'}</td>
+                <td className="whitespace-nowrap px-4 py-3">{record?.memo ?? '-'}</td>
                 <td className="px-4 py-3">
                   <form action={markAttendanceAction} className="flex justify-end gap-2">
                     <input name="slug" type="hidden" value={slug} />
@@ -213,11 +219,21 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
                 </td>
               </tr>
             ))}
-            {rows.length === 0 ? (
+            {total === 0 ? (
               <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={9}>표시할 학생이 없습니다.</td></tr>
             ) : null}
           </tbody>
         </table>
+        <div className="border-t px-4">
+          <Pagination
+            basePath={`/admin/${slug}/attendance`}
+            limit={limit}
+            page={currentPage}
+            searchParams={{ ...filters }}
+            total={total}
+            totalPages={totalPages}
+          />
+        </div>
       </div>
     </main>
   )

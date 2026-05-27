@@ -59,13 +59,26 @@ export const programRepository = {
 
     return prisma.program.findMany({
       where,
-      include: { teacher: true },
+      include: {
+        teacher: true,
+        _count: { select: { enrollments: { where: { status: 'ACTIVE' } } } },
+      },
       orderBy: [{ subject: 'asc' }, { mode: 'asc' }, { targetLevel: 'asc' }, { order: 'asc' }, { createdAt: 'asc' }],
     })
   },
 
   findById(id: string, academyId: string) {
-    return prisma.program.findFirst({ where: { id, academyId }, include: { teacher: true, schedules: true } })
+    return prisma.program.findFirst({
+      where: { id, academyId },
+      include: {
+        teacher: true,
+        schedules: true,
+        enrollments: {
+          include: { student: true },
+          orderBy: { student: { name: 'asc' } },
+        },
+      },
+    })
   },
 
   create(academyId: string, data: CreateProgramInput) {

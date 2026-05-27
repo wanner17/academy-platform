@@ -3,6 +3,7 @@ import {
   type CreateStudentInput,
   type UpdateStudentInput,
 } from '@/lib/repositories/student.repository'
+import { stripPhone } from '@/lib/utils/phone'
 
 export const studentService = {
   getAdminStudents(academyId: string) {
@@ -65,8 +66,8 @@ function normalizeStudentInput<T extends CreateStudentInput | UpdateStudentInput
   const userId = data.userId?.trim() || undefined
   const schoolName = data.schoolName?.trim() || undefined
   const grade = data.grade?.trim() || undefined
-  const phone = data.phone?.trim() || undefined
-  const parentPhone = data.parentPhone?.trim() || undefined
+  const phone = data.phone?.trim() ? stripPhone(data.phone.trim()) || undefined : undefined
+  const parentPhone = data.parentPhone?.trim() ? stripPhone(data.parentPhone.trim()) || undefined : undefined
   const memo = data.memo?.trim() || undefined
 
   if ('name' in data && !name) throw new Error('Name is required')

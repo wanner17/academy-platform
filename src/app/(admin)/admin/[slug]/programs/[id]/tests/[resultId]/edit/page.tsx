@@ -26,7 +26,7 @@ export default async function EditTestResultPage({ params }: EditTestResultPageP
   return (
     <main className="mx-auto max-w-2xl px-6 py-10">
       <a className="mb-2 inline-block text-sm text-blue-700" href={`/admin/${slug}/programs/${program.id}/tests`}>
-        테스트 관리
+        ← 테스트 관리
       </a>
       <h1 className="mb-6 text-2xl font-bold">테스트 결과 수정</h1>
       <form action={updateTestResultAction} className="space-y-4 rounded-lg border bg-white p-5">

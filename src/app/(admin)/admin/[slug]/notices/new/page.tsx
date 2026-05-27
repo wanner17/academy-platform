@@ -14,7 +14,7 @@ export default async function NewNoticePage({ params }: NewNoticePageProps) {
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <a className="mb-6 inline-block text-sm text-blue-700" href={`/admin/${slug}/notices`}>
-        공지 관리
+        ← 공지 관리
       </a>
       <section className="rounded-lg border bg-white p-5">
         <h1 className="mb-4 text-2xl font-bold">공지 작성</h1>

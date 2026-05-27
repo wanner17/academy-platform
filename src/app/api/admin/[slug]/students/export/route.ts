@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import * as XLSX from 'xlsx'
 import { requireAcademyMember } from '@/lib/auth/authorization'
 import { authConfig } from '@/lib/integrations/auth/config'
+import { formatPhone } from '@/lib/utils/phone'
 import { studentService } from '@/lib/services/student.service'
 
 type RouteProps = { params: Promise<{ slug: string }> }
@@ -19,8 +20,8 @@ export async function GET(_request: Request, { params }: RouteProps) {
     s.name,
     s.schoolName ?? '',
     s.grade ?? '',
-    s.phone ?? '',
-    s.parentPhone ?? '',
+    formatPhone(s.phone),
+    formatPhone(s.parentPhone),
     s.memo ?? '',
     s.user?.email ?? '',
     '',

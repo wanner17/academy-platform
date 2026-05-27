@@ -1,13 +1,15 @@
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { Pagination } from '@/components/admin/pagination'
 import { dayLabels } from '@/lib/schedule-labels'
 import { scheduleService } from '@/lib/services/schedule.service'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { deleteScheduleAction } from './actions'
 import { requireAdminPage } from '@/lib/auth/server'
+import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
 
 type AdminSchedulePageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ active?: string; day?: string; q?: string }>
+  searchParams: Promise<{ active?: string; day?: string; limit?: string; page?: string; q?: string }>
 }
 
 export default async function AdminSchedulePage({ params, searchParams }: AdminSchedulePageProps) {
@@ -19,7 +21,8 @@ export default async function AdminSchedulePage({ params, searchParams }: AdminS
   const query = filters.q?.trim().toLowerCase() || ''
   const selectedDay = filters.day !== undefined && filters.day !== '' ? Number(filters.day) : undefined
   const selectedActive = filters.active === 'true' ? true : filters.active === 'false' ? false : undefined
-  const schedules = allSchedules.filter((schedule) => {
+  const { page, limit } = parsePaginationParams(filters)
+  const filteredSchedules = allSchedules.filter((schedule) => {
     const matchesQuery = query
       ? [schedule.title, schedule.subject ?? '', schedule.teacher ?? '', schedule.room ?? '', schedule.program?.title ?? ''].some((value) =>
           value.toLowerCase().includes(query),
@@ -29,6 +32,7 @@ export default async function AdminSchedulePage({ params, searchParams }: AdminS
     const matchesActive = selectedActive === undefined ? true : schedule.isActive === selectedActive
     return matchesQuery && matchesDay && matchesActive
   })
+  const { items: schedules, total, totalPages, page: currentPage } = paginateArray(filteredSchedules, page, limit)
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -75,7 +79,7 @@ export default async function AdminSchedulePage({ params, searchParams }: AdminS
             </a>
           </div>
         </form>
-        <p className="mt-3 text-sm text-slate-500">총 {schedules.length}개</p>
+        <p className="mt-3 text-sm text-slate-500">총 {total}개</p>
       </section>
       <div className="overflow-x-auto rounded-lg border bg-white">
         <table className="w-full min-w-[840px] text-left text-sm">
@@ -125,7 +129,17 @@ export default async function AdminSchedulePage({ params, searchParams }: AdminS
             ))}
           </tbody>
         </table>
-        {schedules.length === 0 ? <p className="p-4 text-sm text-slate-500">등록된 시간표가 없습니다.</p> : null}
+        {total === 0 ? <p className="p-4 text-sm text-slate-500">등록된 시간표가 없습니다.</p> : null}
+        <div className="border-t px-4">
+          <Pagination
+            basePath={`/admin/${slug}/schedule`}
+            limit={limit}
+            page={currentPage}
+            searchParams={{ ...filters }}
+            total={total}
+            totalPages={totalPages}
+          />
+        </div>
       </div>
     </main>
   )

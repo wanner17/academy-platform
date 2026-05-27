@@ -1,17 +1,21 @@
 import type { ProgramMode, TargetLevel } from '@prisma/client'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { Pagination } from '@/components/admin/pagination'
 import { programService } from '@/lib/services/program.service'
 import { teacherService } from '@/lib/services/teacher.service'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { deleteProgramAction } from './actions'
 import { requireAdminPage } from '@/lib/auth/server'
 import { programModeLabels, targetLevelLabels } from '@/lib/program-labels'
+import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
 
 type AdminProgramsPageProps = {
   params: Promise<{ slug: string }>
   searchParams: Promise<{
     active?: string
+    limit?: string
     mode?: string
+    page?: string
     q?: string
     subject?: string
     targetLevel?: string
@@ -27,6 +31,7 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
   const filters = await searchParams
   await requireAdminPage(slug)
   const academy = await getAcademyBySlug(slug)
+  const { page, limit } = parsePaginationParams(filters)
   const allPrograms = await programService.getAdminPrograms(academy.id)
   const teachers = await teacherService.getAdminTeachers(academy.id)
   const selectedMode = modes.includes(filters.mode as ProgramMode) ? (filters.mode as ProgramMode) : undefined
@@ -37,7 +42,7 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
   const selectedSubject = filters.subject?.trim() || undefined
   const selectedTeacherId = filters.teacherId?.trim() || undefined
   const query = filters.q?.trim() || undefined
-  const programs = await programService.getAdminPrograms(academy.id, {
+  const filteredPrograms = await programService.getAdminPrograms(academy.id, {
     isActive: selectedActive,
     mode: selectedMode,
     query,
@@ -48,6 +53,7 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
   const subjects = Array.from(new Set(allPrograms.map((program) => program.subject).filter(isString))).sort((left, right) =>
     left.localeCompare(right, 'ko-KR'),
   )
+  const { items: programs, total, totalPages, page: currentPage } = paginateArray(filteredPrograms, page, limit)
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -132,10 +138,10 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
               </a>
             </div>
           </form>
-          <p className="mt-3 text-sm text-slate-500">총 {programs.length}개</p>
+          <p className="mt-3 text-sm text-slate-500">총 {total}개</p>
         </section>
         <div className="overflow-x-auto rounded-lg border bg-white">
-          <table className="w-full min-w-[860px] text-left text-sm">
+          <table className="w-full min-w-[960px] text-left text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="px-4 py-3 font-medium">수업명</th>
@@ -143,6 +149,7 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
                 <th className="px-4 py-3 font-medium">대상</th>
                 <th className="px-4 py-3 font-medium">과목</th>
                 <th className="px-4 py-3 font-medium">담당 강사</th>
+                <th className="px-4 py-3 font-medium">수강생</th>
                 <th className="px-4 py-3 font-medium">상태</th>
                 <th className="px-4 py-3 text-right font-medium">관리</th>
               </tr>
@@ -155,6 +162,11 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
                   <td className="px-4 py-3">{targetLevelLabels[program.targetLevel]}</td>
                   <td className="px-4 py-3">{program.subject ?? '-'}</td>
                   <td className="px-4 py-3">{program.teacher?.name ?? '-'}</td>
+                  <td className="px-4 py-3">
+                    <a className="hover:text-blue-700 hover:underline" href={`/admin/${slug}/programs/${program.id}`}>
+                      {program._count.enrollments}명
+                    </a>
+                  </td>
                   <td className="px-4 py-3">
                     {program.isActive ? (
                       <span className="rounded bg-blue-50 px-2 py-1 text-xs text-blue-700">공개</span>
@@ -183,7 +195,17 @@ export default async function AdminProgramsPage({ params, searchParams }: AdminP
               ))}
             </tbody>
           </table>
-          {programs.length === 0 ? <p className="p-4 text-sm text-slate-500">등록된 수업이 없습니다.</p> : null}
+          {total === 0 ? <p className="p-4 text-sm text-slate-500">등록된 수업이 없습니다.</p> : null}
+          <div className="border-t px-4">
+            <Pagination
+              basePath={`/admin/${slug}/programs`}
+              limit={limit}
+              page={currentPage}
+              searchParams={{ ...filters }}
+              total={total}
+              totalPages={totalPages}
+            />
+          </div>
         </div>
     </main>
   )

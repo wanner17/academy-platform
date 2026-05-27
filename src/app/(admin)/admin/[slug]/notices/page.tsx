@@ -2,12 +2,14 @@ import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { noticeService } from '@/lib/services/notice.service'
 import { deleteNoticeAction } from './actions'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { Pagination } from '@/components/admin/pagination'
 import { requireAdminPage } from '@/lib/auth/server'
 import { stripHtml } from '@/lib/utils/html'
+import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
 
 type AdminNoticesPageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ pinned?: string; q?: string; status?: string }>
+  searchParams: Promise<{ limit?: string; page?: string; pinned?: string; q?: string; status?: string }>
 }
 
 export default async function AdminNoticesPage({ params, searchParams }: AdminNoticesPageProps) {
@@ -15,11 +17,13 @@ export default async function AdminNoticesPage({ params, searchParams }: AdminNo
   const filters = await searchParams
   await requireAdminPage(slug)
   const academy = await getAcademyBySlug(slug)
-  const { items } = await noticeService.getAdminNotices(academy.id)
+  const { items: allNotices } = await noticeService.getAdminNotices(academy.id)
   const query = filters.q?.trim().toLowerCase() || ''
   const selectedStatus = filters.status?.trim() || ''
   const selectedPinned = filters.pinned === 'true' ? true : filters.pinned === 'false' ? false : undefined
-  const notices = items.filter((notice) => {
+  const { page, limit } = parsePaginationParams(filters)
+
+  const filteredNotices = allNotices.filter((notice) => {
     const matchesQuery = query
       ? [notice.title, stripHtml(notice.content)].some((value) => value.toLowerCase().includes(query))
       : true
@@ -27,6 +31,7 @@ export default async function AdminNoticesPage({ params, searchParams }: AdminNo
     const matchesPinned = selectedPinned === undefined ? true : notice.isPinned === selectedPinned
     return matchesQuery && matchesStatus && matchesPinned
   })
+  const { items: notices, total, totalPages, page: currentPage } = paginateArray(filteredNotices, page, limit)
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -71,7 +76,7 @@ export default async function AdminNoticesPage({ params, searchParams }: AdminNo
             </a>
           </div>
         </form>
-        <p className="mt-3 text-sm text-slate-500">총 {notices.length}개</p>
+        <p className="mt-3 text-sm text-slate-500">총 {total}개</p>
       </section>
       <div className="overflow-x-auto rounded-lg border bg-white">
         <table className="w-full min-w-[820px] text-left text-sm">
@@ -112,7 +117,17 @@ export default async function AdminNoticesPage({ params, searchParams }: AdminNo
             ))}
           </tbody>
         </table>
-        {notices.length === 0 ? <p className="p-4 text-sm text-slate-500">공지 없음</p> : null}
+        {total === 0 ? <p className="p-4 text-sm text-slate-500">공지 없음</p> : null}
+        <div className="border-t px-4">
+          <Pagination
+            basePath={`/admin/${slug}/notices`}
+            limit={limit}
+            page={currentPage}
+            searchParams={{ ...filters }}
+            total={total}
+            totalPages={totalPages}
+          />
+        </div>
       </div>
     </main>
   )

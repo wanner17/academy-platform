@@ -2,12 +2,15 @@ import type { InquiryStatus } from '@prisma/client'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { inquiryService } from '@/lib/services/inquiry.service'
 import { updateInquiryMemoAction, updateInquiryStatusAction } from './actions'
+import { formatPhone } from '@/lib/utils/phone'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { Pagination } from '@/components/admin/pagination'
 import { requireMemberPage } from '@/lib/auth/server'
+import { parsePaginationParams } from '@/lib/utils/pagination'
 
 type AdminInquiriesPageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ q?: string; status?: string }>
+  searchParams: Promise<{ limit?: string; page?: string; q?: string; status?: string }>
 }
 
 const statusLabels = {
@@ -20,15 +23,17 @@ const statuses: InquiryStatus[] = ['PENDING', 'IN_PROGRESS', 'DONE']
 
 export default async function AdminInquiriesPage({ params, searchParams }: AdminInquiriesPageProps) {
   const { slug } = await params
-  const { q, status } = await searchParams
+  const filters = await searchParams
   await requireMemberPage(slug)
   const academy = await getAcademyBySlug(slug)
-  const selectedStatus = statuses.includes(status as InquiryStatus) ? (status as InquiryStatus) : undefined
-  const query = q?.trim() || undefined
-  const { items, total } = await inquiryService.getAdminInquiries(academy.id, 1, 50, {
+  const selectedStatus = statuses.includes(filters.status as InquiryStatus) ? (filters.status as InquiryStatus) : undefined
+  const query = filters.q?.trim() || undefined
+  const { page, limit } = parsePaginationParams(filters)
+  const { items, total } = await inquiryService.getAdminInquiries(academy.id, page, limit, {
     query,
     status: selectedStatus,
   })
+  const totalPages = Math.max(1, Math.ceil(total / limit))
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-10">
@@ -96,7 +101,7 @@ export default async function AdminInquiriesPage({ params, searchParams }: Admin
                 <td className="min-w-0 px-4 py-3">
                   <p className="truncate">{inquiry.name}</p>
                   <p className="truncate text-xs text-slate-500">
-                    {inquiry.phone}
+                    {formatPhone(inquiry.phone)}
                     {inquiry.email ? ` · ${inquiry.email}` : ''}
                   </p>
                 </td>
@@ -151,6 +156,16 @@ export default async function AdminInquiriesPage({ params, searchParams }: Admin
           </tbody>
         </table>
         {items.length === 0 ? <p className="p-4 text-sm text-slate-500">접수된 문의가 없습니다.</p> : null}
+        <div className="border-t px-4">
+          <Pagination
+            basePath={`/admin/${slug}/inquiries`}
+            limit={limit}
+            page={page}
+            searchParams={{ ...filters }}
+            total={total}
+            totalPages={totalPages}
+          />
+        </div>
       </div>
     </main>
   )

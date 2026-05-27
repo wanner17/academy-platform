@@ -25,7 +25,7 @@ export default async function EditStudentPage({ params }: EditStudentPageProps) 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
       <a className="mb-6 inline-block text-sm text-blue-700" href={`/admin/${slug}/students`}>
-        학생 관리
+        ← 학생 관리
       </a>
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="rounded-lg border bg-white p-5">

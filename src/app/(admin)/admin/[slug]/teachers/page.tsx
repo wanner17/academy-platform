@@ -1,13 +1,15 @@
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { Pagination } from '@/components/admin/pagination'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { requireAdminPage } from '@/lib/auth/server'
 import { teacherService } from '@/lib/services/teacher.service'
 import { deleteTeacherAction } from './actions'
 import { stripHtml } from '@/lib/utils/html'
+import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
 
 type AdminTeachersPageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ active?: string; q?: string; subject?: string }>
+  searchParams: Promise<{ active?: string; limit?: string; page?: string; q?: string; subject?: string }>
 }
 
 export default async function AdminTeachersPage({ params, searchParams }: AdminTeachersPageProps) {
@@ -19,10 +21,11 @@ export default async function AdminTeachersPage({ params, searchParams }: AdminT
   const query = filters.q?.trim().toLowerCase() || ''
   const selectedSubject = filters.subject?.trim() || ''
   const selectedActive = filters.active === 'true' ? true : filters.active === 'false' ? false : undefined
+  const { page, limit } = parsePaginationParams(filters)
   const subjects = Array.from(new Set(allTeachers.map((teacher) => teacher.subject).filter(Boolean))).sort((a, b) =>
     a.localeCompare(b, 'ko-KR'),
   )
-  const teachers = allTeachers.filter((teacher) => {
+  const filteredTeachers = allTeachers.filter((teacher) => {
     const matchesQuery = query
       ? [teacher.name, teacher.subject, stripHtml(teacher.bio ?? ''), teacher.user?.email ?? ''].some((value) =>
           value.toLowerCase().includes(query),
@@ -32,6 +35,7 @@ export default async function AdminTeachersPage({ params, searchParams }: AdminT
     const matchesActive = selectedActive === undefined ? true : teacher.isActive === selectedActive
     return matchesQuery && matchesSubject && matchesActive
   })
+  const { items: teachers, total, totalPages, page: currentPage } = paginateArray(filteredTeachers, page, limit)
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -78,7 +82,7 @@ export default async function AdminTeachersPage({ params, searchParams }: AdminT
             </a>
           </div>
         </form>
-        <p className="mt-3 text-sm text-slate-500">총 {teachers.length}명</p>
+        <p className="mt-3 text-sm text-slate-500">총 {total}명</p>
       </section>
       <div className="overflow-x-auto rounded-lg border bg-white">
         <table className="w-full min-w-[760px] text-left text-sm">
@@ -122,7 +126,17 @@ export default async function AdminTeachersPage({ params, searchParams }: AdminT
             ))}
           </tbody>
         </table>
-        {teachers.length === 0 ? <p className="p-4 text-sm text-slate-500">등록된 강사가 없습니다.</p> : null}
+        {total === 0 ? <p className="p-4 text-sm text-slate-500">등록된 강사가 없습니다.</p> : null}
+        <div className="border-t px-4">
+          <Pagination
+            basePath={`/admin/${slug}/teachers`}
+            limit={limit}
+            page={currentPage}
+            searchParams={{ ...filters }}
+            total={total}
+            totalPages={totalPages}
+          />
+        </div>
       </div>
     </main>
   )

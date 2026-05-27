@@ -20,7 +20,7 @@ export default async function EditTeacherPage({ params }: EditTeacherPageProps) 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <a className="mb-6 inline-block text-sm text-blue-700" href={`/admin/${slug}/teachers`}>
-        강사진 관리
+        ← 강사진 관리
       </a>
       <section className="rounded-lg border bg-white p-5">
         <h1 className="mb-4 text-2xl font-bold">강사 수정</h1>

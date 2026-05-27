@@ -1,3 +1,4 @@
+import { formatPhone } from '@/lib/utils/phone'
 import { SchoolSelect } from '@/components/admin/school-select'
 
 type StudentFieldsProps = {
@@ -38,11 +39,11 @@ export function StudentFields({ defaults, schools = [] }: StudentFieldsProps) {
         </label>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">학생 연락처</span>
-          <input className="w-full rounded border px-3 py-2" defaultValue={defaults?.phone ?? ''} name="phone" />
+          <input className="w-full rounded border px-3 py-2" defaultValue={formatPhone(defaults?.phone)} name="phone" />
         </label>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">학부모 연락처</span>
-          <input className="w-full rounded border px-3 py-2" defaultValue={defaults?.parentPhone ?? ''} name="parentPhone" />
+          <input className="w-full rounded border px-3 py-2" defaultValue={formatPhone(defaults?.parentPhone)} name="parentPhone" />
         </label>
       </div>
       <label className="block">

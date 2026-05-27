@@ -1,13 +1,16 @@
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { Pagination } from '@/components/admin/pagination'
 import { StudentExcelImport } from '@/components/admin/student-excel-import'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
+import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
+import { formatPhone } from '@/lib/utils/phone'
 import { deleteStudentAction, restoreStudentAction, withdrawStudentAction } from './actions'
 
 type AdminStudentsPageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ grade?: string; programId?: string; q?: string; schoolName?: string; status?: string }>
+  searchParams: Promise<{ grade?: string; limit?: string; page?: string; programId?: string; q?: string; schoolName?: string; status?: string }>
 }
 
 export default async function AdminStudentsPage({ params, searchParams }: AdminStudentsPageProps) {
@@ -21,6 +24,7 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
   const selectedGrade = filters.grade?.trim() || ''
   const selectedProgramId = filters.programId?.trim() || ''
   const selectedStatus = filters.status?.trim() || ''
+  const { page, limit } = parsePaginationParams(filters)
 
   const schools = Array.from(new Set(allStudents.map((s) => s.schoolName).filter(isString))).sort((a, b) =>
     a.localeCompare(b, 'ko-KR'),
@@ -34,7 +38,7 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
     ).values(),
   ).sort((a, b) => a.title.localeCompare(b.title, 'ko-KR'))
 
-  const students = allStudents.filter((student) => {
+  const filteredStudents = allStudents.filter((student) => {
     const matchesQuery = query
       ? [
           student.name,
@@ -57,6 +61,8 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
       true
     return matchesQuery && matchesSchool && matchesGrade && matchesProgram && matchesStatus
   })
+
+  const { items: students, total, totalPages, page: currentPage } = paginateArray(filteredStudents, page, limit)
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -125,7 +131,7 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
             </a>
           </div>
         </form>
-        <p className="mt-3 text-sm text-slate-500">총 {students.length}명</p>
+        <p className="mt-3 text-sm text-slate-500">총 {total}명</p>
       </section>
 
       <div className="overflow-x-auto rounded-lg border bg-white">
@@ -150,7 +156,7 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
                   </a>
                 </td>
                 <td className="px-4 py-3">{[student.schoolName, student.grade].filter(Boolean).join(' ') || '-'}</td>
-                <td className="px-4 py-3">{student.phone ?? student.parentPhone ?? '-'}</td>
+                <td className="px-4 py-3">{formatPhone(student.phone) || formatPhone(student.parentPhone) || '-'}</td>
                 <td className="px-4 py-3">{student.user?.email ?? '-'}</td>
                 <td className="px-4 py-3">{student.enrollments.length}개</td>
                 <td className="px-4 py-3">
@@ -207,7 +213,17 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
             ))}
           </tbody>
         </table>
-        {students.length === 0 ? <p className="p-4 text-sm text-slate-500">등록된 학생이 없습니다.</p> : null}
+        {total === 0 ? <p className="p-4 text-sm text-slate-500">등록된 학생이 없습니다.</p> : null}
+        <div className="border-t px-4">
+          <Pagination
+            basePath={`/admin/${slug}/students`}
+            limit={limit}
+            page={currentPage}
+            searchParams={{ ...filters }}
+            total={total}
+            totalPages={totalPages}
+          />
+        </div>
       </div>
     </main>
   )

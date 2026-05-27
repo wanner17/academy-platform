@@ -5,7 +5,7 @@ import {
 } from '@/lib/repositories/inquiry.repository'
 import type { InquiryStatus } from '@prisma/client'
 
-const phonePattern = /^[0-9+\-\s()]{8,20}$/
+const phonePattern = /^\d{8,15}$/
 
 export const inquiryService = {
   getAdminInquiries(academyId: string, page = 1, limit = 50, options: FindAdminInquiriesOptions = {}) {
@@ -14,7 +14,7 @@ export const inquiryService = {
 
   async createInquiry(academyId: string, data: CreateInquiryInput) {
     const name = data.name.trim()
-    const phone = data.phone.trim()
+    const phone = data.phone.trim().replace(/\D/g, '')
     const email = data.email?.trim() || undefined
     const subject = data.subject?.trim() || undefined
     const content = data.content.trim()

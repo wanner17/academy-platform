@@ -1,22 +1,26 @@
+import { Pagination } from '@/components/admin/pagination'
 import { requireMemberPage } from '@/lib/auth/server'
 import { programService } from '@/lib/services/program.service'
 import { studentService } from '@/lib/services/student.service'
 import { testResultService } from '@/lib/services/test-result.service'
+import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
 
 type AdminTestsPageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ programId?: string; q?: string; studentId?: string; testName?: string }>
+  searchParams: Promise<{ limit?: string; page?: string; programId?: string; q?: string; studentId?: string; testName?: string }>
 }
 
 export default async function AdminTestsPage({ params, searchParams }: AdminTestsPageProps) {
   const { slug } = await params
   const filters = await searchParams
   const { academy } = await requireMemberPage(slug)
-  const [results, programs, students] = await Promise.all([
+  const { page, limit } = parsePaginationParams(filters)
+  const [allResults, programs, students] = await Promise.all([
     testResultService.getAdminTestResults(academy.id, filters),
     programService.getAdminPrograms(academy.id),
     studentService.getAdminStudents(academy.id),
   ])
+  const { items: results, total, totalPages, page: currentPage } = paginateArray(allResults, page, limit)
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
@@ -43,6 +47,7 @@ export default async function AdminTestsPage({ params, searchParams }: AdminTest
         <input className="rounded border px-3 py-2 text-sm" defaultValue={filters.testName ?? ''} name="testName" placeholder="테스트명" />
         <button className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white" type="submit">조회</button>
       </form>
+      <p className="mb-3 text-sm text-slate-500">총 {total}개</p>
       <div className="overflow-x-auto rounded-lg border bg-white">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="bg-slate-50 text-slate-600">
@@ -72,11 +77,21 @@ export default async function AdminTestsPage({ params, searchParams }: AdminTest
                 </td>
               </tr>
             ))}
-            {results.length === 0 ? (
+            {total === 0 ? (
               <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={7}>등록된 테스트 결과가 없습니다.</td></tr>
             ) : null}
           </tbody>
         </table>
+        <div className="border-t px-4">
+          <Pagination
+            basePath={`/admin/${slug}/tests`}
+            limit={limit}
+            page={currentPage}
+            searchParams={{ ...filters }}
+            total={total}
+            totalPages={totalPages}
+          />
+        </div>
       </div>
     </main>
   )

@@ -28,7 +28,7 @@ export default async function EditProgressPage({ params }: EditProgressPageProps
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
       <a className="mb-6 inline-block text-sm text-blue-700" href={`/admin/${slug}/programs/${program.id}/progress`}>
-        진도 관리
+        ← 진도 관리
       </a>
       <section className="rounded-lg border bg-white p-5">
         <h1 className="mb-4 text-2xl font-bold">진도 수정</h1>

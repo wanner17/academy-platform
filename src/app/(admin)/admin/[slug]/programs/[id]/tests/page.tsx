@@ -1,14 +1,16 @@
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { Pagination } from '@/components/admin/pagination'
 import { programService } from '@/lib/services/program.service'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
 import { testResultService } from '@/lib/services/test-result.service'
 import { createTestResultAction, deleteTestResultAction } from './actions'
 import { TestExcelUpload } from './test-excel-upload'
+import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
 
 type ProgramTestsPageProps = {
   params: Promise<{ slug: string; id: string }>
-  searchParams: Promise<{ q?: string; studentId?: string; testName?: string }>
+  searchParams: Promise<{ limit?: string; page?: string; q?: string; studentId?: string; testName?: string }>
 }
 
 export default async function ProgramTestsPage({ params, searchParams }: ProgramTestsPageProps) {
@@ -16,8 +18,9 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
   const filters = await searchParams
   const { academy } = await requireMemberPage(slug)
   const program = await programService.getProgramById(id, academy.id)
+  const { page, limit } = parsePaginationParams(filters)
 
-  const [results, students] = await Promise.all([
+  const [allResults, students] = await Promise.all([
     testResultService.getAdminTestResults(academy.id, {
       programId: program.id,
       query: filters.q,
@@ -29,12 +32,13 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
   const enrolledStudents = students.filter((student) =>
     student.enrollments.some((enrollment) => enrollment.programId === program.id && enrollment.status === 'ACTIVE'),
   )
+  const { items: results, total, totalPages, page: currentPage } = paginateArray(allResults, page, limit)
 
   return (
     <main className="mx-auto grid max-w-6xl gap-6 px-6 py-10 xl:grid-cols-[1fr_380px]">
       <section>
         <a className="mb-2 inline-block text-sm text-blue-700" href={`/admin/${slug}/programs/${program.id}`}>
-          수업 상세
+          ← 수업 상세
         </a>
         <h1 className="mb-4 text-2xl font-bold">{program.title} 테스트 관리</h1>
         <form className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-[1fr_180px_160px_auto]">
@@ -85,11 +89,21 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
                   </td>
                 </tr>
               ))}
-              {results.length === 0 ? (
+              {total === 0 ? (
                 <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={6}>등록된 테스트 결과가 없습니다.</td></tr>
               ) : null}
             </tbody>
           </table>
+          <div className="border-t px-4">
+            <Pagination
+              basePath={`/admin/${slug}/programs/${program.id}/tests`}
+              limit={limit}
+              page={currentPage}
+              searchParams={{ ...filters }}
+              total={total}
+              totalPages={totalPages}
+            />
+          </div>
         </div>
       </section>
       <aside className="space-y-6">

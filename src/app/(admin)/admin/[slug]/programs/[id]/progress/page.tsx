@@ -29,7 +29,7 @@ export default async function ProgramProgressPage({ params }: ProgramProgressPag
     <main className="mx-auto grid max-w-6xl gap-6 px-6 py-10 xl:grid-cols-[1fr_380px]">
       <section>
         <a className="mb-2 inline-block text-sm text-blue-700" href={`/admin/${slug}/programs/${program.id}`}>
-          수업 상세
+          ← 수업 상세
         </a>
         <h1 className="mb-4 text-2xl font-bold">{program.title} 진도</h1>
         <div className="space-y-3">
