@@ -22,6 +22,7 @@ export function AdminNav({ slug, isAdmin }: AdminNavProps) {
         { href: adminPath(slug, '/students'), label: '학생 관리' },
         { href: adminPath(slug, '/notices'), label: '공지 관리' },
         { href: adminPath(slug, '/inquiries'), label: '문의 관리' },
+        { href: adminPath(slug, '/messages'), label: '쪽지' },
         { href: adminPath(slug, '/analytics'), label: '분석' },
       ]
     : [
@@ -30,6 +31,7 @@ export function AdminNav({ slug, isAdmin }: AdminNavProps) {
         { href: adminPath(slug, '/tests'), label: '테스트 관리' },
         { href: adminPath(slug, '/students'), label: '학생 관리' },
         { href: adminPath(slug, '/inquiries'), label: '문의 관리' },
+        { href: adminPath(slug, '/messages'), label: '쪽지' },
         { href: adminPath(slug, '/profile'), label: '내 정보' },
         { href: adminPath(slug, '/my/analytics'), label: '분석' },
       ]

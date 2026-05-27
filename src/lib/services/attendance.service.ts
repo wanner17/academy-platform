@@ -7,6 +7,8 @@ export type AttendanceSettingInput = {
   latitude?: number
   longitude?: number
   radiusMeters: number
+  earlyCheckinMinutes: number
+  lateGraceMinutes: number
 }
 
 export type StudentCheckInInput = {
@@ -24,8 +26,8 @@ export type ManualAttendanceInput = {
   updatedById: string
 }
 
-const LATE_GRACE_MINUTES = 5
-const CHECKIN_EARLY_MINUTES = 30
+const DEFAULT_LATE_GRACE_MINUTES = 5
+const DEFAULT_CHECKIN_EARLY_MINUTES = 30
 
 export const attendanceService = {
   getSetting(academyId: string) {
@@ -254,9 +256,9 @@ export const attendanceService = {
     if (!schedule) throw new Error('수업을 찾을 수 없습니다')
 
     const now = new Date()
-    if (!isWithinCheckInWindow(schedule.startTime, schedule.endTime, now)) throw new Error('출석 가능 시간이 아닙니다')
+    if (!isWithinCheckInWindow(schedule.startTime, schedule.endTime, now, setting.earlyCheckinMinutes)) throw new Error('출석 가능 시간이 아닙니다')
 
-    const status = isLate(schedule.startTime, now) ? 'LATE' : 'PRESENT'
+    const status = isLate(schedule.startTime, now, setting.lateGraceMinutes) ? 'LATE' : 'PRESENT'
     const attendanceDate = toAttendanceDate(now)
 
     const existing = await prisma.attendanceRecord.findFirst({
@@ -370,19 +372,19 @@ function isFiniteCoordinate(latitude: number, longitude: number) {
   return Number.isFinite(latitude) && Number.isFinite(longitude) && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180
 }
 
-export function isWithinCheckInWindow(startTime: string, endTime: string, date: Date): boolean {
+export function isWithinCheckInWindow(startTime: string, endTime: string, date: Date, earlyMinutes = DEFAULT_CHECKIN_EARLY_MINUTES): boolean {
   const nowMinutes = getKoreaMinutes(date)
   const start = parseTime(startTime)
   const end = parseTime(endTime)
   if (start === null || end === null) return false
-  return nowMinutes >= start - CHECKIN_EARLY_MINUTES && nowMinutes <= end
+  return nowMinutes >= start - earlyMinutes && nowMinutes <= end
 }
 
-function isLate(startTime: string, now: Date): boolean {
+function isLate(startTime: string, now: Date, graceMinutes = DEFAULT_LATE_GRACE_MINUTES): boolean {
   const nowMinutes = getKoreaMinutes(now)
   const start = parseTime(startTime)
   if (start === null) return false
-  return nowMinutes > start + LATE_GRACE_MINUTES
+  return nowMinutes > start + graceMinutes
 }
 
 function isScheduleEnded(endTime: string, currentMinutes: number) {

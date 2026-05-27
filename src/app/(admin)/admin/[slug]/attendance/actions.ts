@@ -13,9 +13,17 @@ export async function updateAttendanceSettingAction(formData: FormData) {
   const latitude = readOptionalNumber(formData, 'latitude')
   const longitude = readOptionalNumber(formData, 'longitude')
   const radiusMeters = Number(formData.get('radiusMeters') ?? 100)
+  const earlyCheckinMinutes = Number(formData.get('earlyCheckinMinutes') ?? 30)
+  const lateGraceMinutes = Number(formData.get('lateGraceMinutes') ?? 5)
 
   if (!Number.isInteger(radiusMeters) || radiusMeters < 10 || radiusMeters > 2000) {
     throw new Error('Radius must be between 10 and 2000 meters')
+  }
+  if (!Number.isInteger(earlyCheckinMinutes) || earlyCheckinMinutes < 0 || earlyCheckinMinutes > 120) {
+    throw new Error('Early check-in must be between 0 and 120 minutes')
+  }
+  if (!Number.isInteger(lateGraceMinutes) || lateGraceMinutes < 0 || lateGraceMinutes > 60) {
+    throw new Error('Late grace must be between 0 and 60 minutes')
   }
 
   await attendanceService.upsertSetting(academy.id, {
@@ -23,10 +31,12 @@ export async function updateAttendanceSettingAction(formData: FormData) {
     latitude,
     longitude,
     radiusMeters,
+    earlyCheckinMinutes,
+    lateGraceMinutes,
   })
 
   revalidateAttendancePaths(slug)
-  redirect(`/admin/${slug}/attendance`)
+  redirect(`/admin/${slug}/attendance?saved=1`)
 }
 
 export async function markAttendanceAction(formData: FormData) {

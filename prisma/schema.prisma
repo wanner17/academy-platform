@@ -42,6 +42,7 @@ model Academy {
   attendanceSetting AttendanceSetting?
   attendanceRecords AttendanceRecord[]
   schoolExamResults SchoolExamResult[]
+  messages          Message[]
 
   @@index([slug])
 }
@@ -105,6 +106,8 @@ model User {
   attendanceUpdates AttendanceRecord[]
   accounts     Account[]
   sessions     Session[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 
   @@unique([email, academyId])
   @@index([academyId])
@@ -393,15 +396,17 @@ enum InquiryStatus {
 }
 
 model AttendanceSetting {
-  id           String   @id @default(cuid())
-  academyId    String   @unique
-  isEnabled    Boolean  @default(false)
-  latitude     Float?
-  longitude    Float?
-  radiusMeters Int      @default(100)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  academy      Academy  @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  id                  String   @id @default(cuid())
+  academyId           String   @unique
+  isEnabled           Boolean  @default(false)
+  latitude            Float?
+  longitude           Float?
+  radiusMeters        Int      @default(100)
+  earlyCheckinMinutes Int      @default(30)
+  lateGraceMinutes    Int      @default(5)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  academy             Academy  @relation(fields: [academyId], references: [id], onDelete: Cascade)
 }
 
 model AttendanceRecord {
@@ -465,6 +470,27 @@ model SchoolExamResult {
   @@index([academyId, studentId])
   @@index([academyId, examYear, semester])
   @@index([academyId, subject])
+}
+
+model Message {
+  id         String    @id @default(cuid())
+  academyId  String
+  senderId   String
+  receiverId String
+  content    String    @db.Text
+  isRead            Boolean   @default(false)
+  readAt            DateTime?
+  deletedBySender   Boolean   @default(false)
+  deletedByReceiver Boolean   @default(false)
+  link              String?
+  createdAt         DateTime  @default(now())
+
+  academy  Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  sender   User    @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User    @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@index([academyId, receiverId, createdAt])
+  @@index([academyId, senderId])
 }
 
 model FileAsset {

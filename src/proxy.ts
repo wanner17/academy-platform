@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
 const DEFAULT_ACADEMY_SLUG = process.env.NEXT_PUBLIC_DEFAULT_ACADEMY_SLUG ?? 'demo'
+const DEFAULT_STUDENT_PATHS = new Set([
+  'messages',
+])
+
 const DEFAULT_ADMIN_PATHS = new Set([
   'attendance',
   'inquiries',
+  'messages',
   'my',
   'notices',
   'profile',
@@ -37,7 +42,8 @@ export async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL(`/admin/login?callbackUrl=${pathname}`, req.url))
     }
 
-    const slug = pathname.split('/')[2] || DEFAULT_ACADEMY_SLUG
+    const slugSegment = pathname.split('/')[2]
+    const slug = !slugSegment || DEFAULT_STUDENT_PATHS.has(slugSegment) ? DEFAULT_ACADEMY_SLUG : slugSegment
     if (token.academySlug !== slug || token.role !== 'STUDENT') {
       return NextResponse.redirect(new URL('/admin/login', req.url))
     }

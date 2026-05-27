@@ -18,8 +18,8 @@ async function main() {
     },
   })
 
-  await ensureSuperAdmin('jeong1234', 'jeong1234!', '총괄관리자')
-  await ensureSuperAdmin('ryu3292', 'ryu3292!@', 'Hidden Super Admin')
+  await ensureSuperAdmin('jeong1234', 'jeong1234!', '관리자')
+  await ensureSuperAdmin('ryu3292', 'ryu3292!@', '개발자')
 
   await prisma.user.upsert({
     where: { email_academyId: { email: 'admin@example.com', academyId: academy.id } },

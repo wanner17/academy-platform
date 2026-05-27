@@ -15,6 +15,8 @@ type PublicHeaderProps = {
   contactHref: string
   authHref: string
   authLabel: string
+  messagesHref?: string
+  unreadCount?: number
 }
 
 export function PublicHeader({
@@ -27,6 +29,8 @@ export function PublicHeader({
   contactHref,
   authHref,
   authLabel,
+  messagesHref,
+  unreadCount = 0,
 }: PublicHeaderProps) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -75,7 +79,26 @@ export function PublicHeader({
         <a className={isActive(authHref) ? 'active' : ''} href={authHref}>{authLabel}</a>
       </nav>
 
-      <a className="pub-cta" href={contactHref}>상담 문의</a>
+      <div className="pub-header-right">
+        {messagesHref && (
+          <a
+            aria-label="쪽지"
+            className="pub-msg-icon"
+            href={messagesHref}
+          >
+            <svg fill="none" height="20" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} viewBox="0 0 24 24" width="20">
+              <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            {unreadCount > 0 && (
+              <span className="pub-msg-badge">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </a>
+        )}
+        <a className="pub-cta" href={contactHref}>상담 문의</a>
+      </div>
 
       <button
         className={`pub-hamburger${open ? ' pub-hamburger--open' : ''}`}
@@ -98,6 +121,20 @@ export function PublicHeader({
           <a className={isActive(scheduleHref) ? 'active' : ''} href={scheduleHref} onClick={close}>시간표</a>
           <a className={isActive(noticesHref) ? 'active' : ''} href={noticesHref} onClick={close}>공지사항</a>
           <a className={isActive(authHref) ? 'active' : ''} href={authHref} onClick={close}>{authLabel}</a>
+          {messagesHref && (
+            <a
+              className="flex items-center gap-2"
+              href={messagesHref}
+              onClick={close}
+            >
+              쪽지
+              {unreadCount > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </a>
+          )}
           <a className="pub-mobile-cta" href={contactHref} onClick={close}>상담 문의</a>
         </nav>
       </div>

@@ -10,6 +10,26 @@ import { studentService } from '@/lib/services/student.service'
 import { studentPath } from '@/lib/utils/public-path'
 import { formatKoreaTime } from '@/lib/utils/korea-time'
 
+export async function markMessageReadAction(formData: FormData) {
+  const slug = String(formData.get('slug') ?? '')
+  const id = String(formData.get('id') ?? '')
+  const { user } = await requireStudentPage(slug)
+  const { messageService } = await import('@/lib/services/message.service')
+  await messageService.markRead(id, user.id)
+  revalidatePath(studentPath(slug, '/messages'))
+  redirect(studentPath(slug, '/messages'))
+}
+
+export async function deleteStudentMessageAction(formData: FormData) {
+  const slug = String(formData.get('slug') ?? '')
+  const id = String(formData.get('id') ?? '')
+  const { user } = await requireStudentPage(slug)
+  const { messageService } = await import('@/lib/services/message.service')
+  await messageService.deleteForReceiver(id, user.id)
+  revalidatePath(studentPath(slug, '/messages'))
+  redirect(studentPath(slug, '/messages'))
+}
+
 export async function updateStudentPasswordAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
   const currentPassword = String(formData.get('currentPassword') ?? '')

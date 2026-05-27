@@ -6,7 +6,9 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { isAcademyAdminRole, requireAcademyMember } from '@/lib/auth/authorization'
 import { authConfig } from '@/lib/integrations/auth/config'
+import { prisma } from '@/lib/db/prisma'
 import { homeworkService } from '@/lib/services/homework.service'
+import { messageService } from '@/lib/services/message.service'
 import { progressService } from '@/lib/services/progress.service'
 import { programService } from '@/lib/services/program.service'
 import { scheduleService } from '@/lib/services/schedule.service'
@@ -123,17 +125,48 @@ export async function createHomeworkAction(formData: FormData) {
   assertProgramWritable(program, user)
   const studentId = await readStudentScope(academy.id, programId, formData)
 
+  const title = String(formData.get('title') ?? '')
+  const dueDate = formData.get('dueDate') ? new Date(String(formData.get('dueDate'))) : undefined
+  const isVisible = formData.get('isVisible') !== 'false'
+
   await homeworkService.createHomework(academy.id, {
     authorId: user.id,
     programId,
     studentId,
-    title: String(formData.get('title') ?? ''),
+    title,
     content: String(formData.get('content') ?? ''),
     startDate: formData.get('startDate') ? new Date(String(formData.get('startDate'))) : undefined,
-    dueDate: formData.get('dueDate') ? new Date(String(formData.get('dueDate'))) : undefined,
+    dueDate,
     isCompleted: formData.get('isCompleted') === 'true',
-    isVisible: formData.get('isVisible') !== 'false',
+    isVisible,
   })
+
+  if (isVisible) {
+    let receiverIds: string[] = []
+    if (studentId) {
+      const s = await prisma.student.findFirst({ where: { id: studentId, academyId: academy.id }, select: { userId: true } })
+      if (s?.userId) receiverIds = [s.userId]
+    } else {
+      const enrollments = await prisma.enrollment.findMany({
+        where: { programId, status: 'ACTIVE' },
+        include: { student: { select: { userId: true } } },
+      })
+      receiverIds = enrollments.flatMap((e) => (e.student.userId ? [e.student.userId] : []))
+    }
+    if (receiverIds.length > 0) {
+      const dueDateStr = dueDate
+        ? `\n마감일: ${new Intl.DateTimeFormat('ko-KR', { dateStyle: 'short' }).format(dueDate)}`
+        : ''
+      const { studentPath } = await import('@/lib/utils/public-path')
+      await messageService.sendMessage(
+        academy.id,
+        user.id,
+        receiverIds,
+        `새 숙제가 등록되었습니다.\n\n${title}${dueDateStr}`,
+        studentPath(slug),
+      )
+    }
+  }
 
   revalidatePath(`/admin/${slug}/programs/${programId}`)
   redirect(`/admin/${slug}/programs/${programId}/homeworks`)

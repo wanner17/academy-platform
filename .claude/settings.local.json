@@ -3,7 +3,16 @@
     "allow": [
       "Bash(cd /d d:\\\\dev\\\\academy-platform)",
       "Bash(npm.cmd run *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "mcp__plugin_oh-my-claudecode_t__state_read",
+      "mcp__plugin_oh-my-claudecode_t__state_write",
+      "Bash(npx prisma *)",
+      "Bash(npx dotenv *)",
+      "PowerShell(Get-Process | Where-Object { $_.Name -match \"node|next\" } | Select-Object Id, Name, CPU, StartTime)",
+      "PowerShell(Get-Process -Id 24792, 33764, 35768, 38772 | ForEach-Object { $p = $_; try { $p | Select-Object Id, @{N='Path';E={$_.MainModule.FileName}} } catch { \"$\\($p.Id\\): access denied\" } })",
+      "PowerShell(Get-Process -Id 33764, 38772 | Select-Object Id, @{N='CommandLine';E={ \\(Get-WmiObject Win32_Process -Filter \"ProcessId=$\\($_.Id\\)\"\\).CommandLine }})",
+      "PowerShell(Stop-Process -Id 33764, 38772 -Force)",
+      "PowerShell(Get-Process | Where-Object { $_.Name -match \"node\" } | Select-Object Id, @{N='CommandLine';E={ \\(Get-WmiObject Win32_Process -Filter \"ProcessId=$\\($_.Id\\)\"\\).CommandLine }} | Where-Object { $_.CommandLine -match \"next\" })"
     ]
   }
 }

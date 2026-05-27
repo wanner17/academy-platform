@@ -12,7 +12,7 @@ import { markAttendanceAction, updateAttendanceSettingAction } from './actions'
 
 type AdminAttendancePageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ date?: string; limit?: string; page?: string; q?: string; status?: AttendanceStatus }>
+  searchParams: Promise<{ date?: string; limit?: string; page?: string; q?: string; saved?: string; status?: AttendanceStatus }>
 }
 
 export default async function AdminAttendancePage({ params, searchParams }: AdminAttendancePageProps) {
@@ -86,6 +86,12 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
         <p className="mt-1 text-sm text-slate-600">학생 위치 출석 설정과 일자별 출석 상태를 관리합니다.</p>
       </div>
 
+      {filters.saved === '1' ? (
+        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          설정이 저장되었습니다.
+        </div>
+      ) : null}
+
       <section className="mb-6 grid gap-6 lg:grid-cols-[360px_1fr]">
         <form action={updateAttendanceSettingAction} className="rounded-lg border bg-white p-5">
           <input name="slug" type="hidden" value={slug} />
@@ -106,6 +112,14 @@ export default async function AdminAttendancePage({ params, searchParams }: Admi
             <label className="block">
               <span className="mb-1 block text-sm font-medium">허용 반경(m)</span>
               <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.radiusMeters ?? 100} max={2000} min={10} name="radiusMeters" type="number" />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">출석 가능 시작(수업 시작 몇 분 전)</span>
+              <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.earlyCheckinMinutes ?? 30} max={120} min={0} name="earlyCheckinMinutes" type="number" />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">지각 유예 시간(수업 시작 몇 분 후까지 출석)</span>
+              <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={setting?.lateGraceMinutes ?? 5} max={60} min={0} name="lateGraceMinutes" type="number" />
             </label>
             <ConfirmSubmitButton className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white" message="출석 설정을 저장할까요?">
               설정 저장
