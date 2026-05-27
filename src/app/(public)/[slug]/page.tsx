@@ -53,11 +53,13 @@ export default async function AcademyHomePage({ params }: PageProps) {
             </a>
           </div>
         </div>
-        <div
-          className="pub-hero-image"
-          style={academy.heroImageUrl ? { backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.18)), url("${academy.heroImageUrl}")` } : undefined}
-          aria-label="academy interior"
-        />
+        <div className="pub-hero-visual">
+          <div
+            className="pub-hero-image"
+            style={academy.heroImageUrl ? { backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.18)), url("${academy.heroImageUrl}")` } : undefined}
+            aria-label="academy interior"
+          />
+        </div>
       </section>
 
       {/* Schedule Strip */}
