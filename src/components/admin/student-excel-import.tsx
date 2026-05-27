@@ -16,12 +16,35 @@ export function StudentExcelImport({ slug }: Props) {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
   const [fileName, setFileName] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
 
+  function selectFile(file: File) {
+    setSelectedFile(file)
+    setFileName(file.name)
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false)
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) selectFile(file)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const file = fileRef.current?.files?.[0]
+    const file = selectedFile ?? fileRef.current?.files?.[0]
     if (!file) return
 
     setLoading(true)
@@ -41,6 +64,7 @@ export function StudentExcelImport({ slug }: Props) {
     setOpen(false)
     setResult(null)
     setFileName(null)
+    setSelectedFile(null)
     if (fileRef.current) fileRef.current.value = ''
   }
 
@@ -57,32 +81,43 @@ export function StudentExcelImport({ slug }: Props) {
 
             <div className="mb-4 rounded border bg-slate-50 p-3 text-sm text-slate-600">
               <p className="mb-1 font-medium">엑셀 파일 형식</p>
-              <p>열 순서: 이름(필수) / 학교 / 학년 / 학생연락처 / 학부모연락처 / 메모 / 로그인이메일(필수) / 임시비밀번호(필수)</p>
+              <p className="mb-1">열 순서: 이름(필수) / 학교 / 학년 / 학생연락처 / 학부모연락처 / 메모 / 로그인이메일(필수) / 임시비밀번호</p>
+              <p className="mb-2 text-slate-500">이메일이 기존 학생과 일치하면 수정, 없으면 신규 등록 (신규는 비밀번호 필수)</p>
               <a
-                className="mt-3 inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
                 download
                 href={`/api/admin/${slug}/students/excel-sample`}
               >
-                샘플 파일 다운로드
+                양식 다운로드
               </a>
             </div>
 
             <form onSubmit={handleSubmit}>
-              <label className={`mb-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-sm transition-colors ${fileName ? 'border-blue-400 bg-blue-50' : 'border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50'}`}>
-                <svg className={`h-8 w-8 ${fileName ? 'text-blue-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <label
+                className={`mb-4 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-sm transition-colors ${
+                  isDragging ? 'border-blue-400 bg-blue-100' : fileName ? 'border-blue-400 bg-blue-50' : 'border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50'
+                }`}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
+                <svg className={`h-8 w-8 ${fileName || isDragging ? 'text-blue-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                   <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span className={`font-medium ${fileName ? 'text-blue-700' : 'text-slate-700'}`}>
-                  {fileName ?? '엑셀 파일 선택'}
+                <span className={`font-medium ${fileName || isDragging ? 'text-blue-700' : 'text-slate-700'}`}>
+                  {isDragging ? '여기에 놓으세요' : (fileName ?? '파일을 드래그하거나 클릭해서 선택')}
                 </span>
-                {!fileName && <span className="text-slate-400">.xlsx, .xls 파일만 가능</span>}
+                {!fileName && !isDragging && <span className="text-slate-400">.xlsx, .xls 파일만 가능</span>}
                 <input
                   accept=".xlsx,.xls"
                   className="hidden"
                   ref={fileRef}
-                  required
                   type="file"
-                  onChange={(e) => setFileName(e.currentTarget.files?.[0]?.name ?? null)}
+                  onChange={(e) => {
+                    const file = e.currentTarget.files?.[0]
+                    if (file) selectFile(file)
+                    e.currentTarget.value = ''
+                  }}
                 />
               </label>
 

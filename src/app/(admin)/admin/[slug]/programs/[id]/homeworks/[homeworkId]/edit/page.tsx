@@ -61,7 +61,7 @@ export default async function EditHomeworkPage({ params }: EditHomeworkPageProps
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">마감일</span>
-            <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={formatDateInput(homework.dueDate)} name="dueDate" required type="date" />
+            <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={formatDateInput(homework.dueDate)} name="dueDate" type="date" />
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input defaultChecked={homework.isCompleted} name="isCompleted" type="checkbox" value="true" />

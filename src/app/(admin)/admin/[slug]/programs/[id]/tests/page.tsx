@@ -4,6 +4,7 @@ import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
 import { testResultService } from '@/lib/services/test-result.service'
 import { createTestResultAction, deleteTestResultAction } from './actions'
+import { TestExcelUpload } from './test-excel-upload'
 
 type ProgramTestsPageProps = {
   params: Promise<{ slug: string; id: string }>
@@ -91,7 +92,8 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
           </table>
         </div>
       </section>
-      <aside className="rounded-lg border bg-white p-5">
+      <aside className="space-y-6">
+        <div className="rounded-lg border bg-white p-5">
         <h2 className="mb-4 font-semibold">테스트 결과 추가</h2>
         <form action={createTestResultAction} className="space-y-4">
           <input name="slug" type="hidden" value={slug} />
@@ -129,6 +131,12 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
             저장
           </ConfirmSubmitButton>
         </form>
+        </div>
+        <TestExcelUpload
+          enrolledStudentNames={enrolledStudents.map((s) => s.name)}
+          programId={program.id}
+          slug={slug}
+        />
       </aside>
     </main>
   )

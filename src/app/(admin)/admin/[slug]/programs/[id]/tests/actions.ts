@@ -55,6 +55,50 @@ export async function deleteTestResultAction(formData: FormData) {
   redirect(`/admin/${slug}/programs/${program.id}/tests`)
 }
 
+type BulkTestResultRow = {
+  studentName: string
+  testName: string
+  score: string
+  testedAt: string
+  memo?: string
+  isVisible?: boolean
+}
+
+export async function bulkCreateTestResultsAction(formData: FormData) {
+  const { academy, program, slug, user } = await readContext(formData)
+  assertProgramWritable(program, user)
+
+  const rowsJson = String(formData.get('rows') ?? '[]')
+  const rows: BulkTestResultRow[] = JSON.parse(rowsJson)
+  if (!Array.isArray(rows) || rows.length === 0) throw new Error('행 데이터가 없습니다')
+
+  const students = await studentService.getAdminStudents(academy.id)
+  const enrolledStudents = students.filter((s) =>
+    s.enrollments.some((e) => e.programId === program.id && e.status === 'ACTIVE'),
+  )
+
+  await Promise.all(
+    rows.map(async (row) => {
+      const matched = enrolledStudents.find((s) => s.name === row.studentName.trim())
+      if (!matched) throw new Error(`학생을 찾을 수 없습니다: ${row.studentName}`)
+
+      await testResultService.createTestResult(academy.id, {
+        authorId: user.id,
+        programId: program.id,
+        studentId: matched.id,
+        testName: row.testName,
+        score: row.score,
+        testedAt: new Date(row.testedAt),
+        memo: row.memo || undefined,
+        isVisible: row.isVisible ?? true,
+      })
+    }),
+  )
+
+  revalidateTestResultPaths(slug, program.id)
+  redirect(`/admin/${slug}/programs/${program.id}/tests`)
+}
+
 async function readContext(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
   const programId = String(formData.get('programId') ?? '')

@@ -66,6 +66,13 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
           <p className="mt-1 text-sm text-slate-600">학생 계정, 상태, 수강 수업을 리스트로 확인합니다.</p>
         </div>
         <div className="flex gap-2">
+          <a
+            className="rounded border px-4 py-2 text-sm font-medium"
+            download
+            href={`/api/admin/${slug}/students/export`}
+          >
+            엑셀 다운로드
+          </a>
           <StudentExcelImport slug={slug} />
           <a className="rounded bg-blue-700 px-4 py-2 text-sm font-medium text-white" href={`/admin/${slug}/students/new`}>
             학생 등록

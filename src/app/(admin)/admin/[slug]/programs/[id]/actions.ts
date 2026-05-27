@@ -225,6 +225,56 @@ export async function deleteProgressLogAction(formData: FormData) {
   redirect(`/admin/${slug}/programs/${programId}/progress`)
 }
 
+type BulkHomeworkRow = {
+  title: string
+  content: string
+  studentName?: string
+  startDate?: string
+  dueDate?: string
+  isCompleted?: boolean
+  isVisible?: boolean
+}
+
+export async function bulkCreateHomeworksAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+
+  const rowsJson = String(formData.get('rows') ?? '[]')
+  const rows: BulkHomeworkRow[] = JSON.parse(rowsJson)
+  if (!Array.isArray(rows) || rows.length === 0) throw new Error('행 데이터가 없습니다')
+
+  const students = await studentService.getAdminStudents(academy.id)
+  const enrolledStudents = students.filter((s) =>
+    s.enrollments.some((e) => e.programId === programId && e.status === 'ACTIVE'),
+  )
+
+  await Promise.all(
+    rows.map(async (row) => {
+      let studentId: string | undefined
+      if (row.studentName?.trim()) {
+        const matched = enrolledStudents.find((s) => s.name === row.studentName!.trim())
+        if (!matched) throw new Error(`학생을 찾을 수 없습니다: ${row.studentName}`)
+        studentId = matched.id
+      }
+      await homeworkService.createHomework(academy.id, {
+        authorId: user.id,
+        programId,
+        studentId,
+        title: row.title,
+        content: row.content,
+        startDate: row.startDate ? new Date(row.startDate) : undefined,
+        dueDate: row.dueDate ? new Date(row.dueDate) : undefined,
+        isCompleted: row.isCompleted ?? false,
+        isVisible: row.isVisible ?? true,
+      })
+    }),
+  )
+
+  revalidatePath(`/admin/${slug}/programs/${programId}`)
+  redirect(`/admin/${slug}/programs/${programId}/homeworks`)
+}
+
 async function readStudentScope(academyId: string, programId: string, formData: FormData) {
   const studentId = String(formData.get('studentId') ?? '').trim()
   if (!studentId) return undefined

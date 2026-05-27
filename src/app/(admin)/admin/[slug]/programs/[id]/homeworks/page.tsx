@@ -7,6 +7,7 @@ import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
 import { getKoreaDateParts } from '@/lib/utils/korea-time'
 import { createHomeworkAction, deleteHomeworkAction } from '../actions'
+import { HomeworkExcelUpload } from './homework-excel-upload'
 
 type ProgramHomeworksPageProps = {
   params: Promise<{ slug: string; id: string }>
@@ -76,7 +77,8 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
           {homeworks.length === 0 ? <div className="rounded-lg border bg-white p-5 text-sm text-slate-500">등록된 숙제가 없습니다.</div> : null}
         </div>
       </section>
-      <aside className="rounded-lg border bg-white p-5">
+      <aside className="space-y-6">
+        <div className="rounded-lg border bg-white p-5">
         <h2 className="mb-4 font-semibold">숙제 추가</h2>
         <form action={createHomeworkAction} className="space-y-4">
           <input type="hidden" name="slug" value={slug} />
@@ -106,7 +108,7 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">마감일</span>
-            <input className="w-full rounded border px-3 py-2 text-sm" name="dueDate" required type="date" />
+            <input className="w-full rounded border px-3 py-2 text-sm" name="dueDate" type="date" />
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input name="isCompleted" type="checkbox" value="true" />
@@ -120,6 +122,12 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
             저장
           </ConfirmSubmitButton>
         </form>
+        </div>
+        <HomeworkExcelUpload
+          enrolledStudentNames={enrolledStudents.map((s) => s.name)}
+          programId={program.id}
+          slug={slug}
+        />
       </aside>
     </main>
   )
