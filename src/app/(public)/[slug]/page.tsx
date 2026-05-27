@@ -13,6 +13,7 @@ import { TestimonialsSlider } from '@/components/public/testimonials-slider'
 import { parseStatCounters, parseTestimonials } from '@/lib/homepage-sections'
 import { getKoreaDayOfWeek, getKoreaMinutes } from '@/lib/utils/korea-time'
 import { dayLabels } from '@/lib/schedule-labels'
+import { FadeUp, StaggerList, StaggerItem } from '@/components/ui/animate-on-scroll'
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -64,132 +65,163 @@ export default async function AcademyHomePage({ params }: PageProps) {
 
       {/* Schedule Strip */}
       {upcomingSchedules.length > 0 && (
-        <section className="pub-schedule-strip">
-          {upcomingSchedules.map((schedule) => (
-            <div key={schedule.id} className="pub-schedule-item">
-              <div className="pub-time">
-                {dayLabels[schedule.dayOfWeek]} {schedule.startTime} – {schedule.endTime}
+        <FadeUp>
+          <section className="pub-schedule-strip">
+            {upcomingSchedules.map((schedule) => (
+              <div key={schedule.id} className="pub-schedule-item">
+                <div className="pub-time">
+                  {dayLabels[schedule.dayOfWeek]} {schedule.startTime} – {schedule.endTime}
+                </div>
+                <div className="pub-class-name">{schedule.title}</div>
               </div>
-              <div className="pub-class-name">{schedule.title}</div>
-            </div>
-          ))}
-        </section>
+            ))}
+          </section>
+        </FadeUp>
       )}
 
       {/* Stat Counters */}
-      {academy.showStatCounters ? <StatCounters counters={statCounters} /> : null}
+      {academy.showStatCounters && (
+        <FadeUp>
+          <StatCounters counters={statCounters} />
+        </FadeUp>
+      )}
 
       {galleryImages.length > 0 && (
         <section className="pub-section pub-gallery-section">
-          <div className="pub-section-head">
-            <div>
-              <div className="pub-label">LEARNING SPACE</div>
-              <h2 className="pub-h2">학습 공간</h2>
+          <FadeUp>
+            <div className="pub-section-head">
+              <div>
+                <div className="pub-label">LEARNING SPACE</div>
+                <h2 className="pub-h2">학습 공간</h2>
+              </div>
+              <a className="pub-view-all" href={publicPath(slug, '/gallery')}>
+                전체 사진 보기 →
+              </a>
             </div>
-            <a className="pub-view-all" href={publicPath(slug, '/gallery')}>
-              전체 사진 보기 →
-            </a>
-          </div>
-          <div className="pub-gallery-grid">
-            {galleryImages.slice(0, 5).map((image, index) => (
-              <figure className={index === 0 ? 'pub-gallery-main' : undefined} key={image.id}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="학원 소개 사진" src={image.imageUrl} />
-              </figure>
-            ))}
-          </div>
+          </FadeUp>
+          <FadeUp delay={0.12}>
+            <div className="pub-gallery-grid">
+              {galleryImages.slice(0, 5).map((image, index) => (
+                <figure className={index === 0 ? 'pub-gallery-main' : undefined} key={image.id}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img alt="학원 소개 사진" src={image.imageUrl} />
+                </figure>
+              ))}
+            </div>
+          </FadeUp>
         </section>
       )}
 
       {/* Instructors */}
       {teachers.length > 0 && (
         <section className="pub-section">
-          <div className="pub-section-head">
-            <div>
-              <div className="pub-label">강사진 소개</div>
-              <h2 className="pub-h2">상위권을 만드는 대표 강사진</h2>
+          <FadeUp>
+            <div className="pub-section-head">
+              <div>
+                <div className="pub-label">강사진 소개</div>
+                <h2 className="pub-h2">상위권을 만드는 대표 강사진</h2>
+              </div>
+              <a className="pub-view-all" href={publicPath(slug, '/teachers')}>
+                강사진 전체 보기 →
+              </a>
             </div>
-            <a className="pub-view-all" href={publicPath(slug, '/teachers')}>
-              강사진 전체 보기 →
-            </a>
-          </div>
-          <InstructorsSlider teachers={teachers} slug={slug} />
+          </FadeUp>
+          <FadeUp delay={0.12}>
+            <InstructorsSlider teachers={teachers} slug={slug} />
+          </FadeUp>
         </section>
       )}
 
       {/* Testimonials Slider */}
-      {academy.showTestimonials ? <TestimonialsSlider testimonials={testimonials} /> : null}
+      {academy.showTestimonials && (
+        <FadeUp>
+          <TestimonialsSlider testimonials={testimonials} />
+        </FadeUp>
+      )}
 
       {/* Course Finder Quiz */}
-      <CourseFinderQuiz programs={programs} slug={slug} />
+      <FadeUp>
+        <CourseFinderQuiz programs={programs} slug={slug} />
+      </FadeUp>
 
       {/* Location */}
       {academy.address && academy.features?.showLocation !== false && (
         <section className="pub-section">
-          <div className="pub-section-head">
-            <div>
-              <div className="pub-label">LOCATION</div>
-              <h2 className="pub-h2">오시는 길</h2>
-            </div>
-            <a
-              className="pub-view-all"
-              href={`https://map.kakao.com/link/search/${encodeURIComponent(academy.address)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              카카오맵에서 보기 →
-            </a>
-          </div>
-          <div className="pub-location-body">
-            <div className="pub-location-info">
-              <div className="pub-location-row">
-                <span>📍</span>
-                <span>{academy.address}</span>
+          <FadeUp>
+            <div className="pub-section-head">
+              <div>
+                <div className="pub-label">LOCATION</div>
+                <h2 className="pub-h2">오시는 길</h2>
               </div>
-              {academy.phone && (
-                <div className="pub-location-row">
-                  <span>📞</span>
-                  <span>{academy.phone}</span>
-                </div>
-              )}
-              {academy.email && (
-                <div className="pub-location-row">
-                  <span>✉</span>
-                  <span>{academy.email}</span>
-                </div>
-              )}
-              <a className="pub-cs-link" href={publicPath(slug, '/contact')}>
-                상담 신청하기 →
+              <a
+                className="pub-view-all"
+                href={`https://map.kakao.com/link/search/${encodeURIComponent(academy.address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                카카오맵에서 보기 →
               </a>
             </div>
-            <KakaoMap address={academy.address} lat={academy.mapLatitude} lng={academy.mapLongitude} mapUrl={academy.mapUrl} name={academy.name} />
-          </div>
+          </FadeUp>
+          <FadeUp delay={0.12}>
+            <div className="pub-location-body">
+              <div className="pub-location-info">
+                <div className="pub-location-row">
+                  <span>📍</span>
+                  <span>{academy.address}</span>
+                </div>
+                {academy.phone && (
+                  <div className="pub-location-row">
+                    <span>📞</span>
+                    <span>{academy.phone}</span>
+                  </div>
+                )}
+                {academy.email && (
+                  <div className="pub-location-row">
+                    <span>✉</span>
+                    <span>{academy.email}</span>
+                  </div>
+                )}
+                <a className="pub-cs-link" href={publicPath(slug, '/contact')}>
+                  상담 신청하기 →
+                </a>
+              </div>
+              <KakaoMap address={academy.address} lat={academy.mapLatitude} lng={academy.mapLongitude} mapUrl={academy.mapUrl} name={academy.name} />
+            </div>
+          </FadeUp>
         </section>
       )}
 
       {/* Journal + Sidebar */}
       <div className="pub-journal-wrap">
-        <div>
-          <h2 className="pub-posts-h2">공지사항</h2>
-          {notices.map((notice) => (
-            <article key={notice.id} className="pub-post">
-              <div>
-                <div className="pub-meta">
-                  공지{notice.isPinned ? ' · 고정' : ''}
-                </div>
-                <h3 className="pub-post-title">
-                  <a href={publicPath(slug, `/notices/${notice.id}`)}>{notice.title}</a>
-                </h3>
-              </div>
-            </article>
-          ))}
-          {notices.length === 0 && (
-            <p style={{ color: 'var(--muted)', fontSize: 14 }}>
-              등록된 공지가 없습니다.
-            </p>
-          )}
-        </div>
+        <FadeUp>
+          <div>
+            <h2 className="pub-posts-h2">공지사항</h2>
+            <StaggerList>
+              {notices.map((notice) => (
+                <StaggerItem key={notice.id}>
+                  <article className="pub-post">
+                    <div>
+                      <div className="pub-meta">
+                        공지{notice.isPinned ? ' · 고정' : ''}
+                      </div>
+                      <h3 className="pub-post-title">
+                        <a href={publicPath(slug, `/notices/${notice.id}`)}>{notice.title}</a>
+                      </h3>
+                    </div>
+                  </article>
+                </StaggerItem>
+              ))}
+            </StaggerList>
+            {notices.length === 0 && (
+              <p style={{ color: 'var(--muted)', fontSize: 14 }}>
+                등록된 공지가 없습니다.
+              </p>
+            )}
+          </div>
+        </FadeUp>
 
+        <FadeUp delay={0.15}>
         <aside className="pub-side">
           <h3 className="pub-side-title">상담 문의</h3>
           <div className="pub-side-line" />
@@ -217,6 +249,7 @@ export default async function AcademyHomePage({ params }: PageProps) {
             </a>
           </div>
         </aside>
+        </FadeUp>
       </div>
     </>
   )
