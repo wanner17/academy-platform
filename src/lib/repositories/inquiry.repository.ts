@@ -60,4 +60,8 @@ export const inquiryRepository = {
   updateMemo(id: string, academyId: string, memo?: string) {
     return prisma.inquiry.updateMany({ where: { id, academyId }, data: { memo } })
   },
+
+  delete(id: string, academyId: string) {
+    return prisma.inquiry.deleteMany({ where: { id, academyId } })
+  },
 }

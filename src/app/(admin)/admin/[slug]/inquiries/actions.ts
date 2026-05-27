@@ -38,3 +38,15 @@ export async function updateInquiryMemoAction(formData: FormData) {
   revalidatePath(`/admin/${slug}/inquiries`)
   redirect(`/admin/${slug}/inquiries`)
 }
+
+export async function deleteInquiryAction(formData: FormData) {
+  const slug = String(formData.get('slug') ?? '')
+  const id = String(formData.get('id') ?? '')
+  const session = await getServerSession(authConfig)
+  const { academy } = await requireAcademyMember(session, slug)
+
+  await inquiryService.deleteInquiry(id, academy.id)
+
+  revalidatePath(`/admin/${slug}/inquiries`)
+  redirect(`/admin/${slug}/inquiries`)
+}

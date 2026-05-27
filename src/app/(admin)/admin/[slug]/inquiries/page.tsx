@@ -1,7 +1,7 @@
 import type { InquiryStatus } from '@prisma/client'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { inquiryService } from '@/lib/services/inquiry.service'
-import { updateInquiryMemoAction, updateInquiryStatusAction } from './actions'
+import { deleteInquiryAction, updateInquiryMemoAction, updateInquiryStatusAction } from './actions'
 import { formatPhone } from '@/lib/utils/phone'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
 import { Pagination } from '@/components/admin/pagination'
@@ -132,24 +132,33 @@ export default async function AdminInquiriesPage({ params, searchParams }: Admin
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <form action={updateInquiryStatusAction} className="flex flex-wrap justify-end gap-2">
-                    <input type="hidden" name="slug" value={slug} />
-                    <input type="hidden" name="id" value={inquiry.id} />
-                    <ConfirmSubmitButton className="whitespace-nowrap rounded border px-3 py-1" message="문의 상태를 대기로 변경할까요?" name="status" value="PENDING">
-                      대기
-                    </ConfirmSubmitButton>
-                    <ConfirmSubmitButton
-                      className="whitespace-nowrap rounded border px-3 py-1"
-                      message="문의 상태를 처리중으로 변경할까요?"
-                      name="status"
-                      value="IN_PROGRESS"
-                    >
-                      처리중
-                    </ConfirmSubmitButton>
-                    <ConfirmSubmitButton className="whitespace-nowrap rounded border px-3 py-1" message="문의 상태를 완료로 변경할까요?" name="status" value="DONE">
-                      완료
-                    </ConfirmSubmitButton>
-                  </form>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <form action={updateInquiryStatusAction} className="flex flex-wrap justify-end gap-2">
+                      <input type="hidden" name="slug" value={slug} />
+                      <input type="hidden" name="id" value={inquiry.id} />
+                      <ConfirmSubmitButton className="whitespace-nowrap rounded border px-3 py-1" message="문의 상태를 대기로 변경할까요?" name="status" value="PENDING">
+                        대기
+                      </ConfirmSubmitButton>
+                      <ConfirmSubmitButton
+                        className="whitespace-nowrap rounded border px-3 py-1"
+                        message="문의 상태를 처리중으로 변경할까요?"
+                        name="status"
+                        value="IN_PROGRESS"
+                      >
+                        처리중
+                      </ConfirmSubmitButton>
+                      <ConfirmSubmitButton className="whitespace-nowrap rounded border px-3 py-1" message="문의 상태를 완료로 변경할까요?" name="status" value="DONE">
+                        완료
+                      </ConfirmSubmitButton>
+                    </form>
+                    <form action={deleteInquiryAction}>
+                      <input type="hidden" name="slug" value={slug} />
+                      <input type="hidden" name="id" value={inquiry.id} />
+                      <ConfirmSubmitButton className="whitespace-nowrap rounded border border-red-200 px-3 py-1 text-red-600" message="문의 내역을 삭제할까요?">
+                        삭제
+                      </ConfirmSubmitButton>
+                    </form>
+                  </div>
                 </td>
               </tr>
             ))}
