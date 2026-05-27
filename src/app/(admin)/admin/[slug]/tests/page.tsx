@@ -7,7 +7,7 @@ import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
 
 type AdminTestsPageProps = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ limit?: string; page?: string; programId?: string; q?: string; studentId?: string; testName?: string }>
+  searchParams: Promise<{ limit?: string; page?: string; programId?: string; q?: string; qField?: string; studentId?: string }>
 }
 
 export default async function AdminTestsPage({ params, searchParams }: AdminTestsPageProps) {
@@ -30,8 +30,18 @@ export default async function AdminTestsPage({ params, searchParams }: AdminTest
           <p className="mt-1 text-sm text-slate-600">학생 성적을 수업, 학생, 테스트명 기준으로 모아 봅니다.</p>
         </div>
       </div>
-      <form className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-[1fr_180px_180px_160px_auto]">
-        <input className="rounded border px-3 py-2 text-sm" defaultValue={filters.q ?? ''} name="q" placeholder="검색어" />
+      <form className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-[1fr_180px_180px_auto]">
+        <div className="flex gap-2">
+          <select className="rounded border px-3 py-2 text-sm" defaultValue={filters.qField ?? ''} name="qField">
+            <option value="">전체</option>
+            <option value="testName">테스트명</option>
+            <option value="studentName">학생명</option>
+            <option value="programTitle">수업명</option>
+            <option value="score">점수</option>
+            <option value="memo">메모</option>
+          </select>
+          <input className="min-w-0 flex-1 rounded border px-3 py-2 text-sm" defaultValue={filters.q ?? ''} name="q" placeholder="검색어" />
+        </div>
         <select className="rounded border px-3 py-2 text-sm" defaultValue={filters.programId ?? ''} name="programId">
           <option value="">전체 수업</option>
           {programs.map((program) => (
@@ -44,7 +54,6 @@ export default async function AdminTestsPage({ params, searchParams }: AdminTest
             <option key={student.id} value={student.id}>{student.name}</option>
           ))}
         </select>
-        <input className="rounded border px-3 py-2 text-sm" defaultValue={filters.testName ?? ''} name="testName" placeholder="테스트명" />
         <button className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white" type="submit">조회</button>
       </form>
       <p className="mb-3 text-sm text-slate-500">총 {total}개</p>

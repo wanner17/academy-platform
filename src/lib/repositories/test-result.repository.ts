@@ -15,31 +15,42 @@ export type UpdateTestResultInput = Omit<CreateTestResultInput, 'authorId' | 'pr
 
 export type FindAdminTestResultsOptions = {
   programId?: string
-  query?: string
+  q?: string
+  qField?: string
   studentId?: string
   testName?: string
 }
 
 export const testResultRepository = {
   findAdmin(academyId: string, options: FindAdminTestResultsOptions = {}) {
-    const query = options.query?.trim()
+    const q = options.q?.trim()
+    const qField = options.qField
+
+    const searchWhere = (() => {
+      if (!q) return {}
+      if (qField === 'testName') return { testName: { contains: q } }
+      if (qField === 'studentName') return { student: { name: { contains: q } } }
+      if (qField === 'programTitle') return { program: { title: { contains: q } } }
+      if (qField === 'score') return { score: { contains: q } }
+      if (qField === 'memo') return { memo: { contains: q } }
+      return {
+        OR: [
+          { testName: { contains: q } },
+          { score: { contains: q } },
+          { memo: { contains: q } },
+          { student: { name: { contains: q } } },
+          { program: { title: { contains: q } } },
+        ],
+      }
+    })()
+
     return prisma.testResult.findMany({
       where: {
         academyId,
         ...(options.programId ? { programId: options.programId } : {}),
         ...(options.studentId ? { studentId: options.studentId } : {}),
-        ...(options.testName ? { testName: options.testName } : {}),
-        ...(query
-          ? {
-              OR: [
-                { testName: { contains: query } },
-                { score: { contains: query } },
-                { memo: { contains: query } },
-                { student: { name: { contains: query } } },
-                { program: { title: { contains: query } } },
-              ],
-            }
-          : {}),
+        ...(options.testName ? { testName: { contains: options.testName } } : {}),
+        ...searchWhere,
       },
       include: { author: true, program: true, student: true },
       orderBy: [{ testedAt: 'desc' }, { createdAt: 'desc' }],

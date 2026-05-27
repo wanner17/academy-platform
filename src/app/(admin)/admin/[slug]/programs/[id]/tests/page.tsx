@@ -23,7 +23,7 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
   const [allResults, students] = await Promise.all([
     testResultService.getAdminTestResults(academy.id, {
       programId: program.id,
-      query: filters.q,
+      q: filters.q,
       studentId: filters.studentId,
       testName: filters.testName,
     }),
@@ -41,7 +41,7 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
           ← 수업 상세
         </a>
         <h1 className="mb-4 text-2xl font-bold">{program.title} 테스트 관리</h1>
-        <form className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-[1fr_180px_160px_auto]">
+        <form className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-[1fr_180px_auto]">
           <input className="rounded border px-3 py-2 text-sm" defaultValue={filters.q ?? ''} name="q" placeholder="검색어" />
           <select className="rounded border px-3 py-2 text-sm" defaultValue={filters.studentId ?? ''} name="studentId">
             <option value="">전체 학생</option>
@@ -49,7 +49,6 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
               <option key={student.id} value={student.id}>{student.name}</option>
             ))}
           </select>
-          <input className="rounded border px-3 py-2 text-sm" defaultValue={filters.testName ?? ''} name="testName" placeholder="테스트명" />
           <button className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white" type="submit">조회</button>
         </form>
         <div className="overflow-x-auto rounded-lg border bg-white">
