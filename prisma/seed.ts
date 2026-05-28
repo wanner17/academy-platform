@@ -45,65 +45,12 @@ async function main() {
     },
   })
 
-  const mathTeacherUser = await prisma.user.upsert({
-    where: { email_academyId: { email: 'teacher1@example.com', academyId: academy.id } },
-    update: { role: UserRole.TEACHER },
-    create: {
-      academyId: academy.id,
-      email: 'teacher1@example.com',
-      name: '김민준',
-      passwordHash: await bcrypt.hash('password1234', 12),
-      role: UserRole.TEACHER,
-    },
-  })
-
-  const englishTeacherUser = await prisma.user.upsert({
-    where: { email_academyId: { email: 'teacher2@example.com', academyId: academy.id } },
-    update: { role: UserRole.TEACHER },
-    create: {
-      academyId: academy.id,
-      email: 'teacher2@example.com',
-      name: '이서연',
-      passwordHash: await bcrypt.hash('password1234', 12),
-      role: UserRole.TEACHER,
-    },
-  })
-
-  await prisma.teacher.upsert({
-    where: { id: 'seed-demo-teacher-1' },
-    update: { userId: mathTeacherUser.id },
-    create: {
-      id: 'seed-demo-teacher-1',
-      academyId: academy.id,
-      userId: mathTeacherUser.id,
-      name: '김민준',
-      subject: '수학',
-      bio: '중등부터 고등 수학까지 개념 이해와 문제 해결력을 함께 지도합니다.',
-      order: 1,
-    },
-  })
-
-  await prisma.teacher.upsert({
-    where: { id: 'seed-demo-teacher-2' },
-    update: { userId: englishTeacherUser.id },
-    create: {
-      id: 'seed-demo-teacher-2',
-      academyId: academy.id,
-      userId: englishTeacherUser.id,
-      name: '이서연',
-      subject: '영어',
-      bio: '내신 문법, 독해, 수행평가 대비를 학생 수준에 맞춰 지도합니다.',
-      order: 2,
-    },
-  })
-
   await prisma.program.upsert({
     where: { id: 'seed-demo-program-school' },
-    update: { teacherId: 'seed-demo-teacher-1' },
+    update: {},
     create: {
       id: 'seed-demo-program-school',
       academyId: academy.id,
-      teacherId: 'seed-demo-teacher-1',
       title: '휘문중 2학년 내신반',
       mode: 'SCHOOL_EXAM',
       targetLevel: 'MIDDLE',
@@ -117,11 +64,10 @@ async function main() {
 
   await prisma.program.upsert({
     where: { id: 'seed-demo-program-level' },
-    update: { teacherId: 'seed-demo-teacher-1' },
+    update: {},
     create: {
       id: 'seed-demo-program-level',
       academyId: academy.id,
-      teacherId: 'seed-demo-teacher-1',
       title: '중등 심화반',
       mode: 'LEVEL',
       targetLevel: 'MIDDLE',
@@ -140,7 +86,6 @@ async function main() {
       programId: 'seed-demo-program-school',
       title: '휘문중 2학년 내신반',
       subject: '수학',
-      teacher: '김민준',
       room: 'A실',
       dayOfWeek: 0,
       startTime: '17:00',
@@ -158,7 +103,6 @@ async function main() {
       programId: 'seed-demo-program-level',
       title: '중등 심화반',
       subject: '수학',
-      teacher: '김민준',
       room: 'B실',
       dayOfWeek: 2,
       startTime: '19:00',
