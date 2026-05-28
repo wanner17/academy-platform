@@ -38,6 +38,11 @@ export const homeworkService = {
     await this.getHomeworkById(id, academyId)
     return homeworkRepository.delete(id, academyId)
   },
+
+  async toggleStudentCompletion(homeworkId: string, academyId: string, studentId: string, isCompleted: boolean) {
+    await this.getHomeworkById(homeworkId, academyId)
+    return homeworkRepository.upsertCompletion(homeworkId, studentId, isCompleted)
+  },
 }
 
 function normalizeHomeworkInput<T extends CreateHomeworkInput | UpdateHomeworkInput>(data: T) {

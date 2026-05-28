@@ -18,7 +18,7 @@ export const homeworkRepository = {
   findByProgram(academyId: string, programId: string) {
     return prisma.homework.findMany({
       where: { academyId, programId },
-      include: { author: true, student: true },
+      include: { author: true, student: true, completions: { include: { student: true } } },
       orderBy: [{ dueDate: 'desc' }, { createdAt: 'desc' }],
     })
   },
@@ -64,5 +64,13 @@ export const homeworkRepository = {
 
   delete(id: string, academyId: string) {
     return prisma.homework.deleteMany({ where: { id, academyId } })
+  },
+
+  upsertCompletion(homeworkId: string, studentId: string, isCompleted: boolean) {
+    return prisma.homeworkCompletion.upsert({
+      where: { homeworkId_studentId: { homeworkId, studentId } },
+      create: { homeworkId, studentId, isCompleted },
+      update: { isCompleted },
+    })
   },
 }

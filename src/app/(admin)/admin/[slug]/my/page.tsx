@@ -81,6 +81,7 @@ export default async function MyTeacherPage({ params, searchParams }: MyTeacherP
                     {targetLevelLabels[program.targetLevel]}
                     {program.subject ? ` · ${program.subject}` : ''}
                   </p>
+                  <p className="mt-1 text-xs text-slate-400">수강생 {program._count.enrollments}명</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <a className="rounded border px-4 py-2 text-sm" href={`/admin/${slug}/programs/${program.id}`}>

@@ -206,6 +206,20 @@ export async function deleteHomeworkAction(formData: FormData) {
   redirect(`/admin/${slug}/programs/${programId}/homeworks`)
 }
 
+export async function toggleHomeworkStudentCompletionAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+
+  const homeworkId = String(formData.get('homeworkId') ?? '')
+  const studentId = String(formData.get('studentId') ?? '')
+  const isCompleted = formData.get('isCompleted') === 'true'
+
+  await homeworkService.toggleStudentCompletion(homeworkId, academy.id, studentId, isCompleted)
+
+  revalidatePath(`/admin/${slug}/programs/${programId}/homeworks`)
+}
+
 export async function createProgressLogAction(formData: FormData) {
   const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
   const program = await programService.getProgramById(programId, academy.id)

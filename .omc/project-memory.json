@@ -171,6 +171,12 @@
   },
   "hotPaths": [
     {
+      "path": "prisma\\schema.prisma",
+      "accessCount": 19,
+      "lastAccessed": 1779956717013,
+      "type": "file"
+    },
+    {
       "path": "src\\app\\(public)\\[slug]\\page.tsx",
       "accessCount": 16,
       "lastAccessed": 1779858764695,
@@ -183,27 +189,21 @@
       "type": "file"
     },
     {
-      "path": "prisma\\schema.prisma",
-      "accessCount": 15,
-      "lastAccessed": 1779955230605,
+      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\actions.ts",
+      "accessCount": 13,
+      "lastAccessed": 1779956745856,
       "type": "file"
     },
     {
       "path": "",
-      "accessCount": 12,
-      "lastAccessed": 1779955463433,
+      "accessCount": 13,
+      "lastAccessed": 1779956794518,
       "type": "directory"
     },
     {
       "path": "src\\app\\(admin)\\admin\\[slug]\\messages\\page.tsx",
       "accessCount": 11,
       "lastAccessed": 1779865561637,
-      "type": "file"
-    },
-    {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\actions.ts",
-      "accessCount": 11,
-      "lastAccessed": 1779955292308,
       "type": "file"
     },
     {
@@ -313,6 +313,12 @@
       "accessCount": 3,
       "lastAccessed": 1779954806887,
       "type": "directory"
+    },
+    {
+      "path": "src\\lib\\services\\homework.service.ts",
+      "accessCount": 3,
+      "lastAccessed": 1779956735839,
+      "type": "file"
     },
     {
       "path": "src\\components\\ui\\animate-on-scroll.tsx",
@@ -438,12 +444,6 @@
       "path": "src\\components\\admin\\recipient-selector.tsx",
       "accessCount": 1,
       "lastAccessed": 1779865534493,
-      "type": "file"
-    },
-    {
-      "path": "src\\lib\\services\\homework.service.ts",
-      "accessCount": 1,
-      "lastAccessed": 1779866303919,
       "type": "file"
     },
     {

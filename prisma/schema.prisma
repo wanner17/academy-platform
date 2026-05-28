@@ -272,13 +272,29 @@ model Homework {
   isVisible   Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  program   Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
-  student   Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  author    User      @relation(fields: [authorId], references: [id])
+  program     Program              @relation(fields: [programId], references: [id], onDelete: Cascade)
+  student     Student?             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  author      User                 @relation(fields: [authorId], references: [id])
+  completions HomeworkCompletion[]
 
   @@index([academyId, programId, createdAt])
   @@index([academyId, studentId])
   @@index([authorId])
+}
+
+model HomeworkCompletion {
+  id          String   @id @default(cuid())
+  homeworkId  String
+  studentId   String
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  homework    Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([homeworkId, studentId])
+  @@index([homeworkId])
+  @@index([studentId])
 }
 
 model ProgressLog {
@@ -359,11 +375,12 @@ model Student {
   academy     Academy      @relation(fields: [academyId], references: [id])
   user        User?        @relation(fields: [userId], references: [id])
   enrollments Enrollment[]
-  homeworks   Homework[]
-  progressLogs ProgressLog[]
-  testResults TestResult[]
-  attendanceRecords AttendanceRecord[]
-  schoolExamResults SchoolExamResult[]
+  homeworks           Homework[]
+  progressLogs        ProgressLog[]
+  testResults         TestResult[]
+  attendanceRecords   AttendanceRecord[]
+  schoolExamResults   SchoolExamResult[]
+  homeworkCompletions HomeworkCompletion[]
 
   @@index([academyId, name])
 }

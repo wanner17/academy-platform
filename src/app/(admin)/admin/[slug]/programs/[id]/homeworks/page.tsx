@@ -6,7 +6,7 @@ import { programService } from '@/lib/services/program.service'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
 import { getKoreaDateParts } from '@/lib/utils/korea-time'
-import { createHomeworkAction, deleteHomeworkAction } from '../actions'
+import { createHomeworkAction, deleteHomeworkAction, toggleHomeworkStudentCompletionAction } from '../actions'
 import { HomeworkExcelUpload } from './homework-excel-upload'
 
 type ProgramHomeworksPageProps = {
@@ -41,39 +41,77 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
         </a>
         <h1 className="mb-4 text-2xl font-bold">{program.title} 숙제</h1>
         <div className="space-y-3">
-          {homeworks.map((hw) => (
-            <article key={hw.id} className="rounded-lg border bg-white p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{hw.title}</span>
-                    <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{hw.student?.name ?? '전체'}</span>
-                    {hw.isCompleted
-                      ? <span className="rounded bg-green-50 px-2 py-0.5 text-xs text-green-700">완료</span>
-                      : <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">미완료</span>}
-                    {hw.startDate ? <span className="rounded bg-violet-50 px-2 py-0.5 text-xs text-violet-700">시작 {hw.startDate.toLocaleDateString('ko-KR')}</span> : null}
-                    {hw.dueDate ? <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">마감 {hw.dueDate.toLocaleDateString('ko-KR')}</span> : null}
-                    {!hw.isVisible ? <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">비공개</span> : null}
+          {homeworks.map((hw) => {
+            const isAllStudents = hw.studentId === null
+            const completedCount = isAllStudents
+              ? hw.completions.filter((c) => c.isCompleted).length
+              : 0
+            const totalCount = isAllStudents ? enrolledStudents.length : 0
+            const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+
+            return (
+              <article key={hw.id} className="rounded-lg border bg-white p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">{hw.title}</span>
+                      <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{hw.student?.name ?? '전체'}</span>
+                      {isAllStudents ? (
+                        <span className={`rounded px-2 py-0.5 text-xs font-medium ${pct === 100 ? 'bg-green-50 text-green-700' : pct > 0 ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                          {pct}% ({completedCount}/{totalCount})
+                        </span>
+                      ) : (
+                        hw.isCompleted
+                          ? <span className="rounded bg-green-50 px-2 py-0.5 text-xs text-green-700">완료</span>
+                          : <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">미완료</span>
+                      )}
+                      {hw.startDate ? <span className="rounded bg-violet-50 px-2 py-0.5 text-xs text-violet-700">시작 {hw.startDate.toLocaleDateString('ko-KR')}</span> : null}
+                      {hw.dueDate ? <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">마감 {hw.dueDate.toLocaleDateString('ko-KR')}</span> : null}
+                      {!hw.isVisible ? <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">비공개</span> : null}
+                    </div>
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{hw.content}</p>
+                    {isAllStudents && enrolledStudents.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {enrolledStudents.map((student) => {
+                          const completion = hw.completions.find((c) => c.studentId === student.id)
+                          const done = completion?.isCompleted ?? false
+                          return (
+                            <form key={student.id} action={toggleHomeworkStudentCompletionAction}>
+                              <input type="hidden" name="slug" value={slug} />
+                              <input type="hidden" name="programId" value={program.id} />
+                              <input type="hidden" name="homeworkId" value={hw.id} />
+                              <input type="hidden" name="studentId" value={student.id} />
+                              <input type="hidden" name="isCompleted" value={done ? 'false' : 'true'} />
+                              <button
+                                type="submit"
+                                className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-xs transition-colors ${done ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50'}`}
+                              >
+                                {done ? '✓ ' : ''}{student.name}
+                              </button>
+                            </form>
+                          )
+                        })}
+                      </div>
+                    )}
+                    <p className="mt-1 text-xs text-slate-400">{hw.author.name} · {hw.createdAt.toLocaleDateString('ko-KR')}</p>
                   </div>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{hw.content}</p>
-                  <p className="mt-1 text-xs text-slate-400">{hw.author.name} · {hw.createdAt.toLocaleDateString('ko-KR')}</p>
+                  <div className="flex shrink-0 gap-2">
+                    <a className="rounded border px-3 py-1 text-sm" href={`/admin/${slug}/programs/${program.id}/homeworks/${hw.id}/edit`}>
+                      수정
+                    </a>
+                    <form action={deleteHomeworkAction}>
+                      <input type="hidden" name="slug" value={slug} />
+                      <input type="hidden" name="programId" value={program.id} />
+                      <input type="hidden" name="id" value={hw.id} />
+                      <ConfirmSubmitButton className="rounded border px-3 py-1 text-sm text-red-700" message="이 숙제를 삭제할까요?">
+                        삭제
+                      </ConfirmSubmitButton>
+                    </form>
+                  </div>
                 </div>
-                <div className="flex shrink-0 gap-2">
-                  <a className="rounded border px-3 py-1 text-sm" href={`/admin/${slug}/programs/${program.id}/homeworks/${hw.id}/edit`}>
-                    수정
-                  </a>
-                  <form action={deleteHomeworkAction}>
-                    <input type="hidden" name="slug" value={slug} />
-                    <input type="hidden" name="programId" value={program.id} />
-                    <input type="hidden" name="id" value={hw.id} />
-                    <ConfirmSubmitButton className="rounded border px-3 py-1 text-sm text-red-700" message="이 숙제를 삭제할까요?">
-                      삭제
-                    </ConfirmSubmitButton>
-                  </form>
-                </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            )
+          })}
           {homeworks.length === 0 ? <div className="rounded-lg border bg-white p-5 text-sm text-slate-500">등록된 숙제가 없습니다.</div> : null}
         </div>
       </section>
