@@ -44,6 +44,20 @@ export default async function ProgramProgressPage({ params }: ProgramProgressPag
                   </div>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{log.content}</p>
                   {log.nextPlan ? <p className="mt-2 whitespace-pre-wrap text-sm text-blue-700"><span className="font-medium">다음 수업 계획:</span> {log.nextPlan}</p> : null}
+                  {log.homeworkRate != null ? (
+                    <div className="mt-2">
+                      <div className="mb-1 flex items-center justify-between text-sm">
+                        <span className="font-medium text-slate-600">숙제 수행률</span>
+                        <span className="text-slate-700">{log.homeworkRate}%</span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          className="h-2 rounded-full bg-blue-500 transition-all"
+                          style={{ width: `${Math.min(100, Math.max(0, log.homeworkRate))}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : null}
                   <p className="mt-1 text-xs text-slate-400">{log.author.name} · {log.createdAt.toLocaleDateString('ko-KR')}</p>
                 </div>
                 <div className="flex shrink-0 gap-2">
@@ -92,6 +106,10 @@ export default async function ProgramProgressPage({ params }: ProgramProgressPag
           <label className="block">
             <span className="mb-1 block text-sm font-medium">다음 수업 계획 (선택)</span>
             <textarea className="min-h-16 w-full rounded border px-3 py-2 text-sm" name="nextPlan" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">숙제 수행률 (%, 선택)</span>
+            <input className="w-full rounded border px-3 py-2 text-sm" max="100" min="0" name="homeworkRate" placeholder="0~100" type="number" />
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input defaultChecked name="isVisible" type="checkbox" value="true" />

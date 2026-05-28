@@ -288,9 +288,10 @@ model ProgressLog {
   studentId String?
   authorId  String
   classDate DateTime
-  content   String   @db.Text
-  nextPlan  String?  @db.Text
-  isVisible Boolean  @default(true)
+  content      String   @db.Text
+  nextPlan     String?  @db.Text
+  homeworkRate Int?
+  isVisible    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)

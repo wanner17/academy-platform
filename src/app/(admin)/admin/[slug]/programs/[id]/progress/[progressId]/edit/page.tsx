@@ -59,6 +59,10 @@ export default async function EditProgressPage({ params }: EditProgressPageProps
             <span className="mb-1 block text-sm font-medium">다음 수업 계획 (선택)</span>
             <textarea className="min-h-20 w-full rounded border px-3 py-2 text-sm" defaultValue={progressLog.nextPlan ?? ''} name="nextPlan" />
           </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">숙제 수행률 (%, 선택)</span>
+            <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={progressLog.homeworkRate ?? ''} max="100" min="0" name="homeworkRate" placeholder="0~100" type="number" />
+          </label>
           <label className="flex items-center gap-2 text-sm">
             <input defaultChecked={progressLog.isVisible} name="isVisible" type="checkbox" value="true" />
             학생에게 공개

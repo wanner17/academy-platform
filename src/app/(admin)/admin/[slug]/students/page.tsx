@@ -1,8 +1,8 @@
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
 import { Pagination } from '@/components/admin/pagination'
 import { StudentExcelImport } from '@/components/admin/student-excel-import'
-import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { requireMemberPage } from '@/lib/auth/server'
+import { programService } from '@/lib/services/program.service'
 import { studentService } from '@/lib/services/student.service'
 import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
 import { formatPhone } from '@/lib/utils/phone'
@@ -16,9 +16,14 @@ type AdminStudentsPageProps = {
 export default async function AdminStudentsPage({ params, searchParams }: AdminStudentsPageProps) {
   const { slug } = await params
   const filters = await searchParams
-  await requireMemberPage(slug)
-  const academy = await getAcademyBySlug(slug)
-  const allStudents = await studentService.getAdminStudents(academy.id)
+  const { academy, user } = await requireMemberPage(slug)
+  let allStudents = await studentService.getAdminStudents(academy.id)
+
+  if (user.role === 'TEACHER') {
+    const teacherPrograms = await programService.getTeacherPrograms(academy.id, user.id)
+    const teacherProgramIds = new Set(teacherPrograms.map((p) => p.id))
+    allStudents = allStudents.filter((s) => s.enrollments.some((e) => teacherProgramIds.has(e.programId)))
+  }
   const query = filters.q?.trim().toLowerCase() || ''
   const selectedSchool = filters.schoolName?.trim() || ''
   const selectedGrade = filters.grade?.trim() || ''

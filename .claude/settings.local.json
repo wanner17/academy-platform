@@ -12,7 +12,8 @@
       "PowerShell(Get-Process -Id 24792, 33764, 35768, 38772 | ForEach-Object { $p = $_; try { $p | Select-Object Id, @{N='Path';E={$_.MainModule.FileName}} } catch { \"$\\($p.Id\\): access denied\" } })",
       "PowerShell(Get-Process -Id 33764, 38772 | Select-Object Id, @{N='CommandLine';E={ \\(Get-WmiObject Win32_Process -Filter \"ProcessId=$\\($_.Id\\)\"\\).CommandLine }})",
       "PowerShell(Stop-Process -Id 33764, 38772 -Force)",
-      "PowerShell(Get-Process | Where-Object { $_.Name -match \"node\" } | Select-Object Id, @{N='CommandLine';E={ \\(Get-WmiObject Win32_Process -Filter \"ProcessId=$\\($_.Id\\)\"\\).CommandLine }} | Where-Object { $_.CommandLine -match \"next\" })"
+      "PowerShell(Get-Process | Where-Object { $_.Name -match \"node\" } | Select-Object Id, @{N='CommandLine';E={ \\(Get-WmiObject Win32_Process -Filter \"ProcessId=$\\($_.Id\\)\"\\).CommandLine }} | Where-Object { $_.CommandLine -match \"next\" })",
+      "Bash(grep -E '\\\\.\\(tsx|ts\\)$')"
     ]
   }
 }

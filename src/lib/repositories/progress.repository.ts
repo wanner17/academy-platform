@@ -4,6 +4,7 @@ export type CreateProgressLogInput = {
   authorId: string
   classDate: Date
   content: string
+  homeworkRate?: number
   isVisible?: boolean
   nextPlan?: string
   programId: string

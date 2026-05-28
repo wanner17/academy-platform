@@ -13,13 +13,27 @@ type AdminTestsPageProps = {
 export default async function AdminTestsPage({ params, searchParams }: AdminTestsPageProps) {
   const { slug } = await params
   const filters = await searchParams
-  const { academy } = await requireMemberPage(slug)
+  const { academy, user } = await requireMemberPage(slug)
   const { page, limit } = parsePaginationParams(filters)
-  const [allResults, programs, students] = await Promise.all([
+
+  let teacherProgramIds: Set<string> | null = null
+  if (user.role === 'TEACHER') {
+    const teacherPrograms = await programService.getTeacherPrograms(academy.id, user.id)
+    teacherProgramIds = new Set(teacherPrograms.map((p) => p.id))
+  }
+
+  const [rawResults, allPrograms, allStudents] = await Promise.all([
     testResultService.getAdminTestResults(academy.id, filters),
     programService.getAdminPrograms(academy.id),
     studentService.getAdminStudents(academy.id),
   ])
+
+  const allResults = teacherProgramIds ? rawResults.filter((r) => teacherProgramIds!.has(r.programId)) : rawResults
+  const programs = teacherProgramIds ? allPrograms.filter((p) => teacherProgramIds!.has(p.id)) : allPrograms
+  const students = teacherProgramIds
+    ? allStudents.filter((s) => s.enrollments.some((e) => teacherProgramIds!.has(e.programId)))
+    : allStudents
+
   const { items: results, total, totalPages, page: currentPage } = paginateArray(allResults, page, limit)
 
   return (

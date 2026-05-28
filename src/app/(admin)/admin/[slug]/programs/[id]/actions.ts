@@ -212,6 +212,8 @@ export async function createProgressLogAction(formData: FormData) {
   assertProgramWritable(program, user)
   const studentId = await readStudentScope(academy.id, programId, formData)
 
+  const homeworkRateRaw = formData.get('homeworkRate')
+  const homeworkRate = homeworkRateRaw !== '' && homeworkRateRaw !== null ? Number(homeworkRateRaw) : undefined
   await progressService.createProgressLog(academy.id, {
     authorId: user.id,
     programId,
@@ -219,6 +221,7 @@ export async function createProgressLogAction(formData: FormData) {
     classDate: new Date(String(formData.get('classDate') ?? '')),
     content: String(formData.get('content') ?? ''),
     nextPlan: String(formData.get('nextPlan') ?? '') || undefined,
+    homeworkRate: Number.isFinite(homeworkRate) ? homeworkRate : undefined,
     isVisible: formData.get('isVisible') !== 'false',
   })
 
@@ -235,11 +238,14 @@ export async function updateProgressLogAction(formData: FormData) {
   if (progressLog.programId !== programId) throw new Error('Progress log does not belong to this program')
   const studentId = await readStudentScope(academy.id, programId, formData)
 
+  const homeworkRateRaw = formData.get('homeworkRate')
+  const homeworkRate = homeworkRateRaw !== '' && homeworkRateRaw !== null ? Number(homeworkRateRaw) : undefined
   await progressService.updateProgressLog(id, academy.id, {
     studentId,
     classDate: new Date(String(formData.get('classDate') ?? '')),
     content: String(formData.get('content') ?? ''),
     nextPlan: String(formData.get('nextPlan') ?? '') || undefined,
+    homeworkRate: Number.isFinite(homeworkRate) ? homeworkRate : undefined,
     isVisible: formData.get('isVisible') !== 'false',
   })
 
