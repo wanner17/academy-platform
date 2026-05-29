@@ -6,13 +6,14 @@ import { attendanceStatusLabels } from '@/lib/attendance-labels'
 import { programModeLabels, targetLevelLabels } from '@/lib/program-labels'
 import { requireStudentPage } from '@/lib/auth/server'
 import { attendanceService, isWithinCheckInWindow } from '@/lib/services/attendance.service'
+import { dailyQuizService } from '@/lib/services/daily-quiz.service'
 import { homeworkService } from '@/lib/services/homework.service'
 import { progressService } from '@/lib/services/progress.service'
 import { studentService } from '@/lib/services/student.service'
 import { testResultService } from '@/lib/services/test-result.service'
 import { studentPath } from '@/lib/utils/public-path'
 import { formatKoreaTime, getKoreaDateParts, toKoreaDateKey } from '@/lib/utils/korea-time'
-import { updateStudentPasswordAction } from './actions'
+import { submitQuizAnswerAction, updateStudentPasswordAction } from './actions'
 
 type StudentHomePageProps = {
   params: Promise<{ slug: string }>
@@ -36,7 +37,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
     now,
     studentId: student.id,
   })
-  const [homeworks, progressLogs, testResults, attendanceSetting, todayAttendances, monthlyAttendance, todaySchedules] = await Promise.all([
+  const [homeworks, progressLogs, testResults, attendanceSetting, todayAttendances, monthlyAttendance, todaySchedules, todayQuiz, ranking] = await Promise.all([
     homeworkService.getVisibleHomeworksForPrograms(academy.id, programIds, student.id),
     progressService.getVisibleProgressLogsForPrograms(academy.id, programIds, student.id),
     testResultService.getStudentVisibleTestResults(academy.id, student.id),
@@ -44,7 +45,10 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
     attendanceService.getStudentRecordsForDate(academy.id, student.id, now),
     attendanceService.getStudentRecordsForMonth(academy.id, student.id, selectedMonth.getFullYear(), selectedMonth.getMonth()),
     attendanceService.getTodaySchedulesForStudent(student.id, now),
+    dailyQuizService.getTodayQuiz(academy.id),
+    dailyQuizService.getRanking(academy.id),
   ])
+  const quizAttempt = todayQuiz ? await dailyQuizService.getStudentAttempt(todayQuiz.id, student.id) : null
   const attendancesByDate = monthlyAttendance.reduce((map, record) => {
     const key = toKoreaDateKey(record.attendanceDate)
     map.set(key, [...(map.get(key) ?? []), record])
@@ -264,6 +268,78 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
             <div className="student-empty">등록된 진도 기록이 없습니다.</div>
           ) : null}
           </div>
+        </section>
+
+        <section className="student-section">
+          <div className="pub-section-head">
+            <div>
+              <div className="pub-label">TODAY&apos;S QUIZ</div>
+              <h2 className="pub-h2">오늘의 퀴즈</h2>
+            </div>
+          </div>
+          {todayQuiz ? (
+            <div className="student-quiz-card">
+              <p className="student-quiz-question">{todayQuiz.question}</p>
+              {quizAttempt ? (
+                <div className={`student-quiz-result ${quizAttempt.isCorrect ? 'is-correct' : 'is-wrong'}`}>
+                  <div className="student-quiz-result-row">
+                    <span className="student-quiz-result-badge">
+                      {quizAttempt.isCorrect ? '정답!' : '오답'}
+                    </span>
+                    <span>
+                      내 답: <strong>{quizAttempt.answer ? 'O' : 'X'}</strong>
+                      {' · '}
+                      정답: <strong>{todayQuiz.answer ? 'O' : 'X'}</strong>
+                    </span>
+                  </div>
+                  {todayQuiz.explanation ? (
+                    <p className="student-quiz-explanation">{todayQuiz.explanation}</p>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="student-quiz-buttons">
+                  <form action={submitQuizAnswerAction}>
+                    <input name="slug" type="hidden" value={slug} />
+                    <input name="quizId" type="hidden" value={todayQuiz.id} />
+                    <input name="answer" type="hidden" value="true" />
+                    <button className="student-quiz-btn student-quiz-btn-o" type="submit">O</button>
+                  </form>
+                  <form action={submitQuizAnswerAction}>
+                    <input name="slug" type="hidden" value={slug} />
+                    <input name="quizId" type="hidden" value={todayQuiz.id} />
+                    <input name="answer" type="hidden" value="false" />
+                    <button className="student-quiz-btn student-quiz-btn-x" type="submit">X</button>
+                  </form>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="student-empty">오늘의 퀴즈가 아직 준비되지 않았습니다.</div>
+          )}
+        </section>
+
+        <section className="student-section">
+          <div className="pub-section-head">
+            <div>
+              <div className="pub-label">RANKING</div>
+              <h2 className="pub-h2">랭킹</h2>
+            </div>
+          </div>
+          <ol className="student-ranking-list">
+            {ranking.map((entry, index) => {
+              const isMe = entry.id === student.id
+              return (
+                <li key={entry.id} className={`student-ranking-item${isMe ? ' is-me' : ''}`}>
+                  <span className="student-ranking-pos">{index + 1}</span>
+                  <span className="student-ranking-name">{isMe ? `${entry.name} (나)` : entry.name}</span>
+                  <span className="student-ranking-points">{entry.points}점</span>
+                </li>
+              )
+            })}
+            {ranking.length === 0 ? (
+              <li className="student-empty">아직 참여한 학생이 없습니다.</li>
+            ) : null}
+          </ol>
         </section>
 
         <section className="student-section">

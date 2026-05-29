@@ -42,6 +42,8 @@ const nextConfig: NextConfig = {
         { source: '/admin/teachers/:path*', destination: `/admin/${slug}/teachers/:path*` },
         { source: '/admin/students/:path*', destination: `/admin/${slug}/students/:path*` },
         { source: '/admin/notices/:path*', destination: `/admin/${slug}/notices/:path*` },
+        { source: '/admin/quiz', destination: `/admin/${slug}/quiz` },
+        { source: '/admin/quiz/:path*', destination: `/admin/${slug}/quiz/:path*` },
         { source: '/admin/inquiries/:path*', destination: `/admin/${slug}/inquiries/:path*` },
         { source: '/admin/profile/:path*', destination: `/admin/${slug}/profile/:path*` },
         { source: '/admin/schedule/:path*', destination: `/admin/${slug}/schedule/:path*` },

@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { requireStudentPage } from '@/lib/auth/server'
 import { prisma } from '@/lib/db/prisma'
 import { attendanceService, type StudentCheckInInput } from '@/lib/services/attendance.service'
+import { dailyQuizService } from '@/lib/services/daily-quiz.service'
 import { studentService } from '@/lib/services/student.service'
 import { studentPath } from '@/lib/utils/public-path'
 import { formatKoreaTime } from '@/lib/utils/korea-time'
@@ -70,6 +71,17 @@ export async function checkInAttendanceAction(slug: string, input: StudentCheckI
     const message = error instanceof Error ? error.message : '출석 처리에 실패했습니다.'
     return { ok: false, message: toKoreanAttendanceMessage(message) }
   }
+}
+
+export async function submitQuizAnswerAction(formData: FormData) {
+  const slug = String(formData.get('slug') ?? '')
+  const quizId = String(formData.get('quizId') ?? '')
+  const answer = formData.get('answer') === 'true'
+  const { academy, user } = await requireStudentPage(slug)
+  const student = await studentService.getStudentByUserId(user.id, academy.id)
+  await dailyQuizService.submitAnswer(academy.id, quizId, student.id, answer)
+  revalidatePath(studentPath(slug))
+  redirect(studentPath(slug))
 }
 
 function toKoreanAttendanceMessage(message: string) {

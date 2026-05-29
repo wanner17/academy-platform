@@ -14,6 +14,7 @@ const DEFAULT_ADMIN_PATHS = new Set([
   'notices',
   'profile',
   'programs',
+  'quiz',
   'schedule',
   'settings',
   'students',

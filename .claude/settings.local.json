@@ -14,7 +14,8 @@
       "PowerShell(Stop-Process -Id 33764, 38772 -Force)",
       "PowerShell(Get-Process | Where-Object { $_.Name -match \"node\" } | Select-Object Id, @{N='CommandLine';E={ \\(Get-WmiObject Win32_Process -Filter \"ProcessId=$\\($_.Id\\)\"\\).CommandLine }} | Where-Object { $_.CommandLine -match \"next\" })",
       "Bash(grep -E '\\\\.\\(tsx|ts\\)$')",
-      "Bash(Remove-Item \"d:\\\\dev\\\\academy-platform\\\\prisma\\\\add_homework_completion.sql\")"
+      "Bash(Remove-Item \"d:\\\\dev\\\\academy-platform\\\\prisma\\\\add_homework_completion.sql\")",
+      "Bash(Get-ChildItem -Path \"d:/dev/academy-platform\" -Filter \"*.env*\" -Force)"
     ]
   }
 }

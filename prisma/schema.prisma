@@ -43,6 +43,7 @@ model Academy {
   attendanceRecords AttendanceRecord[]
   schoolExamResults SchoolExamResult[]
   messages          Message[]
+  dailyQuizzes      DailyQuiz[]
 
   @@index([slug])
 }
@@ -381,6 +382,7 @@ model Student {
   attendanceRecords   AttendanceRecord[]
   schoolExamResults   SchoolExamResult[]
   homeworkCompletions HomeworkCompletion[]
+  dailyQuizAttempts   DailyQuizAttempt[]
 
   @@index([academyId, name])
 }
@@ -509,6 +511,39 @@ model Message {
 
   @@index([academyId, receiverId, createdAt])
   @@index([academyId, senderId])
+}
+
+model DailyQuiz {
+  id          String   @id @default(cuid())
+  academyId   String
+  date        DateTime @db.Date
+  question    String
+  answer      Boolean
+  explanation String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  academy  Academy            @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  attempts DailyQuizAttempt[]
+
+  @@unique([academyId, date])
+  @@index([academyId, date])
+}
+
+model DailyQuizAttempt {
+  id        String   @id @default(cuid())
+  academyId String
+  quizId    String
+  studentId String
+  answer    Boolean
+  isCorrect Boolean
+  createdAt DateTime @default(now())
+
+  quiz    DailyQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  student Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, studentId])
+  @@index([academyId, isCorrect])
+  @@index([studentId])
 }
 
 model FileAsset {
