@@ -34,9 +34,9 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
   const schools = Array.from(new Set(allStudents.map((s) => s.schoolName).filter(isString))).sort((a, b) =>
     a.localeCompare(b, 'ko-KR'),
   )
-  const grades = Array.from(new Set(allStudents.map((s) => s.grade).filter(isString))).sort((a, b) =>
-    a.localeCompare(b, 'ko-KR'),
-  )
+  const grades = Array.from(
+    new Set(allStudents.map((s) => s.grade).filter(isString).map(normalizeGrade))
+  ).sort(sortGrade)
   const programs = Array.from(
     new Map(
       allStudents.flatMap((s) => s.enrollments.map((e) => [e.programId, e.program])),
@@ -55,7 +55,7 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
         ].some((v) => v.toLowerCase().includes(query))
       : true
     const matchesSchool = selectedSchool ? student.schoolName === selectedSchool : true
-    const matchesGrade = selectedGrade ? student.grade === selectedGrade : true
+    const matchesGrade = selectedGrade ? normalizeGrade(student.grade ?? '') === selectedGrade : true
     const matchesProgram = selectedProgramId
       ? student.enrollments.some((e) => e.programId === selectedProgramId)
       : true
@@ -236,4 +236,17 @@ export default async function AdminStudentsPage({ params, searchParams }: AdminS
 
 function isString(value: string | null): value is string {
   return Boolean(value)
+}
+
+function normalizeGrade(grade: string): string {
+  const trimmed = grade.trim()
+  const num = trimmed.replace(/학년$/, '').trim()
+  return /^\d+$/.test(num) ? `${num}학년` : trimmed
+}
+
+function sortGrade(a: string, b: string): number {
+  const numA = parseInt(a.replace(/학년$/, ''), 10)
+  const numB = parseInt(b.replace(/학년$/, ''), 10)
+  if (!isNaN(numA) && !isNaN(numB)) return numA - numB
+  return a.localeCompare(b, 'ko-KR')
 }
