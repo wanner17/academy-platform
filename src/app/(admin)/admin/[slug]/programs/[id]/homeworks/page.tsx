@@ -6,8 +6,9 @@ import { programService } from '@/lib/services/program.service'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
 import { getKoreaDateParts } from '@/lib/utils/korea-time'
-import { createHomeworkAction, deleteHomeworkAction, toggleHomeworkStudentCompletionAction } from '../actions'
+import { deleteHomeworkAction, toggleHomeworkStudentCompletionAction } from '../actions'
 import { HomeworkExcelUpload } from './homework-excel-upload'
+import { HomeworkRowForm } from './homework-row-form'
 
 type ProgramHomeworksPageProps = {
   params: Promise<{ slug: string; id: string }>
@@ -117,49 +118,13 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
       </section>
       <aside className="space-y-6">
         <div className="rounded-lg border bg-white p-5">
-        <h2 className="mb-4 font-semibold">숙제 추가</h2>
-        <form action={createHomeworkAction} className="space-y-4">
-          <input type="hidden" name="slug" value={slug} />
-          <input type="hidden" name="programId" value={program.id} />
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">대상 학생</span>
-            <select className="w-full rounded border px-3 py-2 text-sm" name="studentId">
-              <option value="">전체 학생</option>
-              {enrolledStudents.map((student) => (
-                <option key={student.id} value={student.id}>
-                  {student.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">제목</span>
-            <input className="w-full rounded border px-3 py-2 text-sm" name="title" required />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">내용</span>
-            <textarea className="min-h-24 w-full rounded border px-3 py-2 text-sm" name="content" required />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">시작일</span>
-            <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={today} name="startDate" required type="date" />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">마감일</span>
-            <input className="w-full rounded border px-3 py-2 text-sm" name="dueDate" type="date" />
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input name="isCompleted" type="checkbox" value="true" />
-            숙제 완료
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input defaultChecked name="isVisible" type="checkbox" value="true" />
-            학생에게 공개
-          </label>
-          <ConfirmSubmitButton className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white" message="숙제를 저장할까요?">
-            저장
-          </ConfirmSubmitButton>
-        </form>
+          <h2 className="mb-4 font-semibold">숙제 추가</h2>
+          <HomeworkRowForm
+            enrolledStudents={enrolledStudents.map((s) => ({ id: s.id, name: s.name }))}
+            programId={program.id}
+            slug={slug}
+            today={today}
+          />
         </div>
         <HomeworkExcelUpload
           enrolledStudentNames={enrolledStudents.map((s) => s.name)}

@@ -195,6 +195,74 @@ export async function updateHomeworkAction(formData: FormData) {
   redirect(`/admin/${slug}/programs/${programId}/homeworks`)
 }
 
+export async function updateAndBulkCreateHomeworksAction(formData: FormData) {
+  const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
+  const id = String(formData.get('id') ?? '')
+  const program = await programService.getProgramById(programId, academy.id)
+  assertProgramWritable(program, user)
+  const homework = await homeworkService.getHomeworkById(id, academy.id)
+  if (homework.programId !== programId) throw new Error('Homework does not belong to this program')
+
+  const rowsJson = String(formData.get('rows') ?? '[]')
+  const rows: BulkHomeworkRow[] = JSON.parse(rowsJson)
+  if (!Array.isArray(rows) || rows.length === 0) throw new Error('행 데이터가 없습니다')
+
+  const students = await studentService.getAdminStudents(academy.id)
+  const enrolledStudents = students.filter((s) =>
+    s.enrollments.some((e) => e.programId === programId && e.status === 'ACTIVE'),
+  )
+
+  const [firstRow, ...restRows] = rows
+
+  await homeworkService.updateHomework(id, academy.id, {
+    studentId: resolveBulkStudentId(firstRow, enrolledStudents),
+    title: firstRow.title,
+    content: firstRow.content,
+    startDate: firstRow.startDate ? new Date(firstRow.startDate) : undefined,
+    dueDate: firstRow.dueDate ? new Date(firstRow.dueDate) : undefined,
+    isCompleted: firstRow.isCompleted ?? false,
+    isVisible: firstRow.isVisible ?? true,
+  })
+
+  if (restRows.length > 0) {
+    await Promise.all(
+      restRows.map((row) =>
+        homeworkService.createHomework(academy.id, {
+          authorId: user.id,
+          programId,
+          studentId: resolveBulkStudentId(row, enrolledStudents),
+          title: row.title,
+          content: row.content,
+          startDate: row.startDate ? new Date(row.startDate) : undefined,
+          dueDate: row.dueDate ? new Date(row.dueDate) : undefined,
+          isCompleted: row.isCompleted ?? false,
+          isVisible: row.isVisible ?? true,
+        }),
+      ),
+    )
+  }
+
+  revalidatePath(`/admin/${slug}/programs/${programId}`)
+  redirect(`/admin/${slug}/programs/${programId}/homeworks`)
+}
+
+function resolveBulkStudentId(
+  row: BulkHomeworkRow,
+  enrolledStudents: { id: string; name: string }[],
+): string | undefined {
+  if (row.studentId?.trim()) {
+    const matched = enrolledStudents.find((s) => s.id === row.studentId!.trim())
+    if (!matched) throw new Error(`학생을 찾을 수 없습니다: ${row.studentId}`)
+    return matched.id
+  }
+  if (row.studentName?.trim()) {
+    const matched = enrolledStudents.find((s) => s.name === row.studentName!.trim())
+    if (!matched) throw new Error(`학생을 찾을 수 없습니다: ${row.studentName}`)
+    return matched.id
+  }
+  return undefined
+}
+
 export async function deleteHomeworkAction(formData: FormData) {
   const { slug, programId, academy, user } = await readProgramScheduleContext(formData)
   const program = await programService.getProgramById(programId, academy.id)
@@ -281,6 +349,7 @@ export async function deleteProgressLogAction(formData: FormData) {
 type BulkHomeworkRow = {
   title: string
   content: string
+  studentId?: string
   studentName?: string
   startDate?: string
   dueDate?: string
@@ -305,7 +374,11 @@ export async function bulkCreateHomeworksAction(formData: FormData) {
   await Promise.all(
     rows.map(async (row) => {
       let studentId: string | undefined
-      if (row.studentName?.trim()) {
+      if (row.studentId?.trim()) {
+        const matched = enrolledStudents.find((s) => s.id === row.studentId!.trim())
+        if (!matched) throw new Error(`학생을 찾을 수 없습니다: ${row.studentId}`)
+        studentId = matched.id
+      } else if (row.studentName?.trim()) {
         const matched = enrolledStudents.find((s) => s.name === row.studentName!.trim())
         if (!matched) throw new Error(`학생을 찾을 수 없습니다: ${row.studentName}`)
         studentId = matched.id
