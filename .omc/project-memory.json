@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1779954646502,
+  "lastScanned": 1780270221416,
   "projectRoot": "d:\\dev\\academy-platform",
   "techStack": {
     "languages": [
@@ -68,6 +68,7 @@
     "workspaces": [],
     "mainDirectories": [
       "public",
+      "scripts",
       "src"
     ],
     "gitBranches": {
@@ -81,7 +82,7 @@
       "path": "omx_wiki",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1779954646428,
+      "lastAccessed": 1780270221273,
       "keyFiles": [
         "log.md"
       ]
@@ -90,7 +91,7 @@
       "path": "prisma",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1779954646429,
+      "lastAccessed": 1780270221274,
       "keyFiles": [
         "schema.prisma",
         "seed.ts"
@@ -100,7 +101,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 4,
-      "lastAccessed": 1779954646458,
+      "lastAccessed": 1780270221320,
       "keyFiles": [
         "admin-manual.html",
         "instagram-icon.svg",
@@ -108,11 +109,18 @@
         "naver-blog-icon.svg"
       ]
     },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 0,
+      "lastAccessed": 1780270221322,
+      "keyFiles": []
+    },
     "src": {
       "path": "src",
       "purpose": "Source code",
       "fileCount": 1,
-      "lastAccessed": 1779954646459,
+      "lastAccessed": 1780270221322,
       "keyFiles": [
         "proxy.ts"
       ]
@@ -121,7 +129,7 @@
       "path": "prisma\\migrations",
       "purpose": "Database migrations",
       "fileCount": 1,
-      "lastAccessed": 1779954646461,
+      "lastAccessed": 1780270221336,
       "keyFiles": [
         "migration_lock.toml"
       ]
@@ -130,7 +138,7 @@
       "path": "src\\app",
       "purpose": "Application code",
       "fileCount": 6,
-      "lastAccessed": 1779954646462,
+      "lastAccessed": 1780270221356,
       "keyFiles": [
         "error.tsx",
         "global-error.tsx",
@@ -141,7 +149,7 @@
       "path": "src\\components",
       "purpose": "UI components",
       "fileCount": 4,
-      "lastAccessed": 1779954646463,
+      "lastAccessed": 1780270221363,
       "keyFiles": [
         "confirm-submit-button.tsx",
         "public-login-form.tsx",
@@ -152,7 +160,7 @@
       "path": "src\\lib",
       "purpose": "Library code",
       "fileCount": 4,
-      "lastAccessed": 1779954646464,
+      "lastAccessed": 1780270221379,
       "keyFiles": [
         "attendance-labels.ts",
         "homepage-sections.ts",
@@ -163,7 +171,7 @@
       "path": "src\\types",
       "purpose": "Type definitions",
       "fileCount": 1,
-      "lastAccessed": 1779954646464,
+      "lastAccessed": 1780270221383,
       "keyFiles": [
         "next-auth.d.ts"
       ]
@@ -171,15 +179,15 @@
   },
   "hotPaths": [
     {
-      "path": "prisma\\schema.prisma",
-      "accessCount": 26,
-      "lastAccessed": 1780040599905,
+      "path": "src\\app\\(student)\\student\\[slug]\\page.tsx",
+      "accessCount": 29,
+      "lastAccessed": 1780274567724,
       "type": "file"
     },
     {
-      "path": "src\\app\\(student)\\student\\[slug]\\page.tsx",
-      "accessCount": 24,
-      "lastAccessed": 1780040695895,
+      "path": "prisma\\schema.prisma",
+      "accessCount": 27,
+      "lastAccessed": 1780274469741,
       "type": "file"
     },
     {
@@ -190,8 +198,8 @@
     },
     {
       "path": "",
-      "accessCount": 17,
-      "lastAccessed": 1780040240714,
+      "accessCount": 18,
+      "lastAccessed": 1780274417071,
       "type": "directory"
     },
     {

@@ -279,7 +279,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
           </div>
           {todayQuiz ? (
             <div className="student-quiz-card">
-              <p className="student-quiz-question">{todayQuiz.question}</p>
+              <div className="student-quiz-question" dangerouslySetInnerHTML={{ __html: todayQuiz.question }} />
               {quizAttempt ? (
                 <div className={`student-quiz-result ${quizAttempt.isCorrect ? 'is-correct' : 'is-wrong'}`}>
                   <div className="student-quiz-result-row">
@@ -293,7 +293,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
                     </span>
                   </div>
                   {todayQuiz.explanation ? (
-                    <p className="student-quiz-explanation">{todayQuiz.explanation}</p>
+                    <div className="student-quiz-explanation" dangerouslySetInnerHTML={{ __html: todayQuiz.explanation }} />
                   ) : null}
                 </div>
               ) : (

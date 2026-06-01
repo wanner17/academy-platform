@@ -517,7 +517,7 @@ model DailyQuiz {
   id          String   @id @default(cuid())
   academyId   String
   date        DateTime @db.Date
-  question    String
+  question    String   @db.Text
   answer      Boolean
   explanation String?  @db.Text
   createdAt   DateTime @default(now())

@@ -1,8 +1,10 @@
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { SmartEditor } from '@/components/admin/smart-editor'
 import { requireAdminPage } from '@/lib/auth/server'
 import { dailyQuizService } from '@/lib/services/daily-quiz.service'
 import { getAcademyBySlug } from '@/lib/utils/tenant'
 import { toKoreaDateKey } from '@/lib/utils/korea-time'
+import { stripHtml } from '@/lib/utils/html'
 import { createQuizAction, deleteQuizAction } from './actions'
 
 type Props = {
@@ -28,7 +30,7 @@ export default async function AdminQuizPage({ params, searchParams }: Props) {
 
       <section className="mb-8 rounded-lg border bg-white p-6">
         <h2 className="mb-4 font-semibold">새 퀴즈 등록</h2>
-        <form action={createQuizAction} className="grid gap-4 sm:grid-cols-2">
+        <form action={createQuizAction} className="grid gap-4 sm:grid-cols-2" encType="multipart/form-data">
           <input name="slug" type="hidden" value={slug} />
           <label className="block">
             <span className="mb-1 block text-sm font-medium">날짜</span>
@@ -47,25 +49,16 @@ export default async function AdminQuizPage({ params, searchParams }: Props) {
               <option value="false">X (틀리다)</option>
             </select>
           </label>
-          <label className="block sm:col-span-2">
+          <div className="block sm:col-span-2">
             <span className="mb-1 block text-sm font-medium">문제</span>
-            <input
-              className="w-full rounded border px-3 py-2 text-sm"
-              name="question"
-              placeholder="예: 대한민국의 수도는 서울이다."
-              required
-              type="text"
-            />
-          </label>
-          <label className="block sm:col-span-2">
-            <span className="mb-1 block text-sm font-medium">해설 <span className="text-slate-400 font-normal">(선택)</span></span>
-            <textarea
-              className="w-full rounded border px-3 py-2 text-sm"
-              name="explanation"
-              placeholder="정답 이유나 추가 설명을 입력하세요."
-              rows={2}
-            />
-          </label>
+            <SmartEditor minHeight={160} name="question" slug={slug} />
+          </div>
+          <div className="block sm:col-span-2">
+            <span className="mb-1 block text-sm font-medium">
+              해설 <span className="text-slate-400 font-normal">(선택)</span>
+            </span>
+            <SmartEditor minHeight={120} name="explanation" slug={slug} />
+          </div>
           <div className="sm:col-span-2 flex items-center gap-4">
             <button className="rounded bg-blue-700 px-5 py-2 text-sm font-medium text-white hover:bg-blue-800" type="submit">
               등록
@@ -107,9 +100,9 @@ export default async function AdminQuizPage({ params, searchParams }: Props) {
                     ) : null}
                   </td>
                   <td className="px-4 py-3 text-slate-700">
-                    <p>{quiz.question}</p>
+                    <p className="line-clamp-2">{stripHtml(quiz.question)}</p>
                     {quiz.explanation ? (
-                      <p className="mt-1 text-xs text-slate-400">{quiz.explanation}</p>
+                      <p className="mt-1 line-clamp-1 text-xs text-slate-400">{stripHtml(quiz.explanation)}</p>
                     ) : null}
                   </td>
                   <td className="px-4 py-3">

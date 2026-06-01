@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { requireAcademyAdmin } from '@/lib/auth/authorization'
 import { authConfig } from '@/lib/integrations/auth/config'
 import { dailyQuizService } from '@/lib/services/daily-quiz.service'
+import { sanitizeRichText } from '@/lib/utils/html'
 import { toStoredKoreaDate } from '@/lib/utils/korea-time'
 
 export async function createQuizAction(formData: FormData) {
@@ -20,11 +21,11 @@ export async function createQuizAction(formData: FormData) {
   const [year, month, day] = dateStr.split('-').map(Number)
   const date = toStoredKoreaDate(new Date(year, month - 1, day))
 
-  const explanation = String(formData.get('explanation') ?? '').trim() || undefined
+  const explanation = sanitizeRichText(String(formData.get('explanation') ?? '')).trim() || undefined
   try {
     await dailyQuizService.createQuiz(academy.id, {
       date,
-      question: String(formData.get('question') ?? ''),
+      question: sanitizeRichText(String(formData.get('question') ?? '')),
       answer: formData.get('answer') === 'true',
       explanation,
     })
