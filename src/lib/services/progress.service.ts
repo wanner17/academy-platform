@@ -33,6 +33,10 @@ export const progressService = {
     await this.getProgressLogById(id, academyId)
     return progressRepository.delete(id, academyId)
   },
+
+  countStudentLogsForMonth(academyId: string, studentId: string, year: number, month: number) {
+    return progressRepository.countStudentLogsForMonth(academyId, studentId, year, month)
+  },
 }
 
 function normalizeProgressLogInput<T extends CreateProgressLogInput | UpdateProgressLogInput>(data: T) {

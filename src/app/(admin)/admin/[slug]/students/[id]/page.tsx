@@ -88,6 +88,16 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
   const hwTotal = monthlyHomework.filter((h) => h.dueDate).length
   const hwDone = monthlyHomework.filter((h) => h.dueDate && h.isCompleted).length
 
+  const validScores = monthlyTestResults.map((r) => parseScoreAsRate(r.score)).filter((s) => s !== null) as number[]
+  const avgTestScore = validScores.length > 0
+    ? Math.round((validScores.reduce((a, b) => a + b, 0) / validScores.length) * 10) / 10
+    : null
+
+  const attendanceTotal = present + late + absent + excused
+  const attendanceRate = attendanceTotal > 0
+    ? Math.round(((present + late + excused) / attendanceTotal) * 100)
+    : null
+
   // School exam chart data
   const subjects = [...new Set(exams.filter((e) => e.score != null).map((e) => e.subject))].sort()
   const periods = [...new Set(exams.map((e) => periodLabel(e.examYear, e.semester)))].sort()
@@ -154,6 +164,35 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
           </div>
         </section>
       )}
+
+      {/* Summary cards */}
+      <section className="mb-8 grid grid-cols-3 gap-4">
+        <div className="rounded-lg border bg-white p-4 text-center">
+          <p className="text-xs text-slate-500">숙제 완료율</p>
+          <p className="mt-1 text-2xl font-bold text-indigo-700">
+            {hwTotal > 0 ? `${Math.round((hwDone / hwTotal) * 100)}%` : '-'}
+          </p>
+          {hwTotal > 0 && <p className="mt-0.5 text-xs text-slate-400">{hwDone}/{hwTotal}개</p>}
+        </div>
+        <div className="rounded-lg border bg-white p-4 text-center">
+          <p className="text-xs text-slate-500">테스트 평균</p>
+          <p className="mt-1 text-2xl font-bold text-indigo-700">
+            {avgTestScore !== null ? `${avgTestScore}%` : '-'}
+          </p>
+          {monthlyTestResults.length > 0 && (
+            <p className="mt-0.5 text-xs text-slate-400">{monthlyTestResults.length}회</p>
+          )}
+        </div>
+        <div className="rounded-lg border bg-white p-4 text-center">
+          <p className="text-xs text-slate-500">출석률</p>
+          <p className="mt-1 text-2xl font-bold text-indigo-700">
+            {attendanceRate !== null ? `${attendanceRate}%` : '-'}
+          </p>
+          {attendanceTotal > 0 && (
+            <p className="mt-0.5 text-xs text-slate-400">{present + late + excused}/{attendanceTotal}회</p>
+          )}
+        </div>
+      </section>
 
       {/* Attendance calendar */}
       <section className="mb-8 rounded-lg border bg-white p-5">
@@ -345,6 +384,19 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
       </section>
     </main>
   )
+}
+
+function parseScoreAsRate(score: string): number | null {
+  const trimmed = score.trim()
+  if (trimmed.includes('/')) {
+    const [numStr, denStr] = trimmed.split('/')
+    const num = parseFloat(numStr)
+    const den = parseFloat(denStr)
+    if (!isNaN(num) && !isNaN(den) && den > 0) return (num / den) * 100
+    return null
+  }
+  const n = parseFloat(trimmed)
+  return isNaN(n) ? null : n
 }
 
 function parseMonthParam(value: string | undefined) {

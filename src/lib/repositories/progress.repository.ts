@@ -50,4 +50,17 @@ export const progressRepository = {
   delete(id: string, academyId: string) {
     return prisma.progressLog.deleteMany({ where: { id, academyId } })
   },
+
+  countStudentLogsForMonth(academyId: string, studentId: string, year: number, month: number) {
+    return prisma.progressLog.count({
+      where: {
+        academyId,
+        studentId,
+        classDate: {
+          gte: new Date(year, month, 1),
+          lt: new Date(year, month + 1, 1),
+        },
+      },
+    })
+  },
 }

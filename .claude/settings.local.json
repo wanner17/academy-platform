@@ -23,7 +23,8 @@
       "PowerShell(npx dotenv -e .env.local -- npx prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --script 2>&1)",
       "PowerShell(npx dotenv -e .env.local -- npx prisma db execute --file prisma\\\\create_program_notice.sql --schema prisma\\\\schema.prisma 2>&1)",
       "PowerShell(npx dotenv -e .env.local -- npx prisma generate 2>&1)",
-      "PowerShell(npx tsc --noEmit 2>&1)"
+      "PowerShell(npx tsc --noEmit 2>&1)",
+      "Bash(dir \"d:\\\\dev\\\\academy-platform\\\\src\\\\app\\\\\\(admin\\)\\\\admin\\\\[slug]\\\\students\\\\[id]\")"
     ]
   }
 }
