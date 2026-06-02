@@ -25,6 +25,13 @@ export default async function ProgramProgressPage({ params }: ProgramProgressPag
     student.enrollments.some((enrollment) => enrollment.programId === program.id && enrollment.status === 'ACTIVE'),
   )
 
+  const groupedLogs = progressLogs.reduce<Map<string, typeof progressLogs>>((acc, log) => {
+    const key = log.classDate.toLocaleDateString('ko-KR')
+    if (!acc.has(key)) acc.set(key, [])
+    acc.get(key)!.push(log)
+    return acc
+  }, new Map())
+
   return (
     <main className="mx-auto grid max-w-6xl gap-6 px-6 py-10 xl:grid-cols-[1fr_380px]">
       <section>
@@ -33,48 +40,60 @@ export default async function ProgramProgressPage({ params }: ProgramProgressPag
         </a>
         <h1 className="mb-4 text-2xl font-bold">{program.title} 진도</h1>
         <div className="space-y-3">
-          {progressLogs.map((log) => (
-            <article key={log.id} className="rounded-lg border bg-white p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{log.classDate.toLocaleDateString('ko-KR')} 수업</span>
-                    <span className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{log.student?.name ?? '전체'}</span>
-                    {!log.isVisible ? <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">비공개</span> : null}
-                  </div>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{log.content}</p>
-                  {log.nextPlan ? <p className="mt-2 whitespace-pre-wrap text-sm text-blue-700"><span className="font-medium">다음 수업 계획:</span> {log.nextPlan}</p> : null}
-                  {log.homeworkRate != null ? (
-                    <div className="mt-2">
-                      <div className="mb-1 flex items-center justify-between text-sm">
-                        <span className="font-medium text-slate-600">숙제 수행률</span>
-                        <span className="text-slate-700">{log.homeworkRate}%</span>
+          {[...groupedLogs.entries()].map(([date, logs]) => (
+            <details key={date} className="group rounded-lg border bg-white">
+              <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 select-none">
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold">{date} 수업</span>
+                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{logs.length}건</span>
+                </div>
+                <span className="text-slate-400 transition-transform group-open:rotate-180">▼</span>
+              </summary>
+              <div className="space-y-2 border-t px-5 py-4">
+                {logs.map((log) => (
+                  <article key={log.id} className="rounded-lg border bg-slate-50 p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-medium">{log.student?.name ?? '전체'}</span>
+                          {!log.isVisible ? <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">비공개</span> : null}
+                        </div>
+                        <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{log.content}</p>
+                        {log.nextPlan ? <p className="mt-2 whitespace-pre-wrap text-sm text-blue-700"><span className="font-medium">다음 수업 계획:</span> {log.nextPlan}</p> : null}
+                        {log.homeworkRate != null ? (
+                          <div className="mt-2">
+                            <div className="mb-1 flex items-center justify-between text-sm">
+                              <span className="font-medium text-slate-600">숙제 수행률</span>
+                              <span className="text-slate-700">{log.homeworkRate}%</span>
+                            </div>
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                              <div
+                                className="h-2 rounded-full bg-blue-500 transition-all"
+                                style={{ width: `${Math.min(100, Math.max(0, log.homeworkRate))}%` }}
+                              />
+                            </div>
+                          </div>
+                        ) : null}
+                        <p className="mt-1 text-xs text-slate-400">{log.author.name} · {log.createdAt.toLocaleDateString('ko-KR')}</p>
                       </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-2 rounded-full bg-blue-500 transition-all"
-                          style={{ width: `${Math.min(100, Math.max(0, log.homeworkRate))}%` }}
-                        />
+                      <div className="flex shrink-0 gap-2">
+                        <a className="rounded border px-3 py-1 text-sm" href={`/admin/${slug}/programs/${program.id}/progress/${log.id}/edit`}>
+                          수정
+                        </a>
+                        <form action={deleteProgressLogAction}>
+                          <input type="hidden" name="slug" value={slug} />
+                          <input type="hidden" name="programId" value={program.id} />
+                          <input type="hidden" name="id" value={log.id} />
+                          <ConfirmSubmitButton className="rounded border px-3 py-1 text-sm text-red-700" message="이 진도 기록을 삭제할까요?">
+                            삭제
+                          </ConfirmSubmitButton>
+                        </form>
                       </div>
                     </div>
-                  ) : null}
-                  <p className="mt-1 text-xs text-slate-400">{log.author.name} · {log.createdAt.toLocaleDateString('ko-KR')}</p>
-                </div>
-                <div className="flex shrink-0 gap-2">
-                  <a className="rounded border px-3 py-1 text-sm" href={`/admin/${slug}/programs/${program.id}/progress/${log.id}/edit`}>
-                    수정
-                  </a>
-                  <form action={deleteProgressLogAction}>
-                    <input type="hidden" name="slug" value={slug} />
-                    <input type="hidden" name="programId" value={program.id} />
-                    <input type="hidden" name="id" value={log.id} />
-                    <ConfirmSubmitButton className="rounded border px-3 py-1 text-sm text-red-700" message="이 진도 기록을 삭제할까요?">
-                      삭제
-                    </ConfirmSubmitButton>
-                  </form>
-                </div>
+                  </article>
+                ))}
               </div>
-            </article>
+            </details>
           ))}
           {progressLogs.length === 0 ? <div className="rounded-lg border bg-white p-5 text-sm text-slate-500">등록된 진도 기록이 없습니다.</div> : null}
         </div>

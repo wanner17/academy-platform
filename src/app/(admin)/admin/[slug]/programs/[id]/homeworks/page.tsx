@@ -34,6 +34,20 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
     student.enrollments.some((enrollment) => enrollment.programId === program.id && enrollment.status === 'ACTIVE'),
   )
 
+  const groupedHomeworks = homeworks.reduce<Map<string, { displayDate: string; items: typeof homeworks }>>((acc, hw) => {
+    const key = hw.startDate ? hw.startDate.toISOString().split('T')[0] : '__none__'
+    const displayDate = hw.startDate ? hw.startDate.toLocaleDateString('ko-KR') : '날짜 없음'
+    if (!acc.has(key)) acc.set(key, { displayDate, items: [] })
+    acc.get(key)!.items.push(hw)
+    return acc
+  }, new Map())
+
+  const sortedGroups = [...groupedHomeworks.entries()].sort(([a], [b]) => {
+    if (a === '__none__') return 1
+    if (b === '__none__') return -1
+    return b.localeCompare(a)
+  })
+
   return (
     <main className="mx-auto grid max-w-6xl gap-6 px-6 py-10 xl:grid-cols-[1fr_380px]">
       <section>
@@ -42,7 +56,17 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
         </a>
         <h1 className="mb-4 text-2xl font-bold">{program.title} 숙제</h1>
         <div className="space-y-3">
-          {homeworks.map((hw) => {
+          {sortedGroups.map(([key, { displayDate, items }]) => (
+            <details key={key} className="group rounded-lg border bg-white">
+              <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 select-none">
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold">{displayDate}</span>
+                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{items.length}건</span>
+                </div>
+                <span className="text-slate-400 transition-transform group-open:rotate-180">▼</span>
+              </summary>
+              <div className="space-y-2 border-t px-5 py-4">
+                {items.map((hw) => {
             const isAllStudents = hw.studentId === null
             const completedCount = isAllStudents
               ? hw.completions.filter((c) => c.isCompleted).length
@@ -51,7 +75,7 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
             const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
             return (
-              <article key={hw.id} className="rounded-lg border bg-white p-5">
+              <article key={hw.id} className="rounded-lg border bg-slate-50 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -112,7 +136,10 @@ export default async function ProgramHomeworksPage({ params }: ProgramHomeworksP
                 </div>
               </article>
             )
-          })}
+                })}
+              </div>
+            </details>
+          ))}
           {homeworks.length === 0 ? <div className="rounded-lg border bg-white p-5 text-sm text-slate-500">등록된 숙제가 없습니다.</div> : null}
         </div>
       </section>
