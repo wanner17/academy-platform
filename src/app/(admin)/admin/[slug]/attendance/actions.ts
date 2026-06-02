@@ -64,6 +64,41 @@ export async function markAttendanceAction(formData: FormData) {
   redirect(`/admin/${slug}/attendance?date=${date}`)
 }
 
+export async function bulkMarkAttendanceAction(formData: FormData) {
+  const slug = String(formData.get('slug') ?? '')
+  const date = String(formData.get('date') ?? '')
+  const status = String(formData.get('status') ?? 'PRESENT') as AttendanceStatus
+  const memo = String(formData.get('memo') ?? '').trim() || undefined
+  const { academy, user } = await requireMemberPage(slug)
+
+  const entries = formData
+    .getAll('entry')
+    .map((e) => JSON.parse(String(e)) as { studentId: string; scheduleId: string | null })
+
+  const attendanceDate = new Date(`${date}T00:00:00`)
+  if (Number.isNaN(attendanceDate.getTime())) throw new Error('Attendance date is invalid')
+  if (!['PRESENT', 'LATE', 'ABSENT', 'EXCUSED'].includes(status)) throw new Error('Attendance status is invalid')
+  if (entries.length === 0) throw new Error('No entries selected')
+
+  const uniqueStudentIds = [...new Set(entries.map((e) => e.studentId))]
+  await Promise.all(uniqueStudentIds.map((id) => studentService.getStudentById(id, academy.id)))
+
+  await attendanceService.markManualBulk(
+    academy.id,
+    entries.map(({ studentId, scheduleId }) => ({
+      attendanceDate,
+      memo,
+      scheduleId: scheduleId ?? undefined,
+      status,
+      studentId,
+      updatedById: user.id,
+    })),
+  )
+
+  revalidateAttendancePaths(slug)
+  redirect(`/admin/${slug}/attendance?date=${date}`)
+}
+
 function readOptionalNumber(formData: FormData, name: string) {
   const value = String(formData.get(name) ?? '').trim()
   if (!value) return undefined

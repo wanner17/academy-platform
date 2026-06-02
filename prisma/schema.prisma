@@ -44,6 +44,7 @@ model Academy {
   schoolExamResults SchoolExamResult[]
   messages          Message[]
   dailyQuizzes      DailyQuiz[]
+  programNotices    ProgramNotice[]
 
   @@index([slug])
 }
@@ -109,6 +110,7 @@ model User {
   sessions     Session[]
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
+  programNotices   ProgramNotice[]
 
   @@unique([email, academyId])
   @@index([academyId])
@@ -177,6 +179,46 @@ enum PostStatus {
   ARCHIVED
 }
 
+enum ProgramNoticeType {
+  MAKEUP
+  CANCEL
+  SCHEDULE_CHANGE
+  OTHER
+}
+
+model ProgramNotice {
+  id        String            @id @default(cuid())
+  academyId String
+  programId String
+  authorId  String
+  type      ProgramNoticeType
+  title     String
+  content   String?           @db.Text
+  isVisible Boolean           @default(true)
+
+  makeupDate      DateTime?
+  makeupStartTime String?
+  makeupEndTime   String?
+
+  cancelDate DateTime?
+
+  changeDate     DateTime?
+  changeFromTime String?
+  changeToTime   String?
+  dayOfWeek      Int?
+  originalDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  academy Academy @relation(fields: [academyId], references: [id])
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  author  User    @relation(fields: [authorId], references: [id])
+
+  @@index([academyId, programId, createdAt])
+  @@index([authorId])
+}
+
 model Teacher {
   id        String   @id @default(cuid())
   academyId String
@@ -220,6 +262,7 @@ model Program {
   homeworks   Homework[]
   progressLogs ProgressLog[]
   testResults TestResult[]
+  programNotices ProgramNotice[]
 
   @@index([academyId, mode, targetLevel, order])
   @@index([academyId, teacherId])

@@ -297,6 +297,10 @@ export const attendanceService = {
     })
   },
 
+  markManualBulk(academyId: string, inputs: ManualAttendanceInput[]) {
+    return Promise.all(inputs.map((input) => this.markManual(academyId, input)))
+  },
+
   async markManual(academyId: string, input: ManualAttendanceInput) {
     const attendanceDate = toAttendanceDate(input.attendanceDate)
     const scheduleId = input.scheduleId ?? null

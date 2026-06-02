@@ -4,10 +4,12 @@ import { StudentAttendanceButton } from '@/components/student-attendance-button'
 import { StudentCalendarNav } from '@/components/student-calendar-nav'
 import { attendanceStatusLabels } from '@/lib/attendance-labels'
 import { programModeLabels, targetLevelLabels } from '@/lib/program-labels'
+import { formatProgramNoticeDetail, programNoticeTypeBadgeClass, programNoticeTypeLabels } from '@/lib/program-notice-labels'
 import { requireStudentPage } from '@/lib/auth/server'
 import { attendanceService, isWithinCheckInWindow } from '@/lib/services/attendance.service'
 import { dailyQuizService } from '@/lib/services/daily-quiz.service'
 import { homeworkService } from '@/lib/services/homework.service'
+import { programNoticeService } from '@/lib/services/program-notice.service'
 import { progressService } from '@/lib/services/progress.service'
 import { studentService } from '@/lib/services/student.service'
 import { testResultService } from '@/lib/services/test-result.service'
@@ -37,7 +39,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
     now,
     studentId: student.id,
   })
-  const [homeworks, progressLogs, testResults, attendanceSetting, todayAttendances, monthlyAttendance, todaySchedules, todayQuiz, ranking] = await Promise.all([
+  const [homeworks, progressLogs, testResults, attendanceSetting, todayAttendances, monthlyAttendance, todaySchedules, todayQuiz, ranking, programNotices] = await Promise.all([
     homeworkService.getVisibleHomeworksForPrograms(academy.id, programIds, student.id),
     progressService.getVisibleProgressLogsForPrograms(academy.id, programIds, student.id),
     testResultService.getStudentVisibleTestResults(academy.id, student.id),
@@ -47,6 +49,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
     attendanceService.getTodaySchedulesForStudent(student.id, now),
     dailyQuizService.getTodayQuiz(academy.id),
     dailyQuizService.getRanking(academy.id),
+    programNoticeService.getVisibleNoticesForPrograms(academy.id, programIds),
   ])
   const quizAttempt = todayQuiz ? await dailyQuizService.getStudentAttempt(todayQuiz.id, student.id) : null
   const attendancesByDate = monthlyAttendance.reduce((map, record) => {
@@ -174,6 +177,33 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
           {activeEnrollments.length === 0 ? (
             <div className="student-empty">배정된 수업이 없습니다.</div>
           ) : null}
+          </div>
+        </section>
+
+        <section className="student-section">
+          <div className="pub-section-head">
+            <div>
+              <div className="pub-label">CLASS NOTICE</div>
+              <h2 className="pub-h2">수업 공지</h2>
+            </div>
+          </div>
+          <div className="student-list">
+            {programNotices.map((notice) => (
+              <article className="student-record" key={notice.id}>
+                <div className="student-tags">
+                  <span className="pub-card-tag muted">{notice.program.title}</span>
+                  <span className={`pub-card-tag rounded px-2 py-0.5 text-xs font-medium ${programNoticeTypeBadgeClass[notice.type]}`}>
+                    {programNoticeTypeLabels[notice.type]}
+                  </span>
+                </div>
+                <h3>{notice.title}</h3>
+                <p className="text-sm text-slate-600">{formatProgramNoticeDetail(notice)}</p>
+                {notice.content && <p>{notice.content}</p>}
+              </article>
+            ))}
+            {programNotices.length === 0 && (
+              <div className="student-empty">등록된 수업 공지가 없습니다.</div>
+            )}
           </div>
         </section>
 

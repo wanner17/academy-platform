@@ -4,6 +4,7 @@ import { isAcademyAdminRole } from '@/lib/auth/authorization'
 import { programModeLabels, targetLevelLabels } from '@/lib/program-labels'
 import { homeworkService } from '@/lib/services/homework.service'
 import { progressService } from '@/lib/services/progress.service'
+import { programNoticeService } from '@/lib/services/program-notice.service'
 import { programService } from '@/lib/services/program.service'
 import { requireMemberPage } from '@/lib/auth/server'
 import { scheduleService } from '@/lib/services/schedule.service'
@@ -35,11 +36,12 @@ export default async function AdminProgramDetailPage({ params }: AdminProgramDet
 
   if (!canManage) redirect(`/admin/${slug}/my`)
 
-  const [schedules, homeworks, progressLogs, testResults] = await Promise.all([
+  const [schedules, homeworks, progressLogs, testResults, notices] = await Promise.all([
     scheduleService.getProgramSchedules(academy.id, program.id),
     homeworkService.getProgramHomeworks(academy.id, program.id),
     progressService.getProgramProgressLogs(academy.id, program.id),
     testResultService.getAdminTestResults(academy.id, { programId: program.id }),
+    programNoticeService.getProgramNotices(academy.id, program.id),
   ])
   const subject = program.subject ?? program.teacher?.subject ?? ''
 
@@ -62,7 +64,7 @@ export default async function AdminProgramDetailPage({ params }: AdminProgramDet
         </a>
       </div>
 
-      <section className="mb-6 grid gap-4 md:grid-cols-4">
+      <section className="mb-6 grid gap-4 md:grid-cols-5">
         <a className="rounded-lg border bg-white p-5 shadow-sm" href={`/admin/${slug}/programs/${program.id}/schedule`}>
           <div className="text-sm text-slate-500">시간표</div>
           <div className="mt-2 text-3xl font-bold">{schedules.length}</div>
@@ -82,6 +84,11 @@ export default async function AdminProgramDetailPage({ params }: AdminProgramDet
           <div className="text-sm text-slate-500">테스트</div>
           <div className="mt-2 text-3xl font-bold">{testResults.length}</div>
           <p className="mt-2 text-sm text-slate-600">학생별 테스트 결과를 별도 화면에서 관리합니다.</p>
+        </a>
+        <a className="rounded-lg border bg-white p-5 shadow-sm" href={`/admin/${slug}/programs/${program.id}/notices`}>
+          <div className="text-sm text-slate-500">공지</div>
+          <div className="mt-2 text-3xl font-bold">{notices.length}</div>
+          <p className="mt-2 text-sm text-slate-600">보충·휴강·시간표변경 공지를 별도 화면에서 관리합니다.</p>
         </a>
       </section>
 
