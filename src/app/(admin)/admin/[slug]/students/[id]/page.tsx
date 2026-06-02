@@ -88,16 +88,6 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
   const hwTotal = monthlyHomework.filter((h) => h.dueDate).length
   const hwDone = monthlyHomework.filter((h) => h.dueDate && h.isCompleted).length
 
-  const validScores = monthlyTestResults.map((r) => parseScoreAsRate(r.score)).filter((s) => s !== null) as number[]
-  const avgTestScore = validScores.length > 0
-    ? Math.round((validScores.reduce((a, b) => a + b, 0) / validScores.length) * 10) / 10
-    : null
-
-  const attendanceTotal = present + late + absent + excused
-  const attendanceRate = attendanceTotal > 0
-    ? Math.round(((present + late + excused) / attendanceTotal) * 100)
-    : null
-
   // School exam chart data
   const subjects = [...new Set(exams.filter((e) => e.score != null).map((e) => e.subject))].sort()
   const periods = [...new Set(exams.map((e) => periodLabel(e.examYear, e.semester)))].sort()
@@ -123,6 +113,37 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
   })
 
   const activeEnrollments = student.enrollments.filter((e) => e.status === 'ACTIVE')
+
+  const programStats = activeEnrollments.map((e) => {
+    const progHomework = monthlyHomework.filter((h) => h.programId === e.programId && h.dueDate)
+    const progHwDone = progHomework.filter((h) => h.isCompleted).length
+
+    const progTests = monthlyTestResults.filter((t) => t.programId === e.programId)
+    const progScores = progTests.map((t) => parseScoreAsRate(t.score)).filter((s): s is number => s !== null)
+    const progAvgScore = progScores.length > 0
+      ? Math.round((progScores.reduce((a, b) => a + b, 0) / progScores.length) * 10) / 10
+      : null
+
+    const progAttendance = monthlyAttendance.filter((r) => r.schedule?.programId === e.programId)
+    const progPresent = progAttendance.filter((r) => r.status === 'PRESENT').length
+    const progLate = progAttendance.filter((r) => r.status === 'LATE').length
+    const progAbsent = progAttendance.filter((r) => r.status === 'ABSENT').length
+    const progExcused = progAttendance.filter((r) => r.status === 'EXCUSED').length
+    const progTotal = progPresent + progLate + progAbsent + progExcused
+
+    return {
+      programId: e.programId,
+      title: e.program.title,
+      hwTotal: progHomework.length,
+      hwDone: progHwDone,
+      avgScore: progAvgScore,
+      testCount: progTests.length,
+      attendanceRate: progTotal > 0 ? Math.round(((progPresent + progLate + progExcused) / progTotal) * 100) : null,
+      attendanceTotal: progTotal,
+      attendanceAttended: progPresent + progLate + progExcused,
+    }
+  })
+
   const basePath = `/admin/${slug}/students/${studentId}`
 
   return (
@@ -165,34 +186,42 @@ export default async function StudentDetailPage({ params, searchParams }: PagePr
         </section>
       )}
 
-      {/* Summary cards */}
-      <section className="mb-8 grid grid-cols-3 gap-4">
-        <div className="rounded-lg border bg-white p-4 text-center">
-          <p className="text-xs text-slate-500">숙제 완료율</p>
-          <p className="mt-1 text-2xl font-bold text-indigo-700">
-            {hwTotal > 0 ? `${Math.round((hwDone / hwTotal) * 100)}%` : '-'}
-          </p>
-          {hwTotal > 0 && <p className="mt-0.5 text-xs text-slate-400">{hwDone}/{hwTotal}개</p>}
-        </div>
-        <div className="rounded-lg border bg-white p-4 text-center">
-          <p className="text-xs text-slate-500">테스트 평균</p>
-          <p className="mt-1 text-2xl font-bold text-indigo-700">
-            {avgTestScore !== null ? `${avgTestScore}%` : '-'}
-          </p>
-          {monthlyTestResults.length > 0 && (
-            <p className="mt-0.5 text-xs text-slate-400">{monthlyTestResults.length}회</p>
-          )}
-        </div>
-        <div className="rounded-lg border bg-white p-4 text-center">
-          <p className="text-xs text-slate-500">출석률</p>
-          <p className="mt-1 text-2xl font-bold text-indigo-700">
-            {attendanceRate !== null ? `${attendanceRate}%` : '-'}
-          </p>
-          {attendanceTotal > 0 && (
-            <p className="mt-0.5 text-xs text-slate-400">{present + late + excused}/{attendanceTotal}회</p>
-          )}
-        </div>
-      </section>
+      {/* Per-program summary */}
+      {programStats.length > 0 && (
+        <section className="mb-8 overflow-hidden rounded-lg border bg-white">
+          <div className="grid grid-cols-4 border-b bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500">
+            <span>수업</span>
+            <span className="text-center">숙제 완료율</span>
+            <span className="text-center">테스트 득점률</span>
+            <span className="text-center">출석률</span>
+          </div>
+          {programStats.map((s) => (
+            <div className="grid grid-cols-4 items-center border-b px-4 py-3 last:border-0" key={s.programId}>
+              <span className="truncate pr-2 text-sm font-medium text-slate-700">{s.title}</span>
+              <div className="text-center">
+                <span className="text-sm font-semibold text-indigo-700">
+                  {s.hwTotal > 0 ? `${Math.round((s.hwDone / s.hwTotal) * 100)}%` : '-'}
+                </span>
+                {s.hwTotal > 0 && <span className="ml-1 text-xs text-slate-400">{s.hwDone}/{s.hwTotal}</span>}
+              </div>
+              <div className="text-center">
+                <span className="text-sm font-semibold text-indigo-700">
+                  {s.avgScore !== null ? `${s.avgScore}%` : '-'}
+                </span>
+                {s.testCount > 0 && <span className="ml-1 text-xs text-slate-400">{s.testCount}회</span>}
+              </div>
+              <div className="text-center">
+                <span className="text-sm font-semibold text-indigo-700">
+                  {s.attendanceRate !== null ? `${s.attendanceRate}%` : '-'}
+                </span>
+                {s.attendanceTotal > 0 && (
+                  <span className="ml-1 text-xs text-slate-400">{s.attendanceAttended}/{s.attendanceTotal}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       {/* Attendance calendar */}
       <section className="mb-8 rounded-lg border bg-white p-5">

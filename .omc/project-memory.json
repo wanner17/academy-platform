@@ -197,6 +197,12 @@
       "type": "file"
     },
     {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\students\\[id]\\page.tsx",
+      "accessCount": 20,
+      "lastAccessed": 1780367811143,
+      "type": "directory"
+    },
+    {
       "path": "",
       "accessCount": 19,
       "lastAccessed": 1780359501706,
@@ -212,12 +218,6 @@
       "path": "src\\app\\globals.css",
       "accessCount": 15,
       "lastAccessed": 1780042279462,
-      "type": "directory"
-    },
-    {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\students\\[id]\\page.tsx",
-      "accessCount": 15,
-      "lastAccessed": 1780367269761,
       "type": "directory"
     },
     {
