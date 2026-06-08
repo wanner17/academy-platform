@@ -45,6 +45,7 @@ model Academy {
   messages          Message[]
   dailyQuizzes      DailyQuiz[]
   programNotices    ProgramNotice[]
+  testCategories    TestCategory[]
 
   @@index([slug])
 }
@@ -104,7 +105,8 @@ model User {
   student      Student?
   homeworks    Homework[]
   progressLogs ProgressLog[]
-  testResults  TestResult[]
+  testResults     TestResult[]
+  testCategories  TestCategory[]
   attendanceUpdates AttendanceRecord[]
   accounts     Account[]
   sessions     Session[]
@@ -363,26 +365,46 @@ model ProgressLog {
   @@index([authorId])
 }
 
+model TestCategory {
+  id          String       @id @default(cuid())
+  academyId   String
+  authorId    String?
+  name        String
+  color       String       @default("#6366f1")
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  academy     Academy      @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  author      User?        @relation(fields: [authorId], references: [id])
+  testResults TestResult[]
+
+  @@index([academyId, authorId, order])
+}
+
 model TestResult {
-  id        String   @id @default(cuid())
-  academyId String
-  programId String
-  studentId String
-  authorId  String
-  testName  String
-  score     String
-  testedAt  DateTime
-  memo      String?  @db.Text
-  isVisible Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  author    User     @relation(fields: [authorId], references: [id])
+  id         String        @id @default(cuid())
+  academyId  String
+  programId  String
+  studentId  String
+  authorId   String
+  categoryId String?
+  testName   String
+  score      String
+  testedAt   DateTime
+  memo       String?       @db.Text
+  isPassed   Boolean?
+  isVisible  Boolean       @default(true)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  program    Program       @relation(fields: [programId], references: [id], onDelete: Cascade)
+  student    Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  author     User          @relation(fields: [authorId], references: [id])
+  category   TestCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   @@index([academyId, programId, testedAt])
   @@index([academyId, studentId, testedAt])
   @@index([academyId, testName])
+  @@index([academyId, categoryId])
   @@index([authorId])
 }
 

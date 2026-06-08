@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation'
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
+import { TestCategorySelect } from '@/components/admin/test-category-select'
 import { programService } from '@/lib/services/program.service'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
+import { testCategoryService } from '@/lib/services/test-category.service'
 import { testResultService } from '@/lib/services/test-result.service'
 import { updateTestResultAction } from '../../actions'
 
@@ -12,11 +14,12 @@ type EditTestResultPageProps = {
 
 export default async function EditTestResultPage({ params }: EditTestResultPageProps) {
   const { slug, id, resultId } = await params
-  const { academy } = await requireMemberPage(slug)
+  const { academy, user } = await requireMemberPage(slug)
   const program = await programService.getProgramById(id, academy.id)
-  const [result, students] = await Promise.all([
+  const [result, students, categories] = await Promise.all([
     testResultService.getTestResultById(resultId, academy.id),
     studentService.getAdminStudents(academy.id),
+    testCategoryService.getCategories(academy.id, user.id),
   ])
   if (result.programId !== program.id) notFound()
   const enrolledStudents = students.filter((student) =>
@@ -46,9 +49,34 @@ export default async function EditTestResultPage({ params }: EditTestResultPageP
           <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={result.testName} name="testName" required />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">점수</span>
-          <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={result.score} name="score" required />
+          <span className="mb-1 block text-sm font-medium">구분</span>
+          <TestCategorySelect categories={categories} defaultValue={result.categoryId} />
         </label>
+        <div className="block">
+          <span className="mb-1 block text-sm font-medium">점수</span>
+          <div className="flex items-center gap-2">
+            <input
+              className="w-full rounded border px-3 py-2 text-sm text-right"
+              defaultValue={parseScoreParts(result.score).numerator}
+              min="0"
+              name="scoreNumerator"
+              placeholder="획득"
+              required
+              step="0.1"
+              type="number"
+            />
+            <span className="shrink-0 text-slate-400">/</span>
+            <input
+              className="w-full rounded border px-3 py-2 text-sm"
+              defaultValue={parseScoreParts(result.score).denominator}
+              min="0"
+              name="scoreDenominator"
+              placeholder="만점"
+              step="0.1"
+              type="number"
+            />
+          </div>
+        </div>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">일시</span>
           <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={toDateTimeLocalValue(result.testedAt)} name="testedAt" type="datetime-local" required />
@@ -56,6 +84,18 @@ export default async function EditTestResultPage({ params }: EditTestResultPageP
         <label className="block">
           <span className="mb-1 block text-sm font-medium">메모</span>
           <textarea className="min-h-24 w-full rounded border px-3 py-2 text-sm" defaultValue={result.memo ?? ''} name="memo" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">Pass / Fail</span>
+          <select
+            className="w-full rounded border px-3 py-2 text-sm"
+            defaultValue={result.isPassed === true ? 'pass' : result.isPassed === false ? 'fail' : ''}
+            name="isPassed"
+          >
+            <option value="">해당없음</option>
+            <option value="pass">통과 (Pass)</option>
+            <option value="fail">미통과 (Fail)</option>
+          </select>
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input defaultChecked={result.isVisible} name="isVisible" type="checkbox" value="true" />
@@ -72,4 +112,12 @@ export default async function EditTestResultPage({ params }: EditTestResultPageP
 function toDateTimeLocalValue(date: Date) {
   const offset = date.getTimezoneOffset() * 60000
   return new Date(date.getTime() - offset).toISOString().slice(0, 16)
+}
+
+function parseScoreParts(score: string): { numerator: string; denominator: string } {
+  const parts = score.split('/')
+  return {
+    numerator: parts[0]?.trim() ?? '',
+    denominator: parts[1]?.trim() ?? '',
+  }
 }

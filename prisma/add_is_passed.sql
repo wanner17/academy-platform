@@ -1,0 +1,1 @@
+ALTER TABLE `TestResult` ADD COLUMN `isPassed` TINYINT(1) NULL;

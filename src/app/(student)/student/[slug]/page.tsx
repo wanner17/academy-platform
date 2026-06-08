@@ -219,7 +219,9 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
               <thead>
                 <tr>
                   <th>테스트명</th>
+                  <th>구분</th>
                   <th>점수</th>
+                  <th>P/F</th>
                   <th>일시</th>
                   <th>수업</th>
                 </tr>
@@ -228,13 +230,37 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
                 {testResults.map((result) => (
                   <tr key={result.id}>
                     <td>{result.testName}</td>
+                    <td>
+                      {result.category ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              backgroundColor: result.category.color,
+                              flexShrink: 0,
+                            }}
+                          />
+                          {result.category.name}
+                        </span>
+                      ) : '-'}
+                    </td>
                     <td>{result.score}</td>
+                    <td>
+                      {result.isPassed === true ? (
+                        <span style={{ color: '#15803d', fontWeight: 500 }}>통과</span>
+                      ) : result.isPassed === false ? (
+                        <span style={{ color: '#b91c1c', fontWeight: 500 }}>미통과</span>
+                      ) : '-'}
+                    </td>
                     <td>{result.testedAt.toLocaleString('ko-KR')}</td>
                     <td>{result.program.title}</td>
                   </tr>
                 ))}
                 {testResults.length === 0 ? (
-                  <tr><td colSpan={4}>공개된 테스트 결과가 없습니다.</td></tr>
+                  <tr><td colSpan={6}>공개된 테스트 결과가 없습니다.</td></tr>
                 ) : null}
               </tbody>
             </table>

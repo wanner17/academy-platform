@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1780356764838,
+  "lastScanned": 1780875428103,
   "projectRoot": "d:\\dev\\academy-platform",
   "techStack": {
     "languages": [
@@ -82,7 +82,7 @@
       "path": "omx_wiki",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1780356764788,
+      "lastAccessed": 1780875428031,
       "keyFiles": [
         "log.md"
       ]
@@ -91,7 +91,7 @@
       "path": "prisma",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1780356764789,
+      "lastAccessed": 1780875428032,
       "keyFiles": [
         "schema.prisma",
         "seed.ts"
@@ -101,7 +101,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 4,
-      "lastAccessed": 1780356764806,
+      "lastAccessed": 1780875428050,
       "keyFiles": [
         "admin-manual.html",
         "instagram-icon.svg",
@@ -113,14 +113,14 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 0,
-      "lastAccessed": 1780356764807,
+      "lastAccessed": 1780875428051,
       "keyFiles": []
     },
     "src": {
       "path": "src",
       "purpose": "Source code",
       "fileCount": 1,
-      "lastAccessed": 1780356764808,
+      "lastAccessed": 1780875428051,
       "keyFiles": [
         "proxy.ts"
       ]
@@ -129,7 +129,7 @@
       "path": "prisma\\migrations",
       "purpose": "Database migrations",
       "fileCount": 1,
-      "lastAccessed": 1780356764809,
+      "lastAccessed": 1780875428053,
       "keyFiles": [
         "migration_lock.toml"
       ]
@@ -138,7 +138,7 @@
       "path": "src\\app",
       "purpose": "Application code",
       "fileCount": 6,
-      "lastAccessed": 1780356764810,
+      "lastAccessed": 1780875428054,
       "keyFiles": [
         "error.tsx",
         "global-error.tsx",
@@ -149,7 +149,7 @@
       "path": "src\\components",
       "purpose": "UI components",
       "fileCount": 4,
-      "lastAccessed": 1780356764811,
+      "lastAccessed": 1780875428055,
       "keyFiles": [
         "confirm-submit-button.tsx",
         "public-login-form.tsx",
@@ -159,8 +159,8 @@
     "src\\lib": {
       "path": "src\\lib",
       "purpose": "Library code",
-      "fileCount": 4,
-      "lastAccessed": 1780356764811,
+      "fileCount": 5,
+      "lastAccessed": 1780875428055,
       "keyFiles": [
         "attendance-labels.ts",
         "homepage-sections.ts",
@@ -171,7 +171,7 @@
       "path": "src\\types",
       "purpose": "Type definitions",
       "fileCount": 1,
-      "lastAccessed": 1780356764811,
+      "lastAccessed": 1780875428056,
       "keyFiles": [
         "next-auth.d.ts"
       ]
@@ -180,15 +180,21 @@
   "hotPaths": [
     {
       "path": "prisma\\schema.prisma",
-      "accessCount": 46,
-      "lastAccessed": 1780365933692,
+      "accessCount": 62,
+      "lastAccessed": 1780903600813,
       "type": "file"
     },
     {
       "path": "src\\app\\(student)\\student\\[slug]\\page.tsx",
-      "accessCount": 40,
-      "lastAccessed": 1780365431695,
+      "accessCount": 47,
+      "lastAccessed": 1780903748904,
       "type": "file"
+    },
+    {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\students\\[id]\\page.tsx",
+      "accessCount": 21,
+      "lastAccessed": 1780899581398,
+      "type": "directory"
     },
     {
       "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\actions.ts",
@@ -197,15 +203,15 @@
       "type": "file"
     },
     {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\students\\[id]\\page.tsx",
+      "path": "",
       "accessCount": 20,
-      "lastAccessed": 1780367811143,
+      "lastAccessed": 1780899838055,
       "type": "directory"
     },
     {
-      "path": "",
+      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\tests\\page.tsx",
       "accessCount": 19,
-      "lastAccessed": 1780359501706,
+      "lastAccessed": 1780904164250,
       "type": "directory"
     },
     {
@@ -221,6 +227,12 @@
       "type": "directory"
     },
     {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\tests\\page.tsx",
+      "accessCount": 15,
+      "lastAccessed": 1780903728492,
+      "type": "file"
+    },
+    {
       "path": "src\\app\\(admin)\\admin\\[slug]\\messages\\page.tsx",
       "accessCount": 11,
       "lastAccessed": 1779865561637,
@@ -233,15 +245,33 @@
       "type": "file"
     },
     {
-      "path": "src\\app\\(student)\\student\\[slug]\\actions.ts",
-      "accessCount": 8,
-      "lastAccessed": 1780039625187,
+      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\page.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1780899591617,
+      "type": "directory"
+    },
+    {
+      "path": "src\\components\\admin\\admin-nav.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1780901583891,
       "type": "file"
     },
     {
       "path": "src\\lib\\auth\\server.ts",
+      "accessCount": 9,
+      "lastAccessed": 1780902837142,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\repositories\\test-result.repository.ts",
+      "accessCount": 9,
+      "lastAccessed": 1780903643702,
+      "type": "directory"
+    },
+    {
+      "path": "src\\app\\(student)\\student\\[slug]\\actions.ts",
       "accessCount": 8,
-      "lastAccessed": 1780358953375,
+      "lastAccessed": 1780039625187,
       "type": "file"
     },
     {
@@ -251,27 +281,27 @@
       "type": "file"
     },
     {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\page.tsx",
-      "accessCount": 8,
-      "lastAccessed": 1780359437266,
-      "type": "directory"
-    },
-    {
       "path": "src\\lib\\services\\attendance.service.ts",
       "accessCount": 8,
       "lastAccessed": 1780365406734,
       "type": "file"
     },
     {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\tests\\page.tsx",
-      "accessCount": 7,
-      "lastAccessed": 1779954890095,
-      "type": "file"
-    },
-    {
       "path": "src\\lib\\services\\homework.service.ts",
       "accessCount": 7,
       "lastAccessed": 1780365411919,
+      "type": "file"
+    },
+    {
+      "path": "src\\lib\\services\\test-result.service.ts",
+      "accessCount": 7,
+      "lastAccessed": 1780899739676,
+      "type": "directory"
+    },
+    {
+      "path": "src\\lib\\auth\\authorization.ts",
+      "accessCount": 7,
+      "lastAccessed": 1780902846286,
       "type": "file"
     },
     {
@@ -293,12 +323,6 @@
       "type": "file"
     },
     {
-      "path": "src\\lib\\repositories\\test-result.repository.ts",
-      "accessCount": 5,
-      "lastAccessed": 1779954908424,
-      "type": "directory"
-    },
-    {
       "path": "src\\app\\(student)\\student\\[slug]\\layout.tsx",
       "accessCount": 5,
       "lastAccessed": 1780038430576,
@@ -311,28 +335,16 @@
       "type": "file"
     },
     {
-      "path": "src\\components\\admin\\admin-nav.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1780358773682,
-      "type": "file"
-    },
-    {
-      "path": "src\\lib\\auth\\authorization.ts",
-      "accessCount": 5,
-      "lastAccessed": 1780358947879,
-      "type": "file"
-    },
-    {
       "path": "src\\app\\(admin)\\admin\\[slug]\\attendance\\actions.ts",
       "accessCount": 5,
       "lastAccessed": 1780363171093,
       "type": "file"
     },
     {
-      "path": "src\\lib\\services\\test-result.service.ts",
+      "path": "src\\app\\(admin)\\admin\\[slug]\\layout.tsx",
       "accessCount": 5,
-      "lastAccessed": 1780365412418,
-      "type": "directory"
+      "lastAccessed": 1780900400841,
+      "type": "file"
     },
     {
       "path": "src\\app\\(student)\\student\\[slug]\\messages\\page.tsx",
@@ -341,15 +353,15 @@
       "type": "file"
     },
     {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\layout.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1780358769297,
-      "type": "file"
+      "path": "src\\app\\(student)",
+      "accessCount": 3,
+      "lastAccessed": 1780899753974,
+      "type": "directory"
     },
     {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\tests\\page.tsx",
+      "path": "src\\components\\admin",
       "accessCount": 3,
-      "lastAccessed": 1779868791443,
+      "lastAccessed": 1780900397729,
       "type": "directory"
     },
     {
@@ -363,18 +375,6 @@
       "accessCount": 2,
       "lastAccessed": 1779864549853,
       "type": "file"
-    },
-    {
-      "path": "src\\app\\(student)",
-      "accessCount": 2,
-      "lastAccessed": 1780038439579,
-      "type": "directory"
-    },
-    {
-      "path": "src\\components\\admin",
-      "accessCount": 2,
-      "lastAccessed": 1780039385437,
-      "type": "directory"
     },
     {
       "path": "src\\lib\\utils\\public-path.ts",

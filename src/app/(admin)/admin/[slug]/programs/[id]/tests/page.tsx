@@ -1,9 +1,16 @@
 import { ConfirmSubmitButton } from '@/components/confirm-submit-button'
 import { Pagination } from '@/components/admin/pagination'
+import { TestCategorySelect } from '@/components/admin/test-category-select'
+import { TestChartSection } from '@/components/admin/analytics/test-chart-section'
 import { programService } from '@/lib/services/program.service'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
+import { testCategoryService } from '@/lib/services/test-category.service'
 import { testResultService } from '@/lib/services/test-result.service'
+import {
+  createTestCategoryAction,
+  deleteTestCategoryAction,
+} from '@/app/(admin)/admin/[slug]/test-categories/actions'
 import { createTestResultAction, deleteTestResultAction } from './actions'
 import { TestExcelUpload } from './test-excel-upload'
 import { parsePaginationParams, paginateArray } from '@/lib/utils/pagination'
@@ -16,21 +23,24 @@ type ProgramTestsPageProps = {
 export default async function ProgramTestsPage({ params, searchParams }: ProgramTestsPageProps) {
   const { slug, id } = await params
   const filters = await searchParams
-  const { academy } = await requireMemberPage(slug)
+  const { academy, user } = await requireMemberPage(slug)
   const program = await programService.getProgramById(id, academy.id)
   const { page, limit } = parsePaginationParams(filters)
 
-  const [allResults, students] = await Promise.all([
+  const [allResults, allChartResults, students, categories] = await Promise.all([
     testResultService.getAdminTestResults(academy.id, {
       programId: program.id,
       q: filters.q,
       studentId: filters.studentId,
       testName: filters.testName,
     }),
+    testResultService.getAdminTestResults(academy.id, { programId: program.id }),
     studentService.getAdminStudents(academy.id),
+    testCategoryService.getCategories(academy.id, user.id),
   ])
-  const enrolledStudents = students.filter((student) =>
-    student.enrollments.some((enrollment) => enrollment.programId === program.id && enrollment.status === 'ACTIVE'),
+
+  const enrolledStudents = students.filter((s) =>
+    s.enrollments.some((e) => e.programId === program.id && e.status === 'ACTIVE'),
   )
   const { items: results, total, totalPages, page: currentPage } = paginateArray(allResults, page, limit)
 
@@ -45,18 +55,22 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
           <input className="rounded border px-3 py-2 text-sm" defaultValue={filters.q ?? ''} name="q" placeholder="검색어" />
           <select className="rounded border px-3 py-2 text-sm" defaultValue={filters.studentId ?? ''} name="studentId">
             <option value="">전체 학생</option>
-            {enrolledStudents.map((student) => (
-              <option key={student.id} value={student.id}>{student.name}</option>
+            {enrolledStudents.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
           <button className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white" type="submit">조회</button>
         </form>
+
+
         <div className="overflow-x-auto rounded-lg border bg-white">
           <table className="w-full min-w-[760px] text-left text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="px-4 py-3 font-medium">테스트명</th>
+                <th className="px-4 py-3 font-medium">구분</th>
                 <th className="px-4 py-3 font-medium">점수</th>
+                <th className="px-4 py-3 font-medium">P/F</th>
                 <th className="px-4 py-3 font-medium">일시</th>
                 <th className="px-4 py-3 font-medium">학생</th>
                 <th className="px-4 py-3 font-medium">공개</th>
@@ -67,7 +81,26 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
               {results.map((result) => (
                 <tr key={result.id}>
                   <td className="px-4 py-3 font-medium">{result.testName}</td>
+                  <td className="px-4 py-3">
+                    {result.category ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="inline-block h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: result.category.color }} />
+                        <span className="text-sm">{result.category.name}</span>
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{result.score}</td>
+                  <td className="px-4 py-3">
+                    {result.isPassed === true ? (
+                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">통과</span>
+                    ) : result.isPassed === false ? (
+                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">미통과</span>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{result.testedAt.toLocaleString('ko-KR')}</td>
                   <td className="px-4 py-3">{result.student.name}</td>
                   <td className="px-4 py-3">{result.isVisible ? '공개' : '비공개'}</td>
@@ -89,7 +122,7 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
                 </tr>
               ))}
               {total === 0 ? (
-                <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={6}>등록된 테스트 결과가 없습니다.</td></tr>
+                <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={8}>등록된 테스트 결과가 없습니다.</td></tr>
               ) : null}
             </tbody>
           </table>
@@ -104,52 +137,139 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
             />
           </div>
         </div>
+
+        <TestChartSection
+          categories={categories}
+          results={allChartResults.map((r) => ({
+            studentId: r.studentId,
+            testedAt: r.testedAt.toISOString(),
+            score: r.score,
+            testName: r.testName,
+            category: r.category,
+          }))}
+          students={enrolledStudents.map((s) => ({ id: s.id, name: s.name }))}
+        />
       </section>
+
       <aside className="space-y-6">
         <div className="rounded-lg border bg-white p-5">
-        <h2 className="mb-4 font-semibold">테스트 결과 추가</h2>
-        <form action={createTestResultAction} className="space-y-4">
-          <input name="slug" type="hidden" value={slug} />
-          <input name="programId" type="hidden" value={program.id} />
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">학생</span>
-            <select className="w-full rounded border px-3 py-2 text-sm" name="studentId" required>
-              <option value="">선택</option>
-              {enrolledStudents.map((student) => (
-                <option key={student.id} value={student.id}>{student.name}</option>
-              ))}
-            </select>
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">테스트명</span>
-            <input className="w-full rounded border px-3 py-2 text-sm" name="testName" placeholder="예: 5월 문법 테스트" required />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">점수</span>
-            <input className="w-full rounded border px-3 py-2 text-sm" name="score" placeholder="예: 92점 / 100" required />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">일시</span>
-            <input className="w-full rounded border px-3 py-2 text-sm" name="testedAt" type="datetime-local" required />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">메모</span>
-            <textarea className="min-h-24 w-full rounded border px-3 py-2 text-sm" name="memo" />
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input defaultChecked name="isVisible" type="checkbox" value="true" />
-            학생에게 공개
-          </label>
-          <ConfirmSubmitButton className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white" message="테스트 결과를 저장할까요?">
-            저장
-          </ConfirmSubmitButton>
-        </form>
+          <h2 className="mb-4 font-semibold">테스트 결과 추가</h2>
+          <form action={createTestResultAction} className="space-y-4">
+            <input name="slug" type="hidden" value={slug} />
+            <input name="programId" type="hidden" value={program.id} />
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">학생</span>
+              <select className="w-full rounded border px-3 py-2 text-sm" name="studentId" required>
+                <option value="">선택</option>
+                {enrolledStudents.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">테스트명</span>
+              <input className="w-full rounded border px-3 py-2 text-sm" name="testName" placeholder="예: 5월 문법 테스트" required />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">구분</span>
+              <TestCategorySelect categories={categories} />
+            </label>
+            <div className="block">
+              <span className="mb-1 block text-sm font-medium">점수</span>
+              <div className="flex items-center gap-2">
+                <input
+                  className="w-full rounded border px-3 py-2 text-sm text-right"
+                  min="0"
+                  name="scoreNumerator"
+                  placeholder="획득"
+                  required
+                  step="0.1"
+                  type="number"
+                />
+                <span className="shrink-0 text-slate-400">/</span>
+                <input
+                  className="w-full rounded border px-3 py-2 text-sm"
+                  min="0"
+                  name="scoreDenominator"
+                  placeholder="만점"
+                  step="0.1"
+                  type="number"
+                />
+              </div>
+            </div>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">Pass / Fail</span>
+              <select className="w-full rounded border px-3 py-2 text-sm" name="isPassed">
+                <option value="">해당없음</option>
+                <option value="pass">통과 (Pass)</option>
+                <option value="fail">미통과 (Fail)</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">일시</span>
+              <input className="w-full rounded border px-3 py-2 text-sm" name="testedAt" type="datetime-local" required />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-sm font-medium">메모</span>
+              <textarea className="min-h-24 w-full rounded border px-3 py-2 text-sm" name="memo" />
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input defaultChecked name="isVisible" type="checkbox" value="true" />
+              학생에게 공개
+            </label>
+            <ConfirmSubmitButton className="w-full rounded bg-blue-700 px-4 py-2 font-medium text-white" message="테스트 결과를 저장할까요?">
+              저장
+            </ConfirmSubmitButton>
+          </form>
         </div>
+
         <TestExcelUpload
+          categories={categories}
           enrolledStudentNames={enrolledStudents.map((s) => s.name)}
           programId={program.id}
           slug={slug}
         />
+
+        <div className="rounded-lg border bg-white p-5">
+          <h2 className="mb-4 font-semibold">테스트 구분 관리</h2>
+          <div className="mb-3 space-y-1.5">
+            {categories.map((cat) => (
+              <div key={cat.id} className="flex items-center justify-between gap-2 rounded border px-3 py-2 text-sm">
+                <span className="flex items-center gap-2">
+                  <span className="inline-block h-4 w-4 shrink-0 rounded-full border border-slate-200" style={{ backgroundColor: cat.color }} />
+                  {cat.name}
+                </span>
+                <form action={deleteTestCategoryAction}>
+                  <input name="slug" type="hidden" value={slug} />
+                  <input name="id" type="hidden" value={cat.id} />
+                  <input name="redirectTo" type="hidden" value={`/admin/${slug}/programs/${program.id}/tests`} />
+                  <ConfirmSubmitButton
+                    className="text-xs text-red-600 hover:underline"
+                    message={`"${cat.name}" 구분을 삭제할까요? 연결된 테스트의 구분이 초기화됩니다.`}
+                  >
+                    삭제
+                  </ConfirmSubmitButton>
+                </form>
+              </div>
+            ))}
+            {categories.length === 0 ? (
+              <p className="text-sm text-slate-400">등록된 구분이 없습니다.</p>
+            ) : null}
+          </div>
+          <form action={createTestCategoryAction} className="flex items-end gap-2">
+            <input name="slug" type="hidden" value={slug} />
+            <input name="redirectTo" type="hidden" value={`/admin/${slug}/programs/${program.id}/tests`} />
+            <label className="flex-1">
+              <span className="mb-1 block text-xs font-medium text-slate-600">구분명</span>
+              <input className="w-full rounded border px-3 py-2 text-sm" name="name" placeholder="예: 단어 테스트" required />
+            </label>
+            <label>
+              <span className="mb-1 block text-xs font-medium text-slate-600">색상</span>
+              <input className="h-[38px] w-12 cursor-pointer rounded border px-1 py-1" defaultValue="#6366f1" name="color" type="color" />
+            </label>
+            <button className="rounded bg-slate-800 px-3 py-2 text-sm font-medium text-white" type="submit">추가</button>
+          </form>
+        </div>
       </aside>
     </main>
   )

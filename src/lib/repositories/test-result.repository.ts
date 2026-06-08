@@ -2,6 +2,8 @@ import { prisma } from '@/lib/db/prisma'
 
 export type CreateTestResultInput = {
   authorId: string
+  categoryId?: string | null
+  isPassed?: boolean | null
   isVisible?: boolean
   memo?: string
   programId: string
@@ -52,7 +54,7 @@ export const testResultRepository = {
         ...(options.testName ? { testName: { contains: options.testName } } : {}),
         ...searchWhere,
       },
-      include: { author: true, program: true, student: true },
+      include: { author: true, category: true, program: true, student: true },
       orderBy: [{ testedAt: 'desc' }, { createdAt: 'desc' }],
     })
   },
@@ -60,7 +62,7 @@ export const testResultRepository = {
   findVisibleByStudent(academyId: string, studentId: string) {
     return prisma.testResult.findMany({
       where: { academyId, studentId, isVisible: true },
-      include: { program: true },
+      include: { category: true, program: true },
       orderBy: [{ testedAt: 'desc' }, { createdAt: 'desc' }],
     })
   },
@@ -68,7 +70,7 @@ export const testResultRepository = {
   findById(id: string, academyId: string) {
     return prisma.testResult.findFirst({
       where: { id, academyId },
-      include: { author: true, program: true, student: true },
+      include: { author: true, category: true, program: true, student: true },
     })
   },
 

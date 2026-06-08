@@ -59,6 +59,8 @@ type BulkTestResultRow = {
   studentName: string
   testName: string
   score: string
+  categoryId?: string | null
+  isPassed?: boolean | null
   testedAt: string
   memo?: string
   isVisible?: boolean
@@ -88,6 +90,8 @@ export async function bulkCreateTestResultsAction(formData: FormData) {
         studentId: matched.id,
         testName: row.testName,
         score: row.score,
+        categoryId: row.categoryId ?? null,
+        isPassed: row.isPassed ?? null,
         testedAt: new Date(row.testedAt),
         memo: row.memo || undefined,
         isVisible: row.isVisible ?? true,
@@ -128,12 +132,20 @@ async function readEnrolledStudentId(academyId: string, programId: string, formD
 }
 
 function readTestResultForm(formData: FormData) {
+  const categoryId = String(formData.get('categoryId') ?? '').trim() || null
+  const scoreNum = String(formData.get('scoreNumerator') ?? '').trim()
+  const scoreDen = String(formData.get('scoreDenominator') ?? '').trim()
+  const score = scoreDen ? `${scoreNum}/${scoreDen}` : scoreNum
+  const isPassedRaw = formData.get('isPassed')
+  const isPassed = isPassedRaw === 'pass' ? true : isPassedRaw === 'fail' ? false : null
   return {
     testName: String(formData.get('testName') ?? ''),
-    score: String(formData.get('score') ?? ''),
+    score,
     testedAt: new Date(String(formData.get('testedAt') ?? '')),
     memo: String(formData.get('memo') ?? '') || undefined,
     isVisible: formData.get('isVisible') === 'true',
+    categoryId,
+    isPassed,
   }
 }
 

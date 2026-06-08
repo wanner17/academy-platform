@@ -76,7 +76,9 @@ export default async function AdminTestsPage({ params, searchParams }: AdminTest
           <thead className="bg-slate-50 text-slate-600">
             <tr>
               <th className="px-4 py-3 font-medium">테스트명</th>
+              <th className="px-4 py-3 font-medium">구분</th>
               <th className="px-4 py-3 font-medium">점수</th>
+              <th className="px-4 py-3 font-medium">P/F</th>
               <th className="px-4 py-3 font-medium">일시</th>
               <th className="px-4 py-3 font-medium">학생</th>
               <th className="px-4 py-3 font-medium">수업</th>
@@ -88,7 +90,29 @@ export default async function AdminTestsPage({ params, searchParams }: AdminTest
             {results.map((result) => (
               <tr key={result.id}>
                 <td className="px-4 py-3 font-medium">{result.testName}</td>
+                <td className="px-4 py-3">
+                  {result.category ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span
+                        className="inline-block h-3 w-3 shrink-0 rounded-full"
+                        style={{ backgroundColor: result.category.color }}
+                      />
+                      <span>{result.category.name}</span>
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">-</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">{result.score}</td>
+                <td className="px-4 py-3">
+                  {result.isPassed === true ? (
+                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">통과</span>
+                  ) : result.isPassed === false ? (
+                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">미통과</span>
+                  ) : (
+                    <span className="text-slate-400">-</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">{result.testedAt.toLocaleString('ko-KR')}</td>
                 <td className="px-4 py-3">{result.student.name}</td>
                 <td className="px-4 py-3">{result.program.title}</td>
@@ -101,7 +125,7 @@ export default async function AdminTestsPage({ params, searchParams }: AdminTest
               </tr>
             ))}
             {total === 0 ? (
-              <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={7}>등록된 테스트 결과가 없습니다.</td></tr>
+              <tr><td className="px-4 py-8 text-center text-slate-500" colSpan={9}>등록된 테스트 결과가 없습니다.</td></tr>
             ) : null}
           </tbody>
         </table>
