@@ -72,18 +72,18 @@ export default async function AdminTestsPage({ params, searchParams }: AdminTest
       </form>
       <p className="mb-3 text-sm text-slate-500">총 {total}개</p>
       <div className="overflow-x-auto rounded-lg border bg-white">
-        <table className="w-full min-w-[760px] text-left text-sm">
+        <table className="w-full min-w-[960px] text-left text-sm">
           <thead className="bg-slate-50 text-slate-600">
             <tr>
               <th className="px-4 py-3 font-medium">테스트명</th>
-              <th className="px-4 py-3 font-medium">구분</th>
-              <th className="px-4 py-3 font-medium">점수</th>
-              <th className="px-4 py-3 font-medium">P/F</th>
-              <th className="px-4 py-3 font-medium">일시</th>
-              <th className="px-4 py-3 font-medium">학생</th>
+              <th className="w-28 px-4 py-3 font-medium">구분</th>
+              <th className="w-24 px-4 py-3 font-medium">점수</th>
+              <th className="w-20 px-4 py-3 font-medium">P/F</th>
+              <th className="w-40 px-4 py-3 font-medium">일시</th>
+              <th className="w-20 px-4 py-3 font-medium">학생</th>
               <th className="px-4 py-3 font-medium">수업</th>
-              <th className="px-4 py-3 font-medium">공개</th>
-              <th className="px-4 py-3 text-right font-medium">관리</th>
+              <th className="w-16 px-4 py-3 font-medium">공개</th>
+              <th className="w-16 px-4 py-3 text-right font-medium">관리</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -113,11 +113,11 @@ export default async function AdminTestsPage({ params, searchParams }: AdminTest
                     <span className="text-slate-400">-</span>
                   )}
                 </td>
-                <td className="px-4 py-3">{result.testedAt.toLocaleString('ko-KR')}</td>
+                <td className="whitespace-nowrap px-4 py-3">{result.testedAt.toLocaleString('ko-KR')}</td>
                 <td className="px-4 py-3">{result.student.name}</td>
                 <td className="px-4 py-3">{result.program.title}</td>
                 <td className="px-4 py-3">{result.isVisible ? '공개' : '비공개'}</td>
-                <td className="px-4 py-3 text-right">
+                <td className="whitespace-nowrap px-4 py-3 text-right">
                   <a className="rounded border px-3 py-1 text-sm" href={`/admin/${slug}/programs/${result.programId}/tests/${result.id}/edit`}>
                     수정
                   </a>
