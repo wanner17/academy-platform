@@ -35,7 +35,9 @@
       "PowerShell(npx dotenv-cli -e .env.local -- npx prisma db execute --file prisma/add_author_id.sql --schema prisma/schema.prisma 2>&1)",
       "PowerShell(npx dotenv-cli -e .env.local -- npx prisma generate 2>&1)",
       "PowerShell(npx dotenv-cli -e .env.local -- npx tsx prisma/normalize-scores.ts 2>&1)",
-      "PowerShell(npx dotenv-cli -e .env.local -- npx prisma db execute --file prisma/add_is_passed.sql --schema prisma/schema.prisma 2>&1)"
+      "PowerShell(npx dotenv-cli -e .env.local -- npx prisma db execute --file prisma/add_is_passed.sql --schema prisma/schema.prisma 2>&1)",
+      "Bash(not exist *)",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\dev\\\\academy-platform\\\\docs\")"
     ]
   }
 }
