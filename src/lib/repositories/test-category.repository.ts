@@ -17,6 +17,13 @@ export const testCategoryRepository = {
     })
   },
 
+  findAll(academyId: string) {
+    return prisma.testCategory.findMany({
+      where: { academyId },
+      orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    })
+  },
+
   findById(id: string, academyId: string) {
     return prisma.testCategory.findFirst({ where: { id, academyId } })
   },

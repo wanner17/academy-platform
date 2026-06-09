@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1780875428103,
+  "lastScanned": 1780963457737,
   "projectRoot": "d:\\dev\\academy-platform",
   "techStack": {
     "languages": [
@@ -67,6 +67,7 @@
     "isMonorepo": false,
     "workspaces": [],
     "mainDirectories": [
+      "docs",
       "public",
       "scripts",
       "src"
@@ -78,11 +79,21 @@
   },
   "customNotes": [],
   "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1780963457651,
+      "keyFiles": [
+        "test-management-manual.html",
+        "test-management-manual.md"
+      ]
+    },
     "omx_wiki": {
       "path": "omx_wiki",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1780875428031,
+      "lastAccessed": 1780963457654,
       "keyFiles": [
         "log.md"
       ]
@@ -90,9 +101,12 @@
     "prisma": {
       "path": "prisma",
       "purpose": null,
-      "fileCount": 2,
-      "lastAccessed": 1780875428032,
+      "fileCount": 5,
+      "lastAccessed": 1780963457675,
       "keyFiles": [
+        "add_author_id.sql",
+        "add_is_passed.sql",
+        "normalize-scores.ts",
         "schema.prisma",
         "seed.ts"
       ]
@@ -101,7 +115,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 4,
-      "lastAccessed": 1780875428050,
+      "lastAccessed": 1780963457677,
       "keyFiles": [
         "admin-manual.html",
         "instagram-icon.svg",
@@ -113,14 +127,14 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 0,
-      "lastAccessed": 1780875428051,
+      "lastAccessed": 1780963457677,
       "keyFiles": []
     },
     "src": {
       "path": "src",
       "purpose": "Source code",
       "fileCount": 1,
-      "lastAccessed": 1780875428051,
+      "lastAccessed": 1780963457678,
       "keyFiles": [
         "proxy.ts"
       ]
@@ -129,7 +143,7 @@
       "path": "prisma\\migrations",
       "purpose": "Database migrations",
       "fileCount": 1,
-      "lastAccessed": 1780875428053,
+      "lastAccessed": 1780963457680,
       "keyFiles": [
         "migration_lock.toml"
       ]
@@ -138,7 +152,7 @@
       "path": "src\\app",
       "purpose": "Application code",
       "fileCount": 6,
-      "lastAccessed": 1780875428054,
+      "lastAccessed": 1780963457682,
       "keyFiles": [
         "error.tsx",
         "global-error.tsx",
@@ -149,7 +163,7 @@
       "path": "src\\components",
       "purpose": "UI components",
       "fileCount": 4,
-      "lastAccessed": 1780875428055,
+      "lastAccessed": 1780963457683,
       "keyFiles": [
         "confirm-submit-button.tsx",
         "public-login-form.tsx",
@@ -160,7 +174,7 @@
       "path": "src\\lib",
       "purpose": "Library code",
       "fileCount": 5,
-      "lastAccessed": 1780875428055,
+      "lastAccessed": 1780963457684,
       "keyFiles": [
         "attendance-labels.ts",
         "homepage-sections.ts",
@@ -171,7 +185,7 @@
       "path": "src\\types",
       "purpose": "Type definitions",
       "fileCount": 1,
-      "lastAccessed": 1780875428056,
+      "lastAccessed": 1780963457685,
       "keyFiles": [
         "next-auth.d.ts"
       ]
@@ -180,8 +194,8 @@
   "hotPaths": [
     {
       "path": "prisma\\schema.prisma",
-      "accessCount": 63,
-      "lastAccessed": 1780907042549,
+      "accessCount": 64,
+      "lastAccessed": 1780964156527,
       "type": "file"
     },
     {
@@ -189,6 +203,12 @@
       "accessCount": 47,
       "lastAccessed": 1780903748904,
       "type": "file"
+    },
+    {
+      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\tests\\page.tsx",
+      "accessCount": 27,
+      "lastAccessed": 1780964199940,
+      "type": "directory"
     },
     {
       "path": "src\\app\\(admin)\\admin\\[slug]\\students\\[id]\\page.tsx",
@@ -206,12 +226,6 @@
       "path": "",
       "accessCount": 20,
       "lastAccessed": 1780899838055,
-      "type": "directory"
-    },
-    {
-      "path": "src\\app\\(admin)\\admin\\[slug]\\programs\\[id]\\tests\\page.tsx",
-      "accessCount": 19,
-      "lastAccessed": 1780904164250,
       "type": "directory"
     },
     {
@@ -287,6 +301,12 @@
       "type": "file"
     },
     {
+      "path": "src\\lib\\auth\\authorization.ts",
+      "accessCount": 8,
+      "lastAccessed": 1780964068980,
+      "type": "file"
+    },
+    {
       "path": "src\\lib\\services\\homework.service.ts",
       "accessCount": 7,
       "lastAccessed": 1780365411919,
@@ -297,12 +317,6 @@
       "accessCount": 7,
       "lastAccessed": 1780899739676,
       "type": "directory"
-    },
-    {
-      "path": "src\\lib\\auth\\authorization.ts",
-      "accessCount": 7,
-      "lastAccessed": 1780902846286,
-      "type": "file"
     },
     {
       "path": "src\\components\\public\\public-header.tsx",

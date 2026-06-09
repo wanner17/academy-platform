@@ -19,7 +19,7 @@ export default async function EditTestResultPage({ params }: EditTestResultPageP
   const [result, students, categories] = await Promise.all([
     testResultService.getTestResultById(resultId, academy.id),
     studentService.getAdminStudents(academy.id),
-    testCategoryService.getCategories(academy.id, user.id),
+    testCategoryService.getCategories(academy.id, program.teacher?.userId ?? null),
   ])
   if (result.programId !== program.id) notFound()
   const enrolledStudents = students.filter((student) =>

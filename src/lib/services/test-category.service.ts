@@ -5,7 +5,8 @@ import {
 } from '@/lib/repositories/test-category.repository'
 
 export const testCategoryService = {
-  getCategories(academyId: string, authorId: string) {
+  getCategories(academyId: string, authorId: string | null) {
+    if (!authorId) return testCategoryRepository.findAll(academyId)
     return testCategoryRepository.findByUser(academyId, authorId)
   },
 

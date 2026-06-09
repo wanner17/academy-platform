@@ -37,7 +37,14 @@
       "PowerShell(npx dotenv-cli -e .env.local -- npx tsx prisma/normalize-scores.ts 2>&1)",
       "PowerShell(npx dotenv-cli -e .env.local -- npx prisma db execute --file prisma/add_is_passed.sql --schema prisma/schema.prisma 2>&1)",
       "Bash(not exist *)",
-      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\dev\\\\academy-platform\\\\docs\")"
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\dev\\\\academy-platform\\\\docs\")",
+      "Bash(mkdir -p \"d:/dev/academy-platform/public/manual/images\" && cp \"d:/dev/academy-platform/docs/test-management-manual.html\" \"d:/dev/academy-platform/public/manual/test-management-manual.html\" && cp d:/dev/academy-platform/docs/images/*.png \"d:/dev/academy-platform/public/manual/images/\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ],
+    "additionalDirectories": [
+      "d:\\dev\\academy-platform\\docs\\images"
     ]
   }
 }

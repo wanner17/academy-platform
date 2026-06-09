@@ -64,18 +64,24 @@ export function TestCategoryTrendChart({ results, studentName }: TestCategoryTre
   const sorted = [...results].sort((a, b) => a.testedAt.getTime() - b.testedAt.getTime())
 
   const dataByDate = new Map<string, Record<string, number | string>>()
+  const dateTimestamp = new Map<string, number>()
   for (const r of sorted) {
     const pct = parseScorePercent(r.score)
     if (pct === null) continue
-    const dateKey = r.testedAt.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+    const dateKey = r.testedAt.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
     const catKey = r.category?.id ?? '__none__'
-    if (!dataByDate.has(dateKey)) dataByDate.set(dateKey, { date: dateKey })
+    if (!dataByDate.has(dateKey)) {
+      dataByDate.set(dateKey, { date: dateKey })
+      dateTimestamp.set(dateKey, r.testedAt.getTime())
+    }
     const pt = dataByDate.get(dateKey)!
     const prev = pt[catKey]
     pt[catKey] = typeof prev === 'number' ? Math.round((prev + pct) * 5) / 10 : pct
   }
 
-  const chartData = Array.from(dataByDate.values())
+  const chartData = Array.from(dataByDate.entries())
+    .sort(([a], [b]) => (dateTimestamp.get(a) ?? 0) - (dateTimestamp.get(b) ?? 0))
+    .map(([, data]) => data)
   const categories = Array.from(categoryMap.entries())
 
   return (

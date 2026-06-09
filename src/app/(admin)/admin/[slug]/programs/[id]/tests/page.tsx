@@ -36,7 +36,7 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
     }),
     testResultService.getAdminTestResults(academy.id, { programId: program.id }),
     studentService.getAdminStudents(academy.id),
-    testCategoryService.getCategories(academy.id, user.id),
+    testCategoryService.getCategories(academy.id, program.teacher?.userId ?? null),
   ])
 
   const enrolledStudents = students.filter((s) =>
@@ -64,17 +64,17 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
 
 
         <div className="overflow-x-auto rounded-lg border bg-white">
-          <table className="w-full min-w-[760px] text-left text-sm">
+          <table className="w-full min-w-[820px] text-left text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="px-4 py-3 font-medium">테스트명</th>
-                <th className="px-4 py-3 font-medium">구분</th>
-                <th className="px-4 py-3 font-medium">점수</th>
-                <th className="px-4 py-3 font-medium">P/F</th>
-                <th className="px-4 py-3 font-medium">일시</th>
-                <th className="px-4 py-3 font-medium">학생</th>
-                <th className="px-4 py-3 font-medium">공개</th>
-                <th className="px-4 py-3 text-right font-medium">관리</th>
+                <th className="w-28 px-4 py-3 font-medium">구분</th>
+                <th className="w-24 px-4 py-3 font-medium">점수</th>
+                <th className="w-20 px-4 py-3 font-medium">P/F</th>
+                <th className="w-40 px-4 py-3 font-medium">일시</th>
+                <th className="w-20 px-4 py-3 font-medium">학생</th>
+                <th className="w-16 px-4 py-3 font-medium">공개</th>
+                <th className="w-24 px-4 py-3 text-right font-medium">관리</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -92,7 +92,7 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
                     )}
                   </td>
                   <td className="px-4 py-3">{result.score}</td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3">
                     {result.isPassed === true ? (
                       <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">통과</span>
                     ) : result.isPassed === false ? (
@@ -101,10 +101,10 @@ export default async function ProgramTestsPage({ params, searchParams }: Program
                       <span className="text-slate-400">-</span>
                     )}
                   </td>
-                  <td className="px-4 py-3">{result.testedAt.toLocaleString('ko-KR')}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{result.testedAt.toLocaleString('ko-KR')}</td>
                   <td className="px-4 py-3">{result.student.name}</td>
                   <td className="px-4 py-3">{result.isVisible ? '공개' : '비공개'}</td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3">
                     <div className="flex justify-end gap-2">
                       <a className="rounded border px-3 py-1 text-sm" href={`/admin/${slug}/programs/${program.id}/tests/${result.id}/edit`}>
                         수정

@@ -15,5 +15,6 @@ yarn-error.log*
 pnpm-debug.log*
 
 manual/
+!public/manual/
 .claude/
 .omc/
