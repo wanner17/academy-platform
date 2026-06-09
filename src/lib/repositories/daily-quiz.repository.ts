@@ -8,15 +8,15 @@ export type CreateQuizInput = {
 }
 
 export const dailyQuizRepository = {
-  findByDate(academyId: string, date: Date) {
+  findByDate(programId: string, date: Date) {
     return prisma.dailyQuiz.findUnique({
-      where: { academyId_date: { academyId, date } },
+      where: { programId_date: { programId, date } },
     })
   },
 
-  findAllByAcademy(academyId: string) {
+  findAllByProgram(programId: string) {
     return prisma.dailyQuiz.findMany({
-      where: { academyId },
+      where: { programId },
       include: { _count: { select: { attempts: true } } },
       orderBy: { date: 'desc' },
     })
@@ -28,8 +28,8 @@ export const dailyQuizRepository = {
     })
   },
 
-  create(academyId: string, data: CreateQuizInput) {
-    return prisma.dailyQuiz.create({ data: { ...data, academyId } })
+  create(academyId: string, programId: string, data: CreateQuizInput) {
+    return prisma.dailyQuiz.create({ data: { ...data, academyId, programId } })
   },
 
   createAttempt(academyId: string, quizId: string, studentId: string, answer: boolean, isCorrect: boolean) {
@@ -42,23 +42,28 @@ export const dailyQuizRepository = {
     return prisma.dailyQuiz.delete({ where: { id, academyId } })
   },
 
-  async getRanking(academyId: string) {
-    const [students, correctAttempts] = await Promise.all([
-      prisma.student.findMany({
-        where: { academyId, isActive: true },
-        select: { id: true, name: true },
+  async getRanking(programId: string) {
+    const quizIds = await prisma.dailyQuiz.findMany({
+      where: { programId },
+      select: { id: true },
+    })
+
+    const [enrollments, correctAttempts] = await Promise.all([
+      prisma.enrollment.findMany({
+        where: { programId, status: 'ACTIVE' },
+        include: { student: { select: { id: true, name: true } } },
       }),
       prisma.dailyQuizAttempt.groupBy({
         by: ['studentId'],
-        where: { academyId, isCorrect: true },
+        where: { quizId: { in: quizIds.map((q) => q.id) }, isCorrect: true },
         _count: { id: true },
       }),
     ])
 
     const pointsMap = new Map(correctAttempts.map((a) => [a.studentId, a._count.id]))
 
-    return students
-      .map((s) => ({ id: s.id, name: s.name, points: pointsMap.get(s.id) ?? 0 }))
+    return enrollments
+      .map((e) => ({ id: e.student.id, name: e.student.name, points: pointsMap.get(e.student.id) ?? 0 }))
       .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name, 'ko'))
   },
 }

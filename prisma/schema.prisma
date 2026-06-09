@@ -265,6 +265,7 @@ model Program {
   progressLogs ProgressLog[]
   testResults TestResult[]
   programNotices ProgramNotice[]
+  dailyQuizzes DailyQuiz[]
 
   @@index([academyId, mode, targetLevel, order])
   @@index([academyId, teacherId])
@@ -581,6 +582,7 @@ model Message {
 model DailyQuiz {
   id          String   @id @default(cuid())
   academyId   String
+  programId   String
   date        DateTime @db.Date
   question    String   @db.Text
   answer      Boolean
@@ -588,9 +590,10 @@ model DailyQuiz {
   createdAt   DateTime @default(now())
 
   academy  Academy            @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  program  Program            @relation(fields: [programId], references: [id], onDelete: Cascade)
   attempts DailyQuizAttempt[]
 
-  @@unique([academyId, date])
+  @@unique([programId, date])
   @@index([academyId, date])
 }
 

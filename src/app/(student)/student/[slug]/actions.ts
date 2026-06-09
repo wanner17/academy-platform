@@ -76,10 +76,11 @@ export async function checkInAttendanceAction(slug: string, input: StudentCheckI
 export async function submitQuizAnswerAction(formData: FormData) {
   const slug = String(formData.get('slug') ?? '')
   const quizId = String(formData.get('quizId') ?? '')
+  const programId = String(formData.get('programId') ?? '')
   const answer = formData.get('answer') === 'true'
   const { academy, user } = await requireStudentPage(slug)
   const student = await studentService.getStudentByUserId(user.id, academy.id)
-  await dailyQuizService.submitAnswer(academy.id, quizId, student.id, answer)
+  await dailyQuizService.submitAnswer(academy.id, programId, quizId, student.id, answer)
   revalidatePath(studentPath(slug))
   redirect(studentPath(slug))
 }

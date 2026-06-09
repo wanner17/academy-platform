@@ -39,7 +39,7 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
     now,
     studentId: student.id,
   })
-  const [homeworks, progressLogs, testResults, attendanceSetting, todayAttendances, monthlyAttendance, todaySchedules, todayQuiz, ranking, programNotices] = await Promise.all([
+  const [homeworks, progressLogs, testResults, attendanceSetting, todayAttendances, monthlyAttendance, todaySchedules, programNotices, todayQuizzes] = await Promise.all([
     homeworkService.getVisibleHomeworksForPrograms(academy.id, programIds, student.id),
     progressService.getVisibleProgressLogsForPrograms(academy.id, programIds, student.id),
     testResultService.getStudentVisibleTestResults(academy.id, student.id),
@@ -47,11 +47,16 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
     attendanceService.getStudentRecordsForDate(academy.id, student.id, now),
     attendanceService.getStudentRecordsForMonth(academy.id, student.id, selectedMonth.getFullYear(), selectedMonth.getMonth()),
     attendanceService.getTodaySchedulesForStudent(student.id, now),
-    dailyQuizService.getTodayQuiz(academy.id),
-    dailyQuizService.getRanking(academy.id),
     programNoticeService.getVisibleNoticesForPrograms(academy.id, programIds),
+    Promise.all(programIds.map((pid) => dailyQuizService.getTodayQuiz(academy.id, pid))),
   ])
-  const quizAttempt = todayQuiz ? await dailyQuizService.getStudentAttempt(todayQuiz.id, student.id) : null
+  const [quizAttempts, rankingsByProgram] = await Promise.all([
+    Promise.all(todayQuizzes.map((quiz) => quiz ? dailyQuizService.getStudentAttempt(quiz.id, student.id) : Promise.resolve(null))),
+    Promise.all(programIds.map((pid) => dailyQuizService.getRanking(pid))),
+  ])
+  const quizByProgramId = new Map(programIds.map((pid, i) => [pid, todayQuizzes[i] ?? null]))
+  const attemptByProgramId = new Map(programIds.map((pid, i) => [pid, quizAttempts[i] ?? null]))
+  const rankingByProgramId = new Map(programIds.map((pid, i) => [pid, rankingsByProgram[i]]))
   const attendancesByDate = monthlyAttendance.reduce((map, record) => {
     const key = toKoreaDateKey(record.attendanceDate)
     map.set(key, [...(map.get(key) ?? []), record])
@@ -326,77 +331,88 @@ export default async function StudentHomePage({ params, searchParams }: StudentH
           </div>
         </section>
 
-        <section className="student-section">
-          <div className="pub-section-head">
-            <div>
-              <div className="pub-label">TODAY&apos;S QUIZ</div>
-              <h2 className="pub-h2">오늘의 퀴즈</h2>
-            </div>
-          </div>
-          {todayQuiz ? (
-            <div className="student-quiz-card">
-              <div className="student-quiz-question" dangerouslySetInnerHTML={{ __html: todayQuiz.question }} />
-              {quizAttempt ? (
-                <div className={`student-quiz-result ${quizAttempt.isCorrect ? 'is-correct' : 'is-wrong'}`}>
-                  <div className="student-quiz-result-row">
-                    <span className="student-quiz-result-badge">
-                      {quizAttempt.isCorrect ? '정답!' : '오답'}
-                    </span>
-                    <span>
-                      내 답: <strong>{quizAttempt.answer ? 'O' : 'X'}</strong>
-                      {' · '}
-                      정답: <strong>{todayQuiz.answer ? 'O' : 'X'}</strong>
-                    </span>
+        {activeEnrollments.map((enrollment) => {
+          const todayQuiz = quizByProgramId.get(enrollment.programId) ?? null
+          const quizAttempt = attemptByProgramId.get(enrollment.programId) ?? null
+          const ranking = rankingByProgramId.get(enrollment.programId) ?? []
+          return (
+            <div key={`quiz-${enrollment.programId}`}>
+              <section className="student-section">
+                <div className="pub-section-head">
+                  <div>
+                    <div className="pub-label">TODAY&apos;S QUIZ</div>
+                    <h2 className="pub-h2">오늘의 퀴즈 · {enrollment.program.title}</h2>
                   </div>
-                  {todayQuiz.explanation ? (
-                    <div className="student-quiz-explanation" dangerouslySetInnerHTML={{ __html: todayQuiz.explanation }} />
-                  ) : null}
                 </div>
-              ) : (
-                <div className="student-quiz-buttons">
-                  <form action={submitQuizAnswerAction}>
-                    <input name="slug" type="hidden" value={slug} />
-                    <input name="quizId" type="hidden" value={todayQuiz.id} />
-                    <input name="answer" type="hidden" value="true" />
-                    <button className="student-quiz-btn student-quiz-btn-o" type="submit">O</button>
-                  </form>
-                  <form action={submitQuizAnswerAction}>
-                    <input name="slug" type="hidden" value={slug} />
-                    <input name="quizId" type="hidden" value={todayQuiz.id} />
-                    <input name="answer" type="hidden" value="false" />
-                    <button className="student-quiz-btn student-quiz-btn-x" type="submit">X</button>
-                  </form>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="student-empty">오늘의 퀴즈가 아직 준비되지 않았습니다.</div>
-          )}
-        </section>
+                {todayQuiz ? (
+                  <div className="student-quiz-card">
+                    <div className="student-quiz-question" dangerouslySetInnerHTML={{ __html: todayQuiz.question }} />
+                    {quizAttempt ? (
+                      <div className={`student-quiz-result ${quizAttempt.isCorrect ? 'is-correct' : 'is-wrong'}`}>
+                        <div className="student-quiz-result-row">
+                          <span className="student-quiz-result-badge">
+                            {quizAttempt.isCorrect ? '정답!' : '오답'}
+                          </span>
+                          <span>
+                            내 답: <strong>{quizAttempt.answer ? 'O' : 'X'}</strong>
+                            {' · '}
+                            정답: <strong>{todayQuiz.answer ? 'O' : 'X'}</strong>
+                          </span>
+                        </div>
+                        {todayQuiz.explanation ? (
+                          <div className="student-quiz-explanation" dangerouslySetInnerHTML={{ __html: todayQuiz.explanation }} />
+                        ) : null}
+                      </div>
+                    ) : (
+                      <div className="student-quiz-buttons">
+                        <form action={submitQuizAnswerAction}>
+                          <input name="slug" type="hidden" value={slug} />
+                          <input name="quizId" type="hidden" value={todayQuiz.id} />
+                          <input name="programId" type="hidden" value={enrollment.programId} />
+                          <input name="answer" type="hidden" value="true" />
+                          <button className="student-quiz-btn student-quiz-btn-o" type="submit">O</button>
+                        </form>
+                        <form action={submitQuizAnswerAction}>
+                          <input name="slug" type="hidden" value={slug} />
+                          <input name="quizId" type="hidden" value={todayQuiz.id} />
+                          <input name="programId" type="hidden" value={enrollment.programId} />
+                          <input name="answer" type="hidden" value="false" />
+                          <button className="student-quiz-btn student-quiz-btn-x" type="submit">X</button>
+                        </form>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="student-empty">오늘의 퀴즈가 아직 준비되지 않았습니다.</div>
+                )}
+              </section>
 
-        <section className="student-section">
-          <div className="pub-section-head">
-            <div>
-              <div className="pub-label">RANKING</div>
-              <h2 className="pub-h2">랭킹</h2>
+              <section className="student-section">
+                <div className="pub-section-head">
+                  <div>
+                    <div className="pub-label">RANKING</div>
+                    <h2 className="pub-h2">랭킹 · {enrollment.program.title}</h2>
+                  </div>
+                </div>
+                <ol className="student-ranking-list">
+                  {ranking.map((entry, index) => {
+                    const isMe = entry.id === student.id
+                    return (
+                      <li key={entry.id} className={`student-ranking-item${isMe ? ' is-me' : ''}`}>
+                        <span className="student-ranking-pos">{index + 1}</span>
+                        <span className="student-ranking-name">{isMe ? `${entry.name} (나)` : entry.name}</span>
+                        <span className="student-ranking-points">{entry.points}점</span>
+                      </li>
+                    )
+                  })}
+                  {ranking.length === 0 ? (
+                    <li className="student-empty">아직 참여한 학생이 없습니다.</li>
+                  ) : null}
+                </ol>
+              </section>
             </div>
-          </div>
-          <ol className="student-ranking-list">
-            {ranking.map((entry, index) => {
-              const isMe = entry.id === student.id
-              return (
-                <li key={entry.id} className={`student-ranking-item${isMe ? ' is-me' : ''}`}>
-                  <span className="student-ranking-pos">{index + 1}</span>
-                  <span className="student-ranking-name">{isMe ? `${entry.name} (나)` : entry.name}</span>
-                  <span className="student-ranking-points">{entry.points}점</span>
-                </li>
-              )
-            })}
-            {ranking.length === 0 ? (
-              <li className="student-empty">아직 참여한 학생이 없습니다.</li>
-            ) : null}
-          </ol>
-        </section>
+          )
+        })}
 
         <section className="student-section">
           <div className="pub-section-head">
