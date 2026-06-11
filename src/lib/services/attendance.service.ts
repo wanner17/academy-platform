@@ -19,7 +19,7 @@ export type StudentCheckInInput = {
 
 export type ManualAttendanceInput = {
   attendanceDate: Date
-  memo?: string
+  memo?: string | null
   scheduleId?: string
   status: AttendanceStatus
   studentId: string

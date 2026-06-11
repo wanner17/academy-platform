@@ -53,7 +53,7 @@ export async function markAttendanceAction(formData: FormData) {
 
   await attendanceService.markManual(academy.id, {
     attendanceDate,
-    memo: String(formData.get('memo') ?? '') || undefined,
+    memo: readOptionalMemo(formData),
     scheduleId: String(formData.get('scheduleId') ?? '').trim() || undefined,
     status,
     studentId: student.id,
@@ -105,6 +105,11 @@ function readOptionalNumber(formData: FormData, name: string) {
   const number = Number(value)
   if (!Number.isFinite(number)) throw new Error(`${name} is invalid`)
   return number
+}
+
+function readOptionalMemo(formData: FormData) {
+  const value = String(formData.get('memo') ?? '').trim()
+  return value || null
 }
 
 function revalidateAttendancePaths(slug: string) {
