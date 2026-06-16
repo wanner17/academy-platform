@@ -6,6 +6,7 @@ import { programService } from '@/lib/services/program.service'
 import { requireMemberPage } from '@/lib/auth/server'
 import { studentService } from '@/lib/services/student.service'
 import { updateProgressLogAction } from '../../../actions'
+import { StudentScopeCheckboxes } from '../../student-scope-checkboxes'
 
 type EditProgressPageProps = {
   params: Promise<{ slug: string; id: string; progressId: string }>
@@ -36,17 +37,10 @@ export default async function EditProgressPage({ params }: EditProgressPageProps
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="programId" value={program.id} />
           <input type="hidden" name="id" value={progressLog.id} />
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium">대상 학생</span>
-            <select className="w-full rounded border px-3 py-2 text-sm" defaultValue={progressLog.studentId ?? ''} name="studentId">
-              <option value="">전체 학생</option>
-              {enrolledStudents.map((student) => (
-                <option key={student.id} value={student.id}>
-                  {student.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <StudentScopeCheckboxes
+            initialStudentId={progressLog.studentId}
+            students={enrolledStudents.map((student) => ({ id: student.id, name: student.name }))}
+          />
           <label className="block">
             <span className="mb-1 block text-sm font-medium">수업일</span>
             <input className="w-full rounded border px-3 py-2 text-sm" defaultValue={progressLog.classDate.toISOString().slice(0, 10)} name="classDate" required type="date" />

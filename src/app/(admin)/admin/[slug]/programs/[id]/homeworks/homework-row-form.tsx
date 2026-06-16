@@ -19,7 +19,7 @@ type Props = {
 export function HomeworkRowForm({ slug, programId, enrolledStudents, today }: Props) {
   const [rows, setRows] = useState<Row[]>([{ id: 1, content: '', isCompleted: false }])
   const [title, setTitle] = useState('')
-  const [studentId, setStudentId] = useState('')
+  const [studentIds, setStudentIds] = useState<string[]>([''])
   const [startDate, setStartDate] = useState(today)
   const [dueDate, setDueDate] = useState('')
   const [isVisible, setIsVisible] = useState(true)
@@ -38,6 +38,15 @@ export function HomeworkRowForm({ slug, programId, enrolledStudents, today }: Pr
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
   }
 
+  function toggleStudent(id: string) {
+    setStudentIds((prev) => {
+      if (id === '') return ['']
+      const withoutAll = prev.filter(Boolean)
+      const next = withoutAll.includes(id) ? withoutAll.filter((studentId) => studentId !== id) : [...withoutAll, id]
+      return next.length > 0 ? next : ['']
+    })
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!title.trim()) {
@@ -51,7 +60,7 @@ export function HomeworkRowForm({ slug, programId, enrolledStudents, today }: Pr
     if (!window.confirm('숙제를 저장할까요?')) return
 
     const bulkRows = rows.map((r) => ({
-      studentId: studentId || undefined,
+      studentIds: studentIds.length > 0 ? studentIds : [''],
       title,
       content: r.content,
       startDate: startDate || undefined,
@@ -71,21 +80,29 @@ export function HomeworkRowForm({ slug, programId, enrolledStudents, today }: Pr
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <label className="block">
+      <fieldset>
         <span className="mb-1 block text-sm font-medium">대상 학생</span>
-        <select
-          className="w-full rounded border px-3 py-2 text-sm"
-          value={studentId}
-          onChange={(e) => setStudentId(e.target.value)}
-        >
-          <option value="">전체 학생</option>
+        <div className="max-h-44 space-y-2 overflow-y-auto rounded border px-3 py-2 text-sm">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={studentIds.includes('')}
+              onChange={() => toggleStudent('')}
+            />
+            전체 학생
+          </label>
           {enrolledStudents.map((s) => (
-            <option key={s.id} value={s.id}>
+            <label key={s.id} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={studentIds.includes(s.id)}
+                onChange={() => toggleStudent(s.id)}
+              />
               {s.name}
-            </option>
+            </label>
           ))}
-        </select>
-      </label>
+        </div>
+      </fieldset>
 
       <label className="block">
         <span className="mb-1 block text-sm font-medium">제목</span>
